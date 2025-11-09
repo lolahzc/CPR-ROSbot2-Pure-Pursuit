@@ -1,0 +1,13 @@
+repositories:
+  husarion_controllers:
+    type: git
+    url: https://github.com/husarion/husarion_controllers
+    version: a2cef30a1f7c384f059a696a67d1ea99414c919e
+  husarion_gz_worlds:
+    type: git
+    url: https://github.com/husarion/husarion_gz_worlds
+    version: 0d61d49485d72ab717c557c1f7fc5baa45592c75
+  husarion_components_description:
+    type: git
+    url: https://github.com/husarion/husarion_components_description.git
+    version: 5ad18c27f53b129a99bf9df513d16fda5a4bca6f
