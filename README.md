@@ -38,3 +38,9 @@ Os recomiendo añadiros esto en el .bashrc para no tener que hacerlo cada vez qu
 ```
 ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 ```
+
+Para comprobar que se os mueve el robot correctamente
+
+```
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
