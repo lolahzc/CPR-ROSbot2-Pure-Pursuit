@@ -42,12 +42,17 @@ public:
         robot_y_ = 0.0;
         robot_yaw_ = 0.0;
 
-        // Timer para el control
-        timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(100),
+        // Timer para el control (más rápido para mejor respuesta)
+        control_timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(50),  // 20 Hz para control
             std::bind(&PurePursuitNode::controlLoop, this));
+            
+        // Timer para TF y odometría (MUCHO más rápido para RViz)
+        tf_timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(20),  // 50 Hz para TF/odom
+            std::bind(&PurePursuitNode::publishOdomAndTF, this));
 
-        RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized");
+        RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized - High frequency mode");
     }
 
 private:
@@ -62,8 +67,11 @@ private:
     void controlLoop()
     {
         if (!has_goal_) {
-            stopRobot();
-            publishOdomAndTF();
+            // Solo publicar comandos de velocidad cero, no detener el timer de TF
+            geometry_msgs::msg::Twist cmd_vel;
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = 0.0;
+            cmd_vel_pub_->publish(cmd_vel);
             return;
         }
 
@@ -72,10 +80,8 @@ private:
         double distance_to_goal = std::sqrt(dx*dx + dy*dy);
 
         if (distance_to_goal < goal_tolerance_) {
-            stopRobot();
             RCLCPP_INFO(this->get_logger(), "Goal reached!");
             has_goal_ = false;
-            publishOdomAndTF();
             return;
         }
 
@@ -84,24 +90,22 @@ private:
 
         geometry_msgs::msg::Twist cmd_vel;
         
-        double angular_vel = 2.0 * angle_error;  
+        // Control más suave
+        double angular_vel = 1.5 * angle_error;  // Reducir ganancia para más suavidad
         angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
         
         double linear_vel = max_linear_vel_ * (1.0 - std::abs(angle_error)/M_PI);
-        linear_vel = std::max(0.0, std::min(linear_vel, max_linear_vel_));
+        linear_vel = std::max(0.1, std::min(linear_vel, max_linear_vel_)); // Velocidad mínima de 0.1
 
         cmd_vel.linear.x = linear_vel;
         cmd_vel.angular.z = angular_vel;
 
         cmd_vel_pub_->publish(cmd_vel);
 
-        // Actualizar posición del robot (simulación simple)
+        // Actualizar posición del robot con paso de tiempo más pequeño
         updateRobotPose(cmd_vel.linear.x, cmd_vel.angular.z);
-
-        // Publicar odometría y TF
-        publishOdomAndTF();
         
-        RCLCPP_DEBUG(this->get_logger(), 
+        RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
                     "Robot Pos: (%.2f, %.2f), Goal: (%.2f, %.2f), Lin: %.2f, Ang: %.2f",
                     robot_x_, robot_y_,
                     goal_point_.x, goal_point_.y,
@@ -110,7 +114,7 @@ private:
 
     void updateRobotPose(double linear_vel, double angular_vel)
     {
-        double dt = 0.1; // 100ms
+        double dt = 0.05; // 50ms - igual que el timer de control
 
         // Actualizar orientación
         robot_yaw_ += angular_vel * dt;
@@ -125,7 +129,7 @@ private:
     {
         auto now = this->now();
 
-        // Publicar Odometría
+        // Publicar Odometría (alta frecuencia)
         auto odom_msg = nav_msgs::msg::Odometry();
         odom_msg.header.stamp = now;
         odom_msg.header.frame_id = "odom";
@@ -136,9 +140,18 @@ private:
         odom_msg.pose.pose.position.z = 0.0;
         odom_msg.pose.pose.orientation = createQuaternionFromYaw(robot_yaw_);
         
+        // Añadir pequeña velocidad para suavizar
+        if (has_goal_) {
+            odom_msg.twist.twist.linear.x = 0.1;
+            odom_msg.twist.twist.angular.z = 0.0;
+        } else {
+            odom_msg.twist.twist.linear.x = 0.0;
+            odom_msg.twist.twist.angular.z = 0.0;
+        }
+        
         odom_pub_->publish(odom_msg);
 
-        // Publicar TF: odom -> base_link
+        // Publicar TF (alta frecuencia)
         auto transform = geometry_msgs::msg::TransformStamped();
         transform.header.stamp = now;
         transform.header.frame_id = "odom";
@@ -150,14 +163,6 @@ private:
         transform.transform.rotation = createQuaternionFromYaw(robot_yaw_);
         
         tf_broadcaster_->sendTransform(transform);
-    }
-
-    void stopRobot()
-    {
-        geometry_msgs::msg::Twist cmd_vel;
-        cmd_vel.linear.x = 0.0;
-        cmd_vel.angular.z = 0.0;
-        cmd_vel_pub_->publish(cmd_vel);
     }
 
     geometry_msgs::msg::Quaternion createQuaternionFromYaw(double yaw)
@@ -190,7 +195,8 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr goal_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    rclcpp::TimerBase::SharedPtr timer_;
+    rclcpp::TimerBase::SharedPtr control_timer_;
+    rclcpp::TimerBase::SharedPtr tf_timer_;
 };
 
 int main(int argc, char** argv)

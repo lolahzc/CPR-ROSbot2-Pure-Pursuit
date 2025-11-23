@@ -45,7 +45,7 @@ public:
             
         // Timer para publicar TF estático del mapa
         tf_timer_ = this->create_wall_timer(
-            std::chrono::seconds(1),
+            std::chrono::milliseconds(50),  // 20 Hz para TF estático
             std::bind(&RoutePublisher::publishStaticTF, this));
 
         RCLCPP_INFO(this->get_logger(), "Route publisher started with %zu waypoints", waypoints_.size());

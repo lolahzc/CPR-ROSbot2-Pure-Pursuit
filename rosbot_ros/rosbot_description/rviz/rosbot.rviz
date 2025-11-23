@@ -207,6 +207,8 @@ Visualization Manager:
               Value: true
             laser:
               Value: true
+            map:
+              Value: true
             odom:
               Value: true
             rl_range:
@@ -259,6 +261,8 @@ Visualization Manager:
                   {}
                 rr_wheel_link:
                   {}
+            map:
+              {}
             odom:
               {}
           Update Interval: 0
@@ -308,7 +312,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        {}
+        waypoints: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -319,8 +323,8 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: base_link
-    Frame Rate: 30
+    Fixed Frame: map
+    Frame Rate: 120
   Name: root
   Tools:
     - Class: rviz_default_plugins/Interact
@@ -362,16 +366,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.006814956665039
+      Distance: 5.779304504394531
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.24043942987918854
-        Y: -2.0506591796875
-        Z: 1.3955731391906738
+        X: 0.375413715839386
+        Y: -2.37461256980896
+        Z: 1.4378817081451416
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
