@@ -227,44 +227,34 @@ Visualization Manager:
           Show Axes: true
           Show Names: true
           Tree:
-            base_link:
-              body_link:
-                camera_mount_link:
-                  camera_link:
-                    camera_color_frame:
-                      camera_color_optical_frame:
-                        {}
-                    camera_depth_frame:
-                      camera_depth_optical_frame:
-                        {}
-                  camera_orbbec_astra_link:
-                    {}
-                cover_link:
-                  slamtec_rplidar_link:
-                    laser:
-                      {}
-                fl_range:
-                  {}
-                fl_wheel_link:
-                  {}
-                fr_range:
-                  {}
-                fr_wheel_link:
-                  {}
-                imu_link:
-                  {}
-                rl_range:
-                  {}
-                rl_wheel_link:
-                  {}
-                rr_range:
-                  {}
-                rr_wheel_link:
-                  {}
             map:
-              {}
-            odom:
-              {}
+              odom:
+                base_link:
+                  body_link:
+                    camera_mount_link:
+                      camera_link:
+                        camera_color_frame:
+                          camera_color_optical_frame:
+                            {}
+                        camera_depth_frame:
+                          camera_depth_optical_frame:
+                            {}
+                      camera_orbbec_astra_link:
+                        {}
+                    cover_link:
+                      slamtec_rplidar_link:
+                        laser:
+                          {}
+                    fl_range:
+                      {}
+                    fr_range:
+                      {}
+                    imu_link:
+                      {}
+                    rl_range:
+                      {}
+                    rr_range:
+                      {}
           Update Interval: 0
           Value: true
         - Angle Tolerance: 0.10000000149011612
@@ -312,13 +302,29 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        waypoints: true
+        original_route: true
+        original_waypoints: true
+        spline_route: true
+        spline_waypoints: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /waypoints_markers
+      Value: true
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: Marker
+      Namespaces:
+        pure_pursuit: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /lookahead_marker
       Value: true
   Enabled: true
   Global Options:
@@ -366,25 +372,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 5.779304504394531
+      Distance: 1.604106068611145
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.375413715839386
-        Y: -2.37461256980896
-        Z: 1.4378817081451416
+        X: 0.5678099393844604
+        Y: -2.7882907390594482
+        Z: 1.5133687257766724
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.730398416519165
+      Pitch: 0.6153983473777771
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.428183078765869
+      Yaw: 3.498185157775879
     Saved: ~
 Window Geometry:
   Displays:

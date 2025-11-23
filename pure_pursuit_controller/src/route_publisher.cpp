@@ -16,7 +16,7 @@ class RoutePublisher : public rclcpp::Node
 public:
     RoutePublisher() : Node("route_publisher")
     {
-        // Publishers - usando PoseStamped para /goal_pose
+        // Publishers 
         goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/goal_pose", 10);
         path_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/waypoints_path", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/waypoints_markers", 10);
@@ -47,7 +47,7 @@ public:
             std::chrono::milliseconds(50),
             std::bind(&RoutePublisher::publishStaticTF, this));
 
-        // Timer para publicar el primer waypoint con retraso (MANTENIDO)
+        // Timer para publicar el primer waypoint con retraso SI NO DA ERROR AL LANZAR EL LAUNCH
         start_timer_ = this->create_wall_timer(
             std::chrono::milliseconds(5000),  // 5s de retraso
             [this]() {
@@ -56,7 +56,7 @@ public:
                 publishCurrentWaypoint();
                 publishWaypointsMarkers();
                 
-                // Cancelar este timer después de ejecutarse una vez
+                // Cancelar este timer después de ejecutarse una vez SOLO ES PARA EL LANZAMIENTO DEL LAUNCH
                 start_timer_->cancel();
                 
                 RCLCPP_INFO(this->get_logger(), "First waypoint published after delay");
@@ -410,7 +410,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr goal_reached_sub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr tf_timer_;
-    rclcpp::TimerBase::SharedPtr start_timer_;  // Timer para el retraso inicial (MANTENIDO)
+    rclcpp::TimerBase::SharedPtr start_timer_;  // Timer para el retraso inicial NO BORRAR QUE SI NO DA PROBLEMAS AL LANZAR EL LAUNCH
 };
 
 int main(int argc, char** argv)

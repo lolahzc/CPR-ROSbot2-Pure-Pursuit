@@ -10,10 +10,10 @@ def generate_launch_description():
             name='pure_pursuit_node',
             output='screen',
             parameters=[{
-                'lookahead_distance': 1.0,
+                'lookahead_distance': 0.5,
                 'max_linear_vel': 0.5,
                 'max_angular_vel': 0.5,
-                'goal_tolerance': 0.1
+                'goal_tolerance': 0.25
             }]
         ),
         

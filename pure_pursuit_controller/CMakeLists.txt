@@ -30,6 +30,7 @@ ament_target_dependencies(pure_pursuit_node
   nav_msgs
   tf2_geometry_msgs
   tf2_ros
+  visualization_msgs
 )
 
 add_executable(route_publisher src/route_publisher.cpp)
