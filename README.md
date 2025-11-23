@@ -3,4 +3,4 @@ Para hacer pruebas con el nuevo paquete solo hay que lanzar el simulador *(readm
 
 ``
 ros2 launch pure_pursuit_controller pure_pursuit.launch.py  
-`
+`` 
