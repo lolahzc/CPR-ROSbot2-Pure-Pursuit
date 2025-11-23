@@ -1,8 +1,9 @@
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/point_stamped.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <vector>
@@ -14,48 +15,58 @@ class RoutePublisher : public rclcpp::Node
 public:
     RoutePublisher() : Node("route_publisher")
     {
-        // Publishers
-        goal_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>("/goal_pose", 10);
+        // Publishers - usando PoseStamped para /goal_pose
+        goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/goal_pose", 10);
         path_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/waypoints_path", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/waypoints_markers", 10);
         
+        // Subscriber para goal reached
+        goal_reached_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+            "/goal_reached", 10,
+            std::bind(&RoutePublisher::goalReachedCallback, this, std::placeholders::_1));
+
         // TF Broadcaster
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
         // Parámetros
-        this->declare_parameter("waypoint_duration", 4.0);
-        this->declare_parameter("loop_route", true);
+        this->declare_parameter("loop_route", false);
         
-        waypoint_duration_ = this->get_parameter("waypoint_duration").as_double();
         loop_route_ = this->get_parameter("loop_route").as_bool();
         
         // Definir waypoints de la ruta
         defineRoute();
         
-        // Publicar el primer waypoint inmediatamente
-        publishCurrentWaypoint();
-        
-        // Publicar marcadores
-        publishWaypointsMarkers();
-        
-        // Timer para cambiar de waypoint automáticamente
-        timer_ = this->create_wall_timer(
-            std::chrono::duration<double>(waypoint_duration_),
-            std::bind(&RoutePublisher::advanceToNextWaypoint, this));
-            
         // Timer para publicar TF estático del mapa
         tf_timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(50),  // 20 Hz para TF estático
+            std::chrono::milliseconds(50),
             std::bind(&RoutePublisher::publishStaticTF, this));
 
+        // Timer para publicar el primer waypoint con retraso
+        start_timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(500),  // 500ms de retraso
+            [this]() {
+                // Publicar el primer waypoint después del retraso
+                current_waypoint_ = 0;
+                publishCurrentWaypoint();
+                publishWaypointsMarkers();
+                
+                // Cancelar este timer después de ejecutarse una vez
+                start_timer_->cancel();
+                
+                RCLCPP_INFO(this->get_logger(), "First waypoint published after delay");
+            });
+
         RCLCPP_INFO(this->get_logger(), "Route publisher started with %zu waypoints", waypoints_.size());
+        RCLCPP_INFO(this->get_logger(), "Publishing to /goal_pose (PoseStamped)");
+        RCLCPP_INFO(this->get_logger(), "Waiting for goal reached signal to advance to next waypoint");
+        RCLCPP_INFO(this->get_logger(), "First waypoint will be published in 500ms...");
     }
 
 private:
     void defineRoute()
     {
         waypoints_ = {
-            {1.0, 0.0, 0.0}, //x+ para arriba e y- para derecha, incrementales 
+            {1.0, 0.0, 0.0},
             {2.0, 0.0, 0.0}, 
             {2.5, -0.5, 0.0},
             {3.0, -1.0, 0.0},
@@ -65,17 +76,26 @@ private:
         };
     }
 
+    void goalReachedCallback(const std_msgs::msg::Bool::SharedPtr msg)
+    {
+        if (msg->data) {
+            RCLCPP_INFO(this->get_logger(), "Goal reached signal received! Advancing to next waypoint...");
+            advanceToNextWaypoint();
+        }
+    }
+
     void publishCurrentWaypoint()
     {
-        // Publicar goal point
-        auto goal_msg = geometry_msgs::msg::PointStamped();
+        // Publicar goal point como PoseStamped
+        auto goal_msg = geometry_msgs::msg::PoseStamped();
         goal_msg.header.stamp = this->now();
         goal_msg.header.frame_id = "map";
         
         const auto& wp = waypoints_[current_waypoint_];
-        goal_msg.point.x = wp[0];
-        goal_msg.point.y = wp[1];
-        goal_msg.point.z = wp[2];
+        goal_msg.pose.position.x = wp[0];
+        goal_msg.pose.position.y = wp[1];
+        goal_msg.pose.position.z = wp[2];
+        goal_msg.pose.orientation.w = 1.0;  // Orientación neutral
         
         goal_pub_->publish(goal_msg);
         
@@ -100,7 +120,7 @@ private:
             pose.position.x = wp[0];
             pose.position.y = wp[1];
             pose.position.z = wp[2];
-            pose.orientation.w = 1.0;  // Orientación neutral
+            pose.orientation.w = 1.0;
             
             path_msg.poses.push_back(pose);
         }
@@ -128,7 +148,7 @@ private:
         line_marker.id = 0;
         line_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
         line_marker.action = visualization_msgs::msg::Marker::ADD;
-        line_marker.scale.x = 0.1;  // Grosor de la línea
+        line_marker.scale.x = 0.1;
         line_marker.color.r = 0.0;
         line_marker.color.g = 1.0;
         line_marker.color.b = 0.0;
@@ -149,7 +169,7 @@ private:
             sphere_marker.header.stamp = this->now();
             sphere_marker.header.frame_id = "map";
             sphere_marker.ns = "waypoints";
-            sphere_marker.id = i + 1;  // ID único para cada waypoint
+            sphere_marker.id = i + 1;
             sphere_marker.type = visualization_msgs::msg::Marker::SPHERE;
             sphere_marker.action = visualization_msgs::msg::Marker::ADD;
             
@@ -162,13 +182,16 @@ private:
             sphere_marker.scale.y = 0.3;
             sphere_marker.scale.z = 0.3;
             
-            // Color diferente para el waypoint actual
             if (i == current_waypoint_) {
-                sphere_marker.color.r = 1.0;  // Rojo para waypoint actual
+                sphere_marker.color.r = 1.0;
                 sphere_marker.color.g = 0.0;
                 sphere_marker.color.b = 0.0;
+            } else if (i < current_waypoint_) {
+                sphere_marker.color.r = 0.5;
+                sphere_marker.color.g = 0.5;
+                sphere_marker.color.b = 0.5;
             } else {
-                sphere_marker.color.r = 0.0;  // Azul para otros waypoints
+                sphere_marker.color.r = 0.0;
                 sphere_marker.color.g = 0.0;
                 sphere_marker.color.b = 1.0;
             }
@@ -182,13 +205,11 @@ private:
 
     void publishStaticTF()
     {
-        // Publicar transformación estática del mapa
         auto transform = geometry_msgs::msg::TransformStamped();
         transform.header.stamp = this->now();
         transform.header.frame_id = "map";
         transform.child_frame_id = "odom";
         
-        // Transformación identidad
         transform.transform.translation.x = 0.0;
         transform.transform.translation.y = 0.0;
         transform.transform.translation.z = 0.0;
@@ -210,8 +231,6 @@ private:
                 current_waypoint_ = 0;
             } else {
                 RCLCPP_INFO(this->get_logger(), "Ruta completada! Finalizando.");
-                timer_->cancel();
-                tf_timer_->cancel();
                 return;
             }
         }
@@ -222,16 +241,16 @@ private:
     // Variables
     std::vector<std::array<double, 3>> waypoints_;
     size_t current_waypoint_ = 0;
-    double waypoint_duration_;
     bool loop_route_;
     
     // ROS2
-    rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr goal_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr path_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr goal_reached_sub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::TimerBase::SharedPtr tf_timer_;
+    rclcpp::TimerBase::SharedPtr start_timer_;  // Nuevo timer para el retraso inicial
 };
 
 int main(int argc, char** argv)

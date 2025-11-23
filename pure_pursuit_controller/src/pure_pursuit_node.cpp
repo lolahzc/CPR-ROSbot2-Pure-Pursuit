@@ -1,7 +1,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/twist.hpp>
-#include <geometry_msgs/msg/point_stamped.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -16,7 +17,7 @@ public:
         this->declare_parameter("lookahead_distance", 1.0);
         this->declare_parameter("max_linear_vel", 0.5);
         this->declare_parameter("max_angular_vel", 0.5);
-        this->declare_parameter("goal_tolerance", 0.05);
+        this->declare_parameter("goal_tolerance", 0.1);
         
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         max_linear_vel_ = this->get_parameter("max_linear_vel").as_double();
@@ -29,8 +30,11 @@ public:
         // Publicador de odometría simulada
         odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
+        // Publicador de goal reached
+        goal_reached_pub_ = this->create_publisher<std_msgs::msg::Bool>("/goal_reached", 10);
+
         // Subscriptores
-        goal_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
+        goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
             "/goal_pose", 10,
             std::bind(&PurePursuitNode::goalCallback, this, std::placeholders::_1));
 
@@ -42,36 +46,49 @@ public:
         robot_y_ = 0.0;
         robot_yaw_ = 0.0;
 
-        // Timer para el control (más rápido para mejor respuesta)
+        // Timer para el control
         control_timer_ = this->create_wall_timer(
             std::chrono::milliseconds(50),  // 20 Hz para control
             std::bind(&PurePursuitNode::controlLoop, this));
             
-        // Timer para TF y odometría (MUCHO más rápido para RViz)
+        // Timer para TF y odometría
         tf_timer_ = this->create_wall_timer(
             std::chrono::milliseconds(20),  // 50 Hz para TF/odom
             std::bind(&PurePursuitNode::publishOdomAndTF, this));
 
-        RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized - High frequency mode");
+        RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized - Waypoint navigation mode");
+        RCLCPP_INFO(this->get_logger(), "Subscribed to /goal_pose (PoseStamped)");
+        RCLCPP_INFO(this->get_logger(), "Waiting for first goal...");
     }
 
 private:
-    void goalCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
+    void goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
     {
-        goal_point_ = msg->point;
+        goal_point_ = msg->pose.position;
         has_goal_ = true;
+        goal_reached_ = false;
         RCLCPP_INFO(this->get_logger(), "New goal received: (%.2f, %.2f)", 
                    goal_point_.x, goal_point_.y);
+        
+        // DEBUG: Verificar que el callback se está ejecutando
+        RCLCPP_DEBUG(this->get_logger(), "Goal callback executed successfully");
     }
 
     void controlLoop()
     {
         if (!has_goal_) {
-            // Solo publicar comandos de velocidad cero, no detener el timer de TF
+            // Publicar comandos de velocidad cero
             geometry_msgs::msg::Twist cmd_vel;
             cmd_vel.linear.x = 0.0;
             cmd_vel.angular.z = 0.0;
             cmd_vel_pub_->publish(cmd_vel);
+            
+            // DEBUG: Mostrar que no hay goal
+            static int no_goal_count = 0;
+            if (no_goal_count++ % 20 == 0) { // Cada ~1 segundo
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, 
+                                   "No goal received yet. Waiting for /goal_pose...");
+            }
             return;
         }
 
@@ -79,9 +96,30 @@ private:
         double dy = goal_point_.y - robot_y_;
         double distance_to_goal = std::sqrt(dx*dx + dy*dy);
 
+        // DEBUG: Mostrar información del control
+        RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                    "Control: Robot(%.2f,%.2f) -> Goal(%.2f,%.2f), Dist: %.3f",
+                    robot_x_, robot_y_, goal_point_.x, goal_point_.y, distance_to_goal);
+
         if (distance_to_goal < goal_tolerance_) {
-            RCLCPP_INFO(this->get_logger(), "Goal reached!");
-            has_goal_ = false;
+            if (!goal_reached_) {
+                RCLCPP_INFO(this->get_logger(), "Goal reached! Distance: %.3f", distance_to_goal);
+                goal_reached_ = true;
+                has_goal_ = false;
+                
+                // Publicar mensaje de goal reached
+                auto goal_reached_msg = std_msgs::msg::Bool();
+                goal_reached_msg.data = true;
+                goal_reached_pub_->publish(goal_reached_msg);
+                
+                RCLCPP_DEBUG(this->get_logger(), "Goal reached message published");
+            }
+            
+            // Detener el robot
+            geometry_msgs::msg::Twist cmd_vel;
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = 0.0;
+            cmd_vel_pub_->publish(cmd_vel);
             return;
         }
 
@@ -90,26 +128,29 @@ private:
 
         geometry_msgs::msg::Twist cmd_vel;
         
-        // Control más suave
-        double angular_vel = 1.5 * angle_error;  // Reducir ganancia para más suavidad
+        // Control proporcional más agresivo
+        double angular_vel = 3.0 * angle_error;  // Aumentada ganancia
         angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
         
-        double linear_vel = max_linear_vel_ * (1.0 - std::abs(angle_error)/M_PI);
-        linear_vel = std::max(0.1, std::min(linear_vel, max_linear_vel_)); // Velocidad mínima de 0.1
+        // Velocidad lineal - más agresiva al inicio
+        double linear_vel = max_linear_vel_;
+        // Reducir velocidad si el error angular es grande
+        if (std::abs(angle_error) > 0.5) {
+            linear_vel *= 0.5;
+        }
+        linear_vel = std::max(0.1, std::min(linear_vel, max_linear_vel_));
 
         cmd_vel.linear.x = linear_vel;
         cmd_vel.angular.z = angular_vel;
 
         cmd_vel_pub_->publish(cmd_vel);
 
-        // Actualizar posición del robot con paso de tiempo más pequeño
+        // Actualizar posición del robot
         updateRobotPose(cmd_vel.linear.x, cmd_vel.angular.z);
         
         RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                    "Robot Pos: (%.2f, %.2f), Goal: (%.2f, %.2f), Lin: %.2f, Ang: %.2f",
-                    robot_x_, robot_y_,
-                    goal_point_.x, goal_point_.y,
-                    cmd_vel.linear.x, cmd_vel.angular.z);
+                    "Cmd Vel: Lin: %.2f, Ang: %.2f, Error: %.2f",
+                    cmd_vel.linear.x, cmd_vel.angular.z, angle_error);
     }
 
     void updateRobotPose(double linear_vel, double angular_vel)
@@ -129,7 +170,7 @@ private:
     {
         auto now = this->now();
 
-        // Publicar Odometría (alta frecuencia)
+        // Publicar Odometría
         auto odom_msg = nav_msgs::msg::Odometry();
         odom_msg.header.stamp = now;
         odom_msg.header.frame_id = "odom";
@@ -140,18 +181,12 @@ private:
         odom_msg.pose.pose.position.z = 0.0;
         odom_msg.pose.pose.orientation = createQuaternionFromYaw(robot_yaw_);
         
-        // Añadir pequeña velocidad para suavizar
-        if (has_goal_) {
-            odom_msg.twist.twist.linear.x = 0.1;
-            odom_msg.twist.twist.angular.z = 0.0;
-        } else {
-            odom_msg.twist.twist.linear.x = 0.0;
-            odom_msg.twist.twist.angular.z = 0.0;
-        }
+        odom_msg.twist.twist.linear.x = 0.0;
+        odom_msg.twist.twist.angular.z = 0.0;
         
         odom_pub_->publish(odom_msg);
 
-        // Publicar TF (alta frecuencia)
+        // Publicar TF
         auto transform = geometry_msgs::msg::TransformStamped();
         transform.header.stamp = now;
         transform.header.frame_id = "odom";
@@ -183,6 +218,7 @@ private:
     double robot_x_, robot_y_, robot_yaw_;
     geometry_msgs::msg::Point goal_point_;
     bool has_goal_ = false;
+    bool goal_reached_ = false;
     
     // Parámetros
     double lookahead_distance_;
@@ -192,7 +228,8 @@ private:
 
     // ROS2
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
-    rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr goal_sub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr goal_reached_pub_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr control_timer_;

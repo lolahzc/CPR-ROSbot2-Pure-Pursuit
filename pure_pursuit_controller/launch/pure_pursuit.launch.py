@@ -8,10 +8,16 @@ def generate_launch_description():
             package='pure_pursuit_controller',
             executable='pure_pursuit_node',
             name='pure_pursuit_node',
-            output='screen'
+            output='screen',
+            parameters=[{
+                'lookahead_distance': 1.0,
+                'max_linear_vel': 0.5,
+                'max_angular_vel': 0.5,
+                'goal_tolerance': 0.1
+            }]
         ),
         
-        # Route publisher (sin dependencia de goal_reached)
+        # Route publisher (ahora depende de goal_reached)
         Node(
             package='pure_pursuit_controller',
             executable='route_publisher',
@@ -21,6 +27,8 @@ def generate_launch_description():
                 'loop_route': False
             }]
         ),
+        
+        # Static transform publisher
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
