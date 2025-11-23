@@ -17,14 +17,15 @@ def generate_launch_description():
             }]
         ),
         
-        # Route publisher (ahora depende de goal_reached)
+        # Route publisher con interpolación
         Node(
             package='pure_pursuit_controller',
             executable='route_publisher',
             name='route_publisher',
             output='screen',
             parameters=[{
-                'loop_route': False
+                'loop_route': False,
+                'interpolation_points_per_segment': 5  # Nuevo parámetro
             }]
         ),
         
