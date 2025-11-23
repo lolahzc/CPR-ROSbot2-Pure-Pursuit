@@ -3,8 +3,9 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <cmath>
-
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -14,25 +15,32 @@ public:
         // Parámetros
         this->declare_parameter("lookahead_distance", 1.0);
         this->declare_parameter("max_linear_vel", 0.5);
-        this->declare_parameter("max_angular_vel", 1.0);
-        this->declare_parameter("goal_tolerance", 0.1);
+        this->declare_parameter("max_angular_vel", 0.5);
+        this->declare_parameter("goal_tolerance", 0.05);
         
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         max_linear_vel_ = this->get_parameter("max_linear_vel").as_double();
         max_angular_vel_ = this->get_parameter("max_angular_vel").as_double();
         goal_tolerance_ = this->get_parameter("goal_tolerance").as_double();
 
-        // Subsciptores
-        odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-            "/odometry/filtered", 10,
-            std::bind(&PurePursuitNode::odomCallback, this, std::placeholders::_1));
-            
+        // TF Broadcaster
+        tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+
+        // Publicador de odometría simulada
+        odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
+
+        // Subscriptores
         goal_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
             "/goal_pose", 10,
             std::bind(&PurePursuitNode::goalCallback, this, std::placeholders::_1));
 
         // Publicadores
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+
+        // Posición inicial del robot
+        robot_x_ = 0.0;
+        robot_y_ = 0.0;
+        robot_yaw_ = 0.0;
 
         // Timer para el control
         timer_ = this->create_wall_timer(
@@ -43,12 +51,6 @@ public:
     }
 
 private:
-    void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
-    {
-        current_pose_ = msg->pose.pose;
-        has_odom_ = true;
-    }
-
     void goalCallback(const geometry_msgs::msg::PointStamped::SharedPtr msg)
     {
         goal_point_ = msg->point;
@@ -59,23 +61,26 @@ private:
 
     void controlLoop()
     {
-        if (!has_odom_ || !has_goal_) return;
+        if (!has_goal_) {
+            stopRobot();
+            publishOdomAndTF();
+            return;
+        }
 
-        double dx = goal_point_.x - current_pose_.position.x;
-        double dy = goal_point_.y - current_pose_.position.y;
+        double dx = goal_point_.x - robot_x_;
+        double dy = goal_point_.y - robot_y_;
         double distance_to_goal = std::sqrt(dx*dx + dy*dy);
 
         if (distance_to_goal < goal_tolerance_) {
             stopRobot();
             RCLCPP_INFO(this->get_logger(), "Goal reached!");
             has_goal_ = false;
+            publishOdomAndTF();
             return;
         }
 
-        double current_yaw = getYawFromQuaternion(current_pose_.orientation);
-        
         double target_angle = std::atan2(dy, dx);
-        double angle_error = normalizeAngle(target_angle - current_yaw);
+        double angle_error = normalizeAngle(target_angle - robot_yaw_);
 
         geometry_msgs::msg::Twist cmd_vel;
         
@@ -89,6 +94,62 @@ private:
         cmd_vel.angular.z = angular_vel;
 
         cmd_vel_pub_->publish(cmd_vel);
+
+        // Actualizar posición del robot (simulación simple)
+        updateRobotPose(cmd_vel.linear.x, cmd_vel.angular.z);
+
+        // Publicar odometría y TF
+        publishOdomAndTF();
+        
+        RCLCPP_DEBUG(this->get_logger(), 
+                    "Robot Pos: (%.2f, %.2f), Goal: (%.2f, %.2f), Lin: %.2f, Ang: %.2f",
+                    robot_x_, robot_y_,
+                    goal_point_.x, goal_point_.y,
+                    cmd_vel.linear.x, cmd_vel.angular.z);
+    }
+
+    void updateRobotPose(double linear_vel, double angular_vel)
+    {
+        double dt = 0.1; // 100ms
+
+        // Actualizar orientación
+        robot_yaw_ += angular_vel * dt;
+        robot_yaw_ = normalizeAngle(robot_yaw_);
+
+        // Actualizar posición
+        robot_x_ += linear_vel * cos(robot_yaw_) * dt;
+        robot_y_ += linear_vel * sin(robot_yaw_) * dt;
+    }
+
+    void publishOdomAndTF()
+    {
+        auto now = this->now();
+
+        // Publicar Odometría
+        auto odom_msg = nav_msgs::msg::Odometry();
+        odom_msg.header.stamp = now;
+        odom_msg.header.frame_id = "odom";
+        odom_msg.child_frame_id = "base_link";
+        
+        odom_msg.pose.pose.position.x = robot_x_;
+        odom_msg.pose.pose.position.y = robot_y_;
+        odom_msg.pose.pose.position.z = 0.0;
+        odom_msg.pose.pose.orientation = createQuaternionFromYaw(robot_yaw_);
+        
+        odom_pub_->publish(odom_msg);
+
+        // Publicar TF: odom -> base_link
+        auto transform = geometry_msgs::msg::TransformStamped();
+        transform.header.stamp = now;
+        transform.header.frame_id = "odom";
+        transform.child_frame_id = "base_link";
+        
+        transform.transform.translation.x = robot_x_;
+        transform.transform.translation.y = robot_y_;
+        transform.transform.translation.z = 0.0;
+        transform.transform.rotation = createQuaternionFromYaw(robot_yaw_);
+        
+        tf_broadcaster_->sendTransform(transform);
     }
 
     void stopRobot()
@@ -99,13 +160,11 @@ private:
         cmd_vel_pub_->publish(cmd_vel);
     }
 
-    double getYawFromQuaternion(const geometry_msgs::msg::Quaternion& quat)
+    geometry_msgs::msg::Quaternion createQuaternionFromYaw(double yaw)
     {
-        tf2::Quaternion tf_quat;
-        tf2::fromMsg(quat, tf_quat);
-        double roll, pitch, yaw;
-        tf2::Matrix3x3(tf_quat).getRPY(roll, pitch, yaw);
-        return yaw;
+        tf2::Quaternion q;
+        q.setRPY(0, 0, yaw);
+        return tf2::toMsg(q);
     }
 
     double normalizeAngle(double angle)
@@ -116,9 +175,8 @@ private:
     }
 
     // Variables
-    geometry_msgs::msg::Pose current_pose_;
+    double robot_x_, robot_y_, robot_yaw_;
     geometry_msgs::msg::Point goal_point_;
-    bool has_odom_ = false;
     bool has_goal_ = false;
     
     // Parámetros
@@ -128,9 +186,10 @@ private:
     double goal_tolerance_;
 
     // ROS2
-    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr goal_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr timer_;
 };
 

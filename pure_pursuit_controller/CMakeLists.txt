@@ -16,6 +16,9 @@ find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(visualization_msgs)
+find_package(tf2_ros)
 
 # Create executable
 add_executable(pure_pursuit_node src/pure_pursuit_node.cpp)
@@ -26,13 +29,17 @@ ament_target_dependencies(pure_pursuit_node
   geometry_msgs
   nav_msgs
   tf2_geometry_msgs
+  tf2_ros
 )
 
 add_executable(route_publisher src/route_publisher.cpp)
 ament_target_dependencies(route_publisher
   rclcpp
   geometry_msgs
-)
+  Eigen3
+  visualization_msgs
+  tf2_ros
+  )
 
 # Install targets
 install(TARGETS
@@ -53,6 +60,9 @@ ament_export_dependencies(
   geometry_msgs
   nav_msgs
   tf2_geometry_msgs
+  Eigen3
+  visualization_msgs
+  tf2_ros
 )
 
 # Add linting

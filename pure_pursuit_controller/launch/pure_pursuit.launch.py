@@ -8,13 +8,7 @@ def generate_launch_description():
             package='pure_pursuit_controller',
             executable='pure_pursuit_node',
             name='pure_pursuit_node',
-            output='screen',
-            parameters=[{
-                'lookahead_distance': 2.0,
-                'max_linear_vel': 0.75,
-                'max_angular_vel': 1.0,
-                'goal_tolerance': 0.1
-            }]
+            output='screen'
         ),
         
         # Route publisher (sin dependencia de goal_reached)
@@ -24,8 +18,13 @@ def generate_launch_description():
             name='route_publisher',
             output='screen',
             parameters=[{
-                'waypoint_duration': 4.0, 
                 'loop_route': False
             }]
+        ),
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='map_to_odom_broadcaster',
+            arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']
         ),
     ])
