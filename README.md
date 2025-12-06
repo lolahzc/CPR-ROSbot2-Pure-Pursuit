@@ -1,46 +1,83 @@
 # CPR-ROSbot2-Pure-Pursuit
+🚗 **Trayectoria con Gazebo — Pure Pursuit**
 
-## Instrucciones instalación
-He hecho la instalación oficial de los paquetes y lo he subido todo en local sin ningún paquete embebido para mayor comodidad al trabajar juntos en paralelo.
+Este proyecto utiliza el algoritmo **Pure Pursuit** para que el robot siga una trayectoria en Gazebo.
 
-Estos paquetes son los que se instalan al poner al variable de Husarion en **simulation**. No sé que se instalaría al poner la variable en **hardware**, que asumo que lo necesitaríamos para probar el código en el robot físico.
-```
-export HUSARION_ROS_BUILD_TYPE=simulation
-```
+---
 
-#### Actualizar e instalar dependencias (deberíais tenerlas de las prácticas).
-```
-sudo apt-get update
-sudo apt-get install -y python3-pip ros-dev-tools stm32flash
-```
+## Archivos modificados
 
-#### Clonar el repositorio.
-```
-mkdir proy_cpr
-cd proy_cpr
-mkdir src
-cd src
-git clone git@github.com:lolahzc/CPR-ROSbot2-Pure-Pursuit.git
-```
 
-#### Volver a carpeta raíz del workspace (proy_cpr) y compilar.
-```
-colcon build --symlink-install --packages-up-to rosbot --cmake-args -DCMAKE_BUILD_TYPE=Release
-```
-Creo que da un warning de uno de los paquetes por movidas de cosas deprecadas pero ignorarlo.
+**pure_pursuit.launch.py**
+- Se ha modificado para que la llamada reciba el parámetro selected_route
 
-#### Lanzar repositorio
-```
+**route_publisher.cpp**
+- Se han creado trayectorias nuevas (anotaciones):
+  1. Ruta original ✅ 
+  2. Línea recta  ✅
+  3. Zig-zag ❌ (cuando llega al final el robot sigue hacia la nada indefinidamente)
+  4. Ocho  ❌ (solo se hace 1 de las ramas del 8)
+  5. Espiral ✅
+  6. Curvas abiertas en todo el plano en ambas direcciones ❌ (cuando llega al punto final se queda varias veces dando  vueltas y luego sigue moviéndose hasta que vuelve a detectar otro punto en medio de la trayectoria entrando así en bucle)
+  7. Curvas cerradas ❌ No hace todos los checkpoints (puntos a gris) y al terminar la segunda vuelta se aleja y se va por completo del plano y las que son muy cerradas no lo hace con muchas precisión (ya todo depende de cuánto queramos afinarlo)
+
+---
+
+## Ejecución del robot siguiendo la trayectoria
+
+Cargar el entorno y lanzar el nodo Pure Pursuit (despues de haber compilado):
+
+```bash
 source install/setup.bash
 ```
-Os recomiendo añadiros esto en el .bashrc para no tener que hacerlo cada vez que queráis trabajar en el proyecto.
 
-```
+lanzar la simulacion
+```bash
 ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 ```
 
-Para comprobar que se os mueve el robot correctamente
-
+en otro terminal lanzar el control con la ruta seleccionada
+```bash
+ros2 launch pure_pursuit_controller pure_pursuit.launch.py selected_route:=<número de la ruta>
 ```
+
+| Número | Nombre de la ruta | Descripción breve      |
+| ------ | ----------------- | ---------------------- |
+| 1      | Original “Lola”   | Ruta inicial de prueba |
+| 2      | Línea recta       | Avanza en línea recta  |
+| 3      | Zigzag            | Movimiento en zigzag   |
+| 4      | Ocho              | Forma de 8             |
+| 5      | Espiral           | Movimiento en espiral  |
+| 6      | Curvas amplias    | Curvas amplias que ocupan todo el plano  |
+| 7      | Curvas cerradas   | Curvas cerradas de distinto radio  |
+
+
+### Finalización de la trayectoria
+
+Cuando el robot complete el recorrido, verás:
+
+```text
+[pure_pursuit_node-1] [INFO] [...] [pure_pursuit_node]: Goal reached!
+```
+
+
+## Control manual del robot y velocidades
+
+mover el robot con el teleoperador
+```bash
+
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ```
+
+visualizar las velocidades enviadas al robot
+```bash
+ros2 topic echo /cmd_vel
+```
+
+### Selección de ruta en el momento mediante la implementación de un parámetro dinámico
+Para ello se ha creado un nuevo tópico denominado changeroute.
+Para usarlo, hay que abrir un nuevo terminal, hacer source y enviar el siguiente mensaje:
+
+ros2 topic pub /change_route std_msgs/msg/Int32 "{data: 4} 
+
+en el topico de changeroute siendo 4 el número de la ruta seleccionada.
