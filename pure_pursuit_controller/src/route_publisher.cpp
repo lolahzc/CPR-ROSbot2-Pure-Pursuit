@@ -3,6 +3,8 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include <std_msgs/msg/int32.hpp>
+
 #include <std_msgs/msg/bool.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -25,6 +27,20 @@ public:
         goal_reached_sub_ = this->create_subscription<std_msgs::msg::Bool>(
             "/goal_reached", 10,
             std::bind(&RoutePublisher::goalReachedCallback, this, std::placeholders::_1));
+           //Me suscribo al topico change_route 
+            route_change_sub_ = this->create_subscription<std_msgs::msg::Int32>(
+    "/change_route", 10,
+    [this](const std_msgs::msg::Int32::SharedPtr msg){
+        changeRoute(msg->data);
+    });
+
+            
+            
+        //seleccion de rutas
+        this->declare_parameter("selected_route", 1);
+		selected_route_ = this->get_parameter("selected_route").as_int();
+		RCLCPP_INFO(this->get_logger(), "Selected route: %d", selected_route_);
+
 
         // TF Broadcaster
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -72,18 +88,144 @@ public:
     }
 
 private:
+
+	int selected_route_;                 // <-- NUEVA variable para elegir ruta
+	
+
     void defineRoute()
     {
-        // Mantener tus waypoints originales
-        original_waypoints_ = {
-            {1.0, 0.0, 0.0},
-            {2.0, 0.0, 0.0}, 
-            {2.5, -0.5, 0.0},
-            {3.0, -1.0, 0.0},
-            {3.0, -2.0, 0.0},
-            {2.5, -2.5, 0.0},
-            {2.0, -2.5, 0.0}
-        };
+    
+     switch (selected_route_) {
+        case 1: // original lola
+            original_waypoints_ = {
+                {1.0, 0.0, 0.0},
+                {2.0, 0.0, 0.0}, 
+                {2.5, -0.5, 0.0},
+                {3.0, -1.0, 0.0},
+                {3.0, -2.0, 0.0},
+                {2.5, -2.5, 0.0},
+                {2.0, -2.5, 0.0}
+            };
+            break;
+
+        case 2: //linea recta
+            original_waypoints_ = {
+                {1.0, 0.0, 0.0},
+                {2.0, 0.0, 0.0},
+                {3.0, 0.0, 0.0},
+                {4.0, 0.0, 0.0},
+                {5.0, 0.0, 0.0}
+            };
+            break;
+       case 3: //zigzag
+       		original_waypoints_={
+       			{1.0, 0.0, 0.0},    
+	   		    {1.0, -2.0, 0.0},   
+	     		{3.0, -2.0, 0.0},   
+	     		{3.0, -4.0, 0.0},  
+	     		{3.0, -5.0, 0.0},   // primer punto extra en línea recta
+    			{3.0, -6.0, 0.0}    // segundo punto extra en línea recta
+	     	};
+	     	break;
+	 case 4: // ocho
+   		    original_waypoints_ = {
+       		   {2.0, 0.0, 0.0},
+			   {3.5, 1.5, 0.0},
+			   {5.0, 1.0, 0.0},
+			   {6.0, -0.5, 0.0},
+			   {5.0, -2.0, 0.0},
+			   {3.5, -1.5, 0.0},
+			   {2.0, 0.0, 0.0},
+			   {0.5, 1.5, 0.0},
+			   {-1.0, 1.0, 0.0},
+			   {-2.0, -0.5, 0.0},
+			   {-1.0, -2.0, 0.0},
+			   {0.5, -1.5, 0.0},
+			   {2.0, 0.0, 0.0}
+            };
+            break;
+	    case 5: // espiral (creciendo hacia afuera)
+            original_waypoints_ = {
+                {0.0, 0.0, 0.0},
+                {1.0, 0.0, 0.0},
+                {1.5, 1.0, 0.0},
+                {1.0, 2.0, 0.0},
+                {0.0, 2.5, 0.0},
+                {-1.5, 2.0, 0.0},
+                {-2.5, 1.0, 0.0},
+                {-3.0, -0.5, 0.0},
+                {-2.5, -2.0, 0.0},
+                {-1.5, -3.0, 0.0},
+                {0.0, -3.5, 0.0},
+                {1.5, -3.0, 0.0},
+                {3.0, -2.0, 0.0},
+                {3.5, -0.5, 0.0},
+                {3.0, 1.0, 0.0}
+            };
+            break; 
+            
+            case 6: // Curvas abiertas en todo el plano en ambas direcciones
+           original_waypoints_ = {
+   	 	{0.0, 0.0, 0.0}, // Inicio
+
+    		// S 1 (curva derecha → izquierda)
+    		{1.0, 1.0, 0.0},
+   		{2.0, -0.5, 0.0},
+   		{3.0, 1.5, 0.0},
+
+    		// Giro cerrado izquierda
+    		{2.0, 3.0, 0.0},
+	
+   		 // S 2 (izquierda → derecha)
+   		{0.5, 2.0, 0.0},
+    		{-1.0, 3.5, 0.0},
+   	 	{-2.0, 1.0, 0.0},
+
+    		// Curva muy cerrada a la derecha
+    		{-1.0, -1.0, 0.0},
+
+    		// S 3 (derecha → izquierda)
+   		{0.5, -2.5, 0.0},
+    		{2.0, -1.0, 0.0},
+    		{3.0, -3.0, 0.0},
+
+    		// Giro muy cerrado a la izquierda
+	    	{1.5, -4.0, 0.0},
+
+    		// Curva final en zig-zag suave
+    		{0.0, -3.0, 0.0},
+    		{-1.5, -4.0, 0.0},
+    		{-3.0, -2.0, 0.0}
+	     };
+
+            break;   
+            
+             case 7: // Curvas cerradas
+            original_waypoints_ = {
+                {0.0, 0.0, 0.0},
+                {0.2, 0.6, 0.0},
+                {0.6, 0.0, 0.0},
+                {0.9, 0.2, 0.0},
+                {0.95, -0.2, 0.0},
+                {1.2, -0.6, 0.0},
+                {1.5, 0.0, 0.0},
+                {1.65, 0.8, 0.0},
+                {2.0, 0.0, 0.0},
+                {2.4, 1.0, 0.0},
+                {3.0, -0.6, 0.0},
+                
+               
+            };
+            break;          
+
+        default:
+            RCLCPP_WARN(this->get_logger(), "Unknown route, using default Route 1");
+            selected_route_ = 1;
+            defineRoute(); // recursivo solo para fallback
+            break;
+    }
+        
+       
     }
 
     // Implementación de splines cúbicos naturales
@@ -395,6 +537,27 @@ private:
         
         publishCurrentWaypoint();
     }
+    
+    void changeRoute(int new_route)
+    {
+        selected_route_ = new_route;
+
+        RCLCPP_INFO(this->get_logger(), "Cambiando a la ruta %d", selected_route_);
+
+        defineRoute();
+        generateSplineRoute();
+        current_waypoint_ = 0;
+	// Borramos los marcadores
+	 visualization_msgs::msg::MarkerArray marker_array;
+    auto clear_marker = visualization_msgs::msg::Marker();
+    clear_marker.header.stamp = this->now();
+    clear_marker.header.frame_id = "map";
+    clear_marker.action = visualization_msgs::msg::Marker::DELETEALL; // borrar todos los namespaces
+    marker_array.markers.push_back(clear_marker);
+    marker_pub_->publish(marker_array);	
+        publishCurrentWaypoint();
+        publishWaypointsMarkers();
+    }
 
     // Variables
     std::vector<std::array<double, 3>> original_waypoints_;
@@ -408,10 +571,14 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr path_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr goal_reached_sub_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr route_change_sub_;//suscriptor al topic change
+    
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr tf_timer_;
     rclcpp::TimerBase::SharedPtr start_timer_;  // Timer para el retraso inicial NO BORRAR QUE SI NO DA PROBLEMAS AL LANZAR EL LAUNCH
 };
+
+
 
 int main(int argc, char** argv)
 {
