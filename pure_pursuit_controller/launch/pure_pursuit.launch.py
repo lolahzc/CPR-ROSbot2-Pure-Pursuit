@@ -1,7 +1,11 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
+    # Declaración de configuración para selected_route
+    selected_route = LaunchConfiguration('selected_route', default='4')
+
     return LaunchDescription([
         # Pure Pursuit controller
         Node(
@@ -16,7 +20,7 @@ def generate_launch_description():
                 'goal_tolerance': 0.25
             }]
         ),
-        
+
         # Route publisher con interpolación
         Node(
             package='pure_pursuit_controller',
@@ -25,10 +29,11 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'loop_route': False,
-                'interpolation_points_per_segment': 10  # Nuevo parámetro
+                'interpolation_points_per_segment': 10,
+                'selected_route': selected_route
             }]
         ),
-        
+
         # Static transform publisher
         Node(
             package='tf2_ros',
