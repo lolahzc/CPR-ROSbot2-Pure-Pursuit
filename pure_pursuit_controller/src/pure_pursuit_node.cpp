@@ -13,6 +13,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm> // Necesario para std::clamp y std::min/std::max
+#include <fstream>  // Necesario para escribir en ficheros
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -54,7 +55,15 @@ public:
         // Publicadores
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
-
+        // Abrir archivo de log
+        data_log_file_.open("robot_data_log.csv");
+        
+        if (data_log_file_.is_open()) {
+            data_log_file_ << "time,robot_x,robot_y,robot_yaw,goal_x,goal_y,dist_error,linear_v,angular_w\n";
+        } else {
+            RCLCPP_ERROR(this->get_logger(), "No se pudo crear el archivo de log!");
+        }
+        RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized...");
 
         // Posición inicial del robot
         robot_x_ = 0.0;
@@ -181,6 +190,21 @@ private:
         RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
                     "PurePursuit: Path Index: %zu/%zu, Curvature: %.3f, Lin: %.2f, Ang: %.2f, Dist2Goal: %.3f",
                     current_path_index_, path_points_.size(), curvature, cmd_vel.linear.x, cmd_vel.angular.z, distance_to_goal);
+
+        // 6. Registrar datos en el archivo de log
+        if (data_log_file_.is_open()) {
+            double current_time = this->now().seconds();
+            
+            data_log_file_ << current_time << ","             // Tiempo
+                           << robot_x_ << ","                 // Robot X
+                           << robot_y_ << ","                 // Robot Y
+                           << robot_yaw_ << ","               // Robot Yaw
+                           << current_goal_.position.x << "," // Goal X actual
+                           << current_goal_.position.y << "," // Goal Y actual
+                           << distance_to_goal << ","         // Distancia al objetivo
+                           << cmd_vel.linear.x << ","         // Velocidad Lineal enviada
+                           << cmd_vel.angular.z << "\n";      // Velocidad Angular enviada
+        }
     }
 
     bool findSequentialLookaheadPoint(geometry_msgs::msg::Point& lookahead_point)
@@ -372,6 +396,7 @@ private:
     bool has_path_ = false;
     bool goal_reached_ = false;
     size_t current_path_index_ = 0; // ÍNDICE SECUENCIAL para /waypoints_path
+    std::ofstream data_log_file_;
     
     // Parámetros
     double lookahead_distance_;
