@@ -29,7 +29,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'loop_route': False,
-                'interpolation_points_per_segment': 10,
+                'interpolation_points_per_segment': 20,
                 'selected_route': selected_route
             }]
         ),
