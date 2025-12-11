@@ -6,6 +6,8 @@
 #include <std_msgs/msg/bool.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <cmath>
@@ -45,8 +47,14 @@ public:
             "/waypoints_path", 10,
             std::bind(&PurePursuitNode::pathCallback, this, std::placeholders::_1));
 
+        odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+            "/odometry/filtered", 10,  // Cambio 1: Nombre del topic (asegúrate de que está bien escrito 'filtered')
+            std::bind(&PurePursuitNode::odomCallback, this, std::placeholders::_1)); // Cambio 2: Usar la función correcta
+
         // Publicadores
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+
+
 
         // Posición inicial del robot
         robot_x_ = 0.0;
@@ -76,6 +84,25 @@ private:
         
         RCLCPP_DEBUG(this->get_logger(), "Goal updated: (%.2f, %.2f)", 
                     current_goal_.position.x, current_goal_.position.y);
+    }
+
+    void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
+    {
+        robot_x_ = msg->pose.pose.position.x;
+        robot_y_ = msg->pose.pose.position.y;
+        
+        // Convertir Cuaternión a Yaw usando Matrix3x3 (Método estándar TF2)
+        tf2::Quaternion q(
+            msg->pose.pose.orientation.x,
+            msg->pose.pose.orientation.y,
+            msg->pose.pose.orientation.z,
+            msg->pose.pose.orientation.w);
+            
+        tf2::Matrix3x3 m(q);
+        double roll, pitch;
+        m.getRPY(roll, pitch, robot_yaw_);
+        
+        robot_yaw_ = normalizeAngle(robot_yaw_);
     }
 
     void pathCallback(const geometry_msgs::msg::PoseArray::SharedPtr msg)
@@ -145,10 +172,11 @@ private:
         
         // 4. Calcular velocidades de control
         geometry_msgs::msg::Twist cmd_vel = calculateControlCommands(curvature, distance_to_goal);
+
         cmd_vel_pub_->publish(cmd_vel);
 
         // 5. Actualizar posición del robot (simulación)
-        updateRobotPose(cmd_vel.linear.x, cmd_vel.angular.z);
+        // updateRobotPose(cmd_vel.linear.x, cmd_vel.angular.z);
         
         RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
                     "PurePursuit: Path Index: %zu/%zu, Curvature: %.3f, Lin: %.2f, Ang: %.2f, Dist2Goal: %.3f",
@@ -281,7 +309,7 @@ private:
         
         marker_pub_->publish(marker);
     }
-
+/*
     void updateRobotPose(double linear_vel, double angular_vel)
     {
         double dt = 0.05;
@@ -292,7 +320,7 @@ private:
         robot_x_ += linear_vel * cos(robot_yaw_) * dt;
         robot_y_ += linear_vel * sin(robot_yaw_) * dt;
     }
-
+*/
     void publishOdomAndTF()
     {
         auto now = this->now();
@@ -361,6 +389,7 @@ private:
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     rclcpp::TimerBase::SharedPtr control_timer_;
     rclcpp::TimerBase::SharedPtr tf_timer_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
 };
 
 int main(int argc, char** argv)

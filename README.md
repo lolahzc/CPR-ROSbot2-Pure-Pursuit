@@ -25,6 +25,12 @@ Este proyecto utiliza el algoritmo **Pure Pursuit** para que el robot siga una t
 
 ## Ejecución del robot siguiendo la trayectoria
 
+Compilar el proyecto (desde proy_cpr)
+
+```bash
+colcon build --symlink-install --packages-up-to rosbot --cmake-args -DCMAKE_BUILD_TYPE=Release
+```
+
 Cargar el entorno y lanzar el nodo Pure Pursuit (despues de haber compilado):
 
 ```bash
