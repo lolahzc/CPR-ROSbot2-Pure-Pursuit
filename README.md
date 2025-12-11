@@ -37,12 +37,12 @@ Cargar el entorno y lanzar el nodo Pure Pursuit (despues de haber compilado):
 source install/setup.bash
 ```
 
-lanzar la simulacion
+Lanzar la simulacion. Se recomienda hacerlo en proy_cpr>src>CPR-ROSBOT2-PURE-PURSUIT para guardar los datos del log en la misma carpeta que el código de matlab
 ```bash
 ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 ```
 
-en otro terminal lanzar el control con la ruta seleccionada
+En otro terminal lanzar el control con la ruta seleccionada
 ```bash
 ros2 launch pure_pursuit_controller pure_pursuit.launch.py selected_route:=<número de la ruta>
 ```

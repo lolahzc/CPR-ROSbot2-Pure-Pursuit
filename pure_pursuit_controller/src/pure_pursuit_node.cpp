@@ -14,6 +14,7 @@
 #include <vector>
 #include <algorithm> // Necesario para std::clamp y std::min/std::max
 #include <fstream>  // Necesario para escribir en ficheros
+#include <iomanip>
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -195,7 +196,8 @@ private:
         if (data_log_file_.is_open()) {
             double current_time = this->now().seconds();
             
-            data_log_file_ << current_time << ","             // Tiempo
+            data_log_file_ << std::fixed << std::setprecision(9)
+                           << current_time << ","             // Tiempo
                            << robot_x_ << ","                 // Robot X
                            << robot_y_ << ","                 // Robot Y
                            << robot_yaw_ << ","               // Robot Yaw
