@@ -84,6 +84,6 @@ ros2 topic echo /cmd_vel
 Para ello se ha creado un nuevo tópico denominado changeroute.
 Para usarlo, hay que abrir un nuevo terminal, hacer source y enviar el siguiente mensaje:
 
-ros2 topic pub /change_route std_msgs/msg/Int32 "{data: 4} 
+ros2 topic pub /change_route std_msgs/msg/Int32 "{data: 4}"
 
 en el topico de changeroute siendo 4 el número de la ruta seleccionada.
