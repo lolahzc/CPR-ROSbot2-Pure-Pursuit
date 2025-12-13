@@ -129,18 +129,18 @@ private:
 	    case 4: // ocho
    		    original_waypoints_ = {
        		   {2.0, 0.0, 0.0},
-			   {3.5, 1.5, 0.0},
-			   {5.0, 1.0, 0.0},
-			   {6.0, -0.5, 0.0},
-			   {5.0, -2.0, 0.0},
-			   {3.5, -1.5, 0.0},
-			   {2.0, 0.0, 0.0},
-			   {0.5, 1.5, 0.0},
-			   {-1.0, 1.0, 0.0},
-			   {-2.0, -0.5, 0.0},
-			   {-1.0, -2.0, 0.0},
-			   {0.5, -1.5, 0.0},
-			   {2.0, 0.0, 0.0}
+		   {3.5, 1.5, 0.0},
+		   {5.0, 1.0, 0.0},
+		   {6.0, -0.5, 0.0},
+		   {5.0, -2.0, 0.0},
+		   {3.5, -1.5, 0.0},
+		   {2.0, 0.0, 0.0},
+		   {0.5, 1.5, 0.0},
+		   {-1.0, 1.0, 0.0},
+		   {-2.0, -0.5, 0.0},
+		   {-1.0, -2.0, 0.0},
+		   {0.5, -1.5, 0.0},
+		   {2.0, 0.0, 0.0}
             };
             break;
 	    case 5: // espiral (creciendo hacia afuera)
@@ -198,7 +198,18 @@ private:
                 {2.4, 1.0, 0.0},
                 {3.0, -0.6, 0.0},     
             };
-            break;          
+            break;     
+            
+             case 8: // obtaculo
+   		    original_waypoints_ = {
+		   {-0.5, 0.0, 0.0},
+		   {0.0, -5.0, 0.0},
+		   {-3.0, -5.0, 0.0},
+		   {-6.5,-5.0, 0.0},
+		   {-8.0,-3.5, 0.0},
+		   {-6.0,-1.5, 0.0}
+            };  
+            break;    
 
         default:
             RCLCPP_WARN(this->get_logger(), "Unknown route, using default Route 1");
@@ -253,7 +264,7 @@ private:
         // Asegurar que pasamos exactamente por los waypoints originales
         for (size_t i = 0; i < original_waypoints_.size(); ++i) {
             double t = static_cast<double>(i) / (original_waypoints_.size() - 1);
-            int index = static_cast<int>(t * total_points);
+            size_t index = static_cast<size_t>(t * total_points); 
             if (index < spline_waypoints_.size()) {
                 spline_waypoints_[index] = original_waypoints_[i];
             }
