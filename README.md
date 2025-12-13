@@ -1,89 +1,61 @@
-# CPR-ROSbot2-Pure-Pursuit
-🚗 **Trayectoria con Gazebo — Pure Pursuit**
+# 🚗 CPR-ROSbot2-Pure-Pursuit: Seguimiento de Trayectorias y Evasión de Obstáculos
 
-Este proyecto utiliza el algoritmo **Pure Pursuit** para que el robot siga una trayectoria en Gazebo.
+Este proyecto implementa el algoritmo **Pure Pursuit** para el robot **Husarion ROSbot 2.0** en el entorno de simulación **Gazebo** (ROS 2). Se incluye una **máquina de estados** robusta para gestionar la evasión de obstáculos.
+
+## Funcionalidades y Mejoras
+
+### `pure_pursuit_controller.cpp` (Lógica de Control)
+
+El controlador principal ha sido extendido para incluir la lógica de evasión de obstáculos, manteniendo el seguimiento de la trayectoria Pure Pursuit como modo por defecto.
+
+#### Máquina de Estados para Evasión (`enum AvoidanceState`)
+
+| Estado | Descripción | Transición |
+| :--- | :--- | :--- |
+| `NORMAL` | El robot sigue la trayectoria Pure Pursuit. | Si detecta obstáculo $\rightarrow$ `STOPPED` |
+| `STOPPED` | Detención del robot. Decisión de giro. | Después de decidir la dirección $\rightarrow$ `SEARCHING_LEFT/RIGHT` |
+| `SEARCHING_LEFT/RIGHT` | El robot pivota sobre sí mismo buscando un espacio libre. | Si el frente está libre y seguro $\rightarrow$ `NORMAL` |
+
+#### Funciones de Evasión Implementadas
+
+* **`scanCallback()`**: Procesa las lecturas del sensor LIDAR con un **filtro de ruido** (ignora lecturas menores a **0.20m**, para evitar el chasis) y un ajuste de **$180^\circ$** (corrigiendo la orientación del sensor).
+* **`checkFreeSpace()`**: Verifica si hay espacio frontal (`> min_free_distance`) para reanudar la marcha.
+* **`findGapSide()`**: Determina hacia dónde pivotar (Izquierda o Derecha) en modo `STOPPED`.
+* **`findClosestIndexForward()`**: Localiza el punto de la trayectoria más cercano y "adelantado" para reenganchar el camino correctamente.
+
+#### Parámetros Clave (Configurables)
+
+| Parámetro | Valor Defecto | Descripción |
+| :--- | :--- | :--- |
+| `obstacle_distance_threshold` | 0.9m | Distancia máxima para considerar un objeto como obstáculo y detener la marcha. |
+| `scan_fov_degrees` | 50° | Campo de visión frontal del LIDAR utilizado para la detección. |
+| `min_free_distance` | 1.2m | Distancia libre mínima requerida para reanudar la marcha. |
+| `search_angular_vel` | 0.45 rad/s | Velocidad angular utilizada para pivotar y buscar un hueco libre. |
 
 ---
 
-## Archivos modificados
+### `route_publisher.cpp` (Gestión de Trayectorias)
 
+El `route_publisher` define, interpole (mediante **Splines Cúbicos Naturales**) y publica las trayectorias.
 
-**pure_pursuit.launch.py**
-- Se ha modificado para que la llamada reciba el parámetro selected_route
-
-**route_publisher.cpp**
-- Se han creado trayectorias nuevas (anotaciones):
-  1. Ruta original ✅ 
-  2. Línea recta  ✅
-  3. Zig-zag ❌ (cuando llega al final el robot sigue hacia la nada indefinidamente)
-  4. Ocho  ❌ (solo se hace 1 de las ramas del 8)
-  5. Espiral ✅
-  6. Curvas abiertas en todo el plano en ambas direcciones ❌ (cuando llega al punto final se queda varias veces dando  vueltas y luego sigue moviéndose hasta que vuelve a detectar otro punto en medio de la trayectoria entrando así en bucle)
-  7. Curvas cerradas ❌ No hace todos los checkpoints (puntos a gris) y al terminar la segunda vuelta se aleja y se va por completo del plano y las que son muy cerradas no lo hace con muchas precisión (ya todo depende de cuánto queramos afinarlo)
+| Ruta (`selected_route`) | Nombre | Descripción |
+| :--- | :--- | :--- |
+| 1 | Original “Lola” | Ruta inicial de prueba. |
+| 2 | Línea recta | Avanza en línea recta. |
+| 3 | Zigzag | Movimiento en zigzag. |
+| 4 | Ocho | Trayectoria en forma de ocho. |
+| 5 | Espiral | Movimiento en espiral. |
+| 6 | Curvas amplias | Curvas amplias que ocupan todo el plano. |
+| 7 | Curvas cerradas | Curvas cerradas de distinto radio. |
+| **8** | **Curva obstáculo** | **Ruta creada para la prueba de evasión (rodeando la pared).** |
 
 ---
 
-## Ejecución del robot siguiendo la trayectoria
+## Ejecución y Uso
 
-Compilar el proyecto (desde proy_cpr)
+### 1. Compilación del Proyecto
+
+Ejecutar la compilación (desde el directorio raíz del espacio de trabajo, ej. `proy_cpr`):
 
 ```bash
 colcon build --symlink-install --packages-up-to rosbot --cmake-args -DCMAKE_BUILD_TYPE=Release
-```
-
-Cargar el entorno y lanzar el nodo Pure Pursuit (despues de haber compilado):
-
-```bash
-source install/setup.bash
-```
-
-Lanzar la simulacion. Se recomienda hacerlo en proy_cpr>src>CPR-ROSBOT2-PURE-PURSUIT para guardar los datos del log en la misma carpeta que el código de matlab
-```bash
-ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
-```
-
-En otro terminal lanzar el control con la ruta seleccionada
-```bash
-ros2 launch pure_pursuit_controller pure_pursuit.launch.py selected_route:=<número de la ruta>
-```
-
-| Número | Nombre de la ruta | Descripción breve      |
-| ------ | ----------------- | ---------------------- |
-| 1      | Original “Lola”   | Ruta inicial de prueba |
-| 2      | Línea recta       | Avanza en línea recta  |
-| 3      | Zigzag            | Movimiento en zigzag   |
-| 4      | Ocho              | Forma de 8             |
-| 5      | Espiral           | Movimiento en espiral  |
-| 6      | Curvas amplias    | Curvas amplias que ocupan todo el plano  |
-| 7      | Curvas cerradas   | Curvas cerradas de distinto radio  |
-
-
-### Finalización de la trayectoria
-
-Cuando el robot complete el recorrido, verás:
-
-```text
-[pure_pursuit_node-1] [INFO] [...] [pure_pursuit_node]: Goal reached!
-```
-
-
-## Control manual del robot y velocidades
-
-mover el robot con el teleoperador
-```bash
-
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
-```
-
-visualizar las velocidades enviadas al robot
-```bash
-ros2 topic echo /cmd_vel
-```
-
-### Selección de ruta en el momento mediante la implementación de un parámetro dinámico
-Para ello se ha creado un nuevo tópico denominado changeroute.
-Para usarlo, hay que abrir un nuevo terminal, hacer source y enviar el siguiente mensaje:
-
-ros2 topic pub /change_route std_msgs/msg/Int32 "{data: 4}"
-
-en el topico de changeroute siendo 4 el número de la ruta seleccionada.
