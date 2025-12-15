@@ -112,7 +112,6 @@ private:
 
         robot_linear_vel_ = msg->twist.twist.linear.x;
         
-        // Convertir Cuaternión a Yaw usando Matrix3x3 (Método estándar TF2)
         tf2::Quaternion q(
             msg->pose.pose.orientation.x,
             msg->pose.pose.orientation.y,
@@ -128,7 +127,6 @@ private:
 
     void pathCallback(const geometry_msgs::msg::PoseArray::SharedPtr msg)
     {
-        // Guardar la ruta completa para Pure Pursuit
         path_points_.clear();
         for (const auto& pose : msg->poses) {
             path_points_.push_back(pose.position);
@@ -138,7 +136,6 @@ private:
             double min_dist_sq = std::numeric_limits<double>::max();
             size_t best_idx = 0;
             
-            // Búsqueda global rápida para resincronizar el índice
             for (size_t i = 0; i < path_points_.size(); ++i) {
                 double dx = path_points_[i].x - robot_x_;
                 double dy = path_points_[i].y - robot_y_;
@@ -161,7 +158,6 @@ private:
         if (path_points_.empty()) return;
 
         double min_dist_sq = std::numeric_limits<double>::max();
-        // Buscamos solo hacia adelante desde el índice actual para eficiencia
         size_t search_limit = std::min(path_points_.size(), current_path_index_ + 200); 
 
         for (size_t i = current_path_index_; i < search_limit; ++i) {
@@ -228,12 +224,12 @@ private:
                 goal_reached_pub_->publish(goal_reached_msg);
                 
                 // Detener el robot brevemente
-                //geometry_msgs::msg::Twist cmd_vel;
-                //cmd_vel.linear.x = 0.0;
-                //cmd_vel.angular.z = 0.0;
-                //cmd_vel_pub_->publish(cmd_vel);
+                geometry_msgs::msg::Twist cmd_vel;
+                cmd_vel.linear.x = 0.0;
+                cmd_vel.angular.z = 0.0;
+                cmd_vel_pub_->publish(cmd_vel);
             }
-            //return;
+            return;
         }
         
         // PURE PURSUIT CON SEGUIMIENTO DE TRAYECTORIA CONTINUA SECUENCIAL
@@ -257,8 +253,8 @@ private:
 
         double linear_vel = max_linear_vel_;
 
-        if (std::abs(cte) > 0.05){
-            linear_vel *= 0.6;
+        if (std::abs(cte) > 0.04){
+            linear_vel *= 0.3;
         }
 
         if (distance_to_goal < lookahead_dist){

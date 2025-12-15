@@ -16,12 +16,12 @@ def generate_launch_description():
             parameters=[{
                 'lookahead_distance': 0.3,
 
-                'max_linear_vel': 0.5,
+                'max_linear_vel': 1.0,
                 'max_angular_vel': 2.5,
                 'goal_tolerance': 0.25,
 
                 'lookahead_min': 0.1,
-                'lookahead_max': 1.2,
+                'lookahead_max': 1.5,
                 'lookahead_gamma': 4.0
             }]
         ),
