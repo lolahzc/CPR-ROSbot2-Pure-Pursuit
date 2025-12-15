@@ -63,6 +63,7 @@ public:
 
         // Publicadores
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+        robot_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/robot_marker", 10);
 
         // Abrir archivo de log
         data_log_file_.open("robot_data_log.csv");
@@ -86,9 +87,7 @@ public:
             std::bind(&PurePursuitNode::controlLoop, this));
             
         // Timer para TF y odometría
-        tf_timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(20),
-            std::bind(&PurePursuitNode::publishOdomAndTF, this));
+
 
         RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized - Continuous path following mode (Sequential)");
         RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance_);
@@ -199,6 +198,9 @@ private:
 
     void controlLoop()
     {
+
+        publishRobotMarker();
+
         if (!has_goal_ || !has_path_ || path_points_.empty()) {
             geometry_msgs::msg::Twist cmd_vel;
             cmd_vel.linear.x = 0.0;
@@ -345,7 +347,7 @@ private:
     {
         auto marker = visualization_msgs::msg::Marker();
         marker.header.stamp = this->now();
-        marker.header.frame_id = "odom";
+        marker.header.frame_id = "map";
         marker.ns = "pure_pursuit";
         marker.id = 0;
         marker.type = visualization_msgs::msg::Marker::SPHERE;
@@ -367,6 +369,38 @@ private:
         
         marker_pub_->publish(marker);
     }
+
+    void publishRobotMarker()
+    {
+        auto marker = visualization_msgs::msg::Marker();
+        marker.header.stamp = this->now();
+        marker.header.frame_id = "map";
+        marker.ns = "robot_viz";
+        marker.id = 1; // ID 1 para el robot
+        marker.type = visualization_msgs::msg::Marker::SPHERE;
+        marker.action = visualization_msgs::msg::Marker::ADD;
+        
+        // Posición del robot
+        marker.pose.position.x = robot_x_;
+        marker.pose.position.y = robot_y_;
+        marker.pose.position.z = 0.0; // Asumimos 2D
+        marker.pose.orientation.w = 1.0;
+        
+        // Escala
+        marker.scale.x = 0.3; 
+        marker.scale.y = 0.3; 
+        marker.scale.z = 0.3; 
+        
+        // Color Azul
+        marker.color.r = 0.0; 
+        marker.color.g = 0.0;
+        marker.color.b = 1.0;
+        marker.color.a = 1.0; // Opaco
+        
+        marker.lifetime = rclcpp::Duration::from_seconds(0);
+        
+        robot_marker_pub_->publish(marker);
+    }
 /*
     void updateRobotPose(double linear_vel, double angular_vel)
     {
@@ -379,41 +413,8 @@ private:
         robot_y_ += linear_vel * sin(robot_yaw_) * dt;
     }
 */
-    void publishOdomAndTF()
-    {
-        auto now = this->now();
 
-        auto odom_msg = nav_msgs::msg::Odometry();
-        odom_msg.header.stamp = now;
-        odom_msg.header.frame_id = "odom";
-        odom_msg.child_frame_id = "base_link";
-        
-        odom_msg.pose.pose.position.x = robot_x_;
-        odom_msg.pose.pose.position.y = robot_y_;
-        odom_msg.pose.pose.position.z = 0.0;
-        odom_msg.pose.pose.orientation = createQuaternionFromYaw(robot_yaw_);
-        
-        odom_pub_->publish(odom_msg);
 
-        auto transform = geometry_msgs::msg::TransformStamped();
-        transform.header.stamp = now;
-        transform.header.frame_id = "odom";
-        transform.child_frame_id = "base_link";
-        
-        transform.transform.translation.x = robot_x_;
-        transform.transform.translation.y = robot_y_;
-        transform.transform.translation.z = 0.0;
-        transform.transform.rotation = createQuaternionFromYaw(robot_yaw_);
-        
-        tf_broadcaster_->sendTransform(transform);
-    }
-
-    geometry_msgs::msg::Quaternion createQuaternionFromYaw(double yaw)
-    {
-        tf2::Quaternion q;
-        q.setRPY(0, 0, yaw);
-        return tf2::toMsg(q);
-    }
 
     double normalizeAngle(double angle)
     {
@@ -453,6 +454,7 @@ private:
     rclcpp::TimerBase::SharedPtr control_timer_;
     rclcpp::TimerBase::SharedPtr tf_timer_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr robot_marker_pub_;
 };
 
 int main(int argc, char** argv)
