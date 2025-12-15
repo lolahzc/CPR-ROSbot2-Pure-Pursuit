@@ -21,8 +21,8 @@ xlabel('X [m]'); ylabel('Y [m]');
 
 % Plotear error de distancia en el tiempo
 figure;
-plot(t, dist_err, 'k-','DisplayName','Error de distancia');hold on
+plot(t, dist_err, 'k-','DisplayName','Distancia a Waypoint');hold on
 plot(t,0.3*ones(length(t),1),'r','DisplayName','Tolerancia');
 title('Distancia al Goal vs Tiempo');
-xlabel('Tiempo [s]'); ylabel('Error [m]');legend show
+xlabel('Tiempo [s]'); ylabel('Distancia [m]');legend show
 grid on;
