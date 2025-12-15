@@ -25,12 +25,20 @@ public:
         this->declare_parameter("lookahead_distance", 1.0);
         this->declare_parameter("max_linear_vel", 0.5);
         this->declare_parameter("max_angular_vel", 0.5);
-        this->declare_parameter("goal_tolerance", 0.1);
+        this->declare_parameter("goal_tolerance", 0.2);
+
+        this->declare_parameter("lookahead_min", 1.0);      // delta_min
+        this->declare_parameter("lookahead_max", 3.0);      // delta_max
+        this->declare_parameter("lookahead_gamma", 0.8);    // gamma
         
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         max_linear_vel_ = this->get_parameter("max_linear_vel").as_double();
         max_angular_vel_ = this->get_parameter("max_angular_vel").as_double();
         goal_tolerance_ = this->get_parameter("goal_tolerance").as_double();
+
+        delta_min_ = this->get_parameter("lookahead_min").as_double();
+        delta_max_ = this->get_parameter("lookahead_max").as_double();
+        gamma_ = this->get_parameter("lookahead_gamma").as_double();
 
         // TF Broadcaster
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
@@ -50,8 +58,8 @@ public:
             std::bind(&PurePursuitNode::pathCallback, this, std::placeholders::_1));
 
         odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-            "/odometry/filtered", 10,  // Cambio 1: Nombre del topic (asegúrate de que está bien escrito 'filtered')
-            std::bind(&PurePursuitNode::odomCallback, this, std::placeholders::_1)); // Cambio 2: Usar la función correcta
+            "/odometry/filtered", 10,  
+            std::bind(&PurePursuitNode::odomCallback, this, std::placeholders::_1)); 
 
         // Publicadores
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
@@ -70,6 +78,7 @@ public:
         robot_x_ = 0.0;
         robot_y_ = 0.0;
         robot_yaw_ = 0.0;
+        robot_linear_vel_ = 0.0;
 
         // Timer para el control
         control_timer_ = this->create_wall_timer(
@@ -100,6 +109,8 @@ private:
     {
         robot_x_ = msg->pose.pose.position.x;
         robot_y_ = msg->pose.pose.position.y;
+
+        robot_linear_vel_ = msg->twist.twist.linear.x;
         
         // Convertir Cuaternión a Yaw usando Matrix3x3 (Método estándar TF2)
         tf2::Quaternion q(
@@ -123,9 +134,71 @@ private:
             path_points_.push_back(pose.position);
         }
         has_path_ = true;
-        current_path_index_ = 0; // REINICIAR ÍNDICE AL RECIBIR NUEVA RUTA
+        if (!path_points_.empty()) {
+            double min_dist_sq = std::numeric_limits<double>::max();
+            size_t best_idx = 0;
+            
+            // Búsqueda global rápida para resincronizar el índice
+            for (size_t i = 0; i < path_points_.size(); ++i) {
+                double dx = path_points_[i].x - robot_x_;
+                double dy = path_points_[i].y - robot_y_;
+                double dist_sq = dx*dx + dy*dy;
+                if (dist_sq < min_dist_sq) {
+                    min_dist_sq = dist_sq;
+                    best_idx = i;
+                }
+            }
+            current_path_index_ = best_idx;
+        } else {
+             current_path_index_ = 0;
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Path updated. Resumed at index %zu", current_path_index_);
+    }
+
+    void updateCurrentPathIndex()
+    {
+        if (path_points_.empty()) return;
+
+        double min_dist_sq = std::numeric_limits<double>::max();
+        // Buscamos solo hacia adelante desde el índice actual para eficiencia
+        size_t search_limit = std::min(path_points_.size(), current_path_index_ + 200); 
+
+        for (size_t i = current_path_index_; i < search_limit; ++i) {
+            double dx = path_points_[i].x - robot_x_;
+            double dy = path_points_[i].y - robot_y_;
+            double dist_sq = dx*dx + dy*dy;
+            
+            if (dist_sq < min_dist_sq) {
+                min_dist_sq = dist_sq;
+                current_path_index_ = i;
+            }
+        }
+    }
+
+    double getCrossTrackError()
+    {
+        if (path_points_.empty()) return 0.0;
+
+        double min_dist = std::numeric_limits<double>::max();
         
-        RCLCPP_DEBUG(this->get_logger(), "Received path with %zu points", path_points_.size());
+        size_t start_idx = (current_path_index_ > 20) ? current_path_index_ - 20 : 0;
+        size_t end_idx = std::min(path_points_.size(), current_path_index_ + 100);
+
+        for (size_t i = start_idx; i < end_idx; ++i) {
+            double dist = std::hypot(path_points_[i].x - robot_x_, path_points_[i].y - robot_y_);
+            if (dist < min_dist) {
+                min_dist = dist;
+            }
+        }
+        return min_dist;
+    }
+
+    double calculateLookaheadDistance(double cross_track_error, double vx)
+    {
+        double vel_f = std::clamp(vx/10.0, 0.5, 2.0);
+        
+        return vel_f * (delta_max_ - delta_min_) * std::exp(-gamma_ * std::abs(cross_track_error)) + delta_min_;
     }
 
     void controlLoop()
@@ -137,6 +210,8 @@ private:
             cmd_vel_pub_->publish(cmd_vel);
             return;
         }
+
+        updateCurrentPathIndex();
 
         // Verificar si se alcanzó el goal final del SEGMENTO (el waypoint original)
         double dx = current_goal_.position.x - robot_x_;
@@ -153,41 +228,58 @@ private:
                 goal_reached_pub_->publish(goal_reached_msg);
                 
                 // Detener el robot brevemente
-                geometry_msgs::msg::Twist cmd_vel;
-                cmd_vel.linear.x = 0.0;
-                cmd_vel.angular.z = 0.0;
-                cmd_vel_pub_->publish(cmd_vel);
+                //geometry_msgs::msg::Twist cmd_vel;
+                //cmd_vel.linear.x = 0.0;
+                //cmd_vel.angular.z = 0.0;
+                //cmd_vel_pub_->publish(cmd_vel);
             }
-            // Mantenemos las velocidades en cero y esperamos el nuevo goal de route_publisher
-            return;
+            //return;
         }
         
         // PURE PURSUIT CON SEGUIMIENTO DE TRAYECTORIA CONTINUA SECUENCIAL
         
-        // 1. Encontrar el punto lookahead secuencial
+        double cte = getCrossTrackError();
+        double lookahead_dist = calculateLookaheadDistance(cte, std::abs(robot_linear_vel_));
+
         geometry_msgs::msg::Point lookahead_point;
-        bool lookahead_found = findSequentialLookaheadPoint(lookahead_point);
+        bool lookahead_found = findLookaheadPoint(lookahead_dist,lookahead_point);
         
         if (!lookahead_found) {
-            // Si no encontramos punto lookahead (estamos cerca del final de la ruta interpolada), 
-            // apuntamos al goal actual para la convergencia final.
             lookahead_point = current_goal_.position;
         }
 
-        // 2. Publicar marcador del punto lookahead
         publishLookaheadMarker(lookahead_point);
-        
-        // 3. Calcular curvatura usando Pure Pursuit
-        double curvature = calculateCurvature(lookahead_point);
-        
-        // 4. Calcular velocidades de control
-        geometry_msgs::msg::Twist cmd_vel = calculateControlCommands(curvature, distance_to_goal);
 
+        RCLCPP_INFO(this->get_logger(), "L: %.3f | CTE: %.3f | Idx: %zu", lookahead_dist, cte, current_path_index_);
+
+        double target_angle = std::atan2(lookahead_point.y - robot_y_, lookahead_point.x - robot_x_);
+        double alpha = normalizeAngle(target_angle - robot_yaw_);
+
+        double linear_vel = max_linear_vel_;
+
+        if (std::abs(cte) > 0.05){
+            linear_vel *= 0.6;
+        }
+
+        if (distance_to_goal < lookahead_dist){
+            linear_vel *= (distance_to_goal / lookahead_dist);
+        }
+
+        linear_vel = std::max(0.1, linear_vel);
+
+        double angular_vel = (2.0 * linear_vel * std::sin(alpha)) / lookahead_dist;
+        angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
+        
+        geometry_msgs::msg::Twist cmd_vel;
+        cmd_vel.linear.x = linear_vel;
+        cmd_vel.angular.z = angular_vel;
         cmd_vel_pub_->publish(cmd_vel);
 
         // 5. Actualizar posición del robot (simulación)
         // updateRobotPose(cmd_vel.linear.x, cmd_vel.angular.z);
         
+        double curvature = calculateCurvature(lookahead_point);
+
         RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
                     "PurePursuit: Path Index: %zu/%zu, Curvature: %.3f, Lin: %.2f, Ang: %.2f, Dist2Goal: %.3f",
                     current_path_index_, path_points_.size(), curvature, cmd_vel.linear.x, cmd_vel.angular.z, distance_to_goal);
@@ -203,58 +295,32 @@ private:
                            << robot_yaw_ << ","               // Robot Yaw
                            << current_goal_.position.x << "," // Goal X actual
                            << current_goal_.position.y << "," // Goal Y actual
+                           << lookahead_dist << ","
+                           << cte << ","    
+                           << current_path_index_ << ","
                            << distance_to_goal << ","         // Distancia al objetivo
                            << cmd_vel.linear.x << ","         // Velocidad Lineal enviada
                            << cmd_vel.angular.z << "\n";      // Velocidad Angular enviada
         }
     }
 
-    bool findSequentialLookaheadPoint(geometry_msgs::msg::Point& lookahead_point)
-    {
-        if (current_path_index_ >= path_points_.size()) {
-            return false;
-        }
-        
-        // 1. Encontrar el punto más cercano *a partir* del índice actual para actualizar el progreso.
-        double min_dist_sq = std::numeric_limits<double>::max();
-        size_t closest_index = current_path_index_;
-        // Limitar la búsqueda hacia adelante para eficiencia y estabilidad, buscando en el remanente de la ruta
-        size_t search_limit = std::min(path_points_.size(), current_path_index_ + 100); 
-
-        // Buscar el punto más cercano en un rango limitado hacia adelante.
-        for (size_t i = current_path_index_; i < search_limit; ++i) {
-            double dx = path_points_[i].x - robot_x_;
-            double dy = path_points_[i].y - robot_y_;
-            double dist_sq = dx*dx + dy*dy;
-            
-            if (dist_sq < min_dist_sq) {
-                min_dist_sq = dist_sq;
-                closest_index = i;
-            }
-        }
-        
-        // Actualizar el índice de inicio para la próxima búsqueda.
-        current_path_index_ = closest_index;
-
-        // 2. Buscar el punto lookahead (el que está a una distancia L)
-        // La búsqueda comienza desde el punto más cercano encontrado.
+    bool findLookaheadPoint(double dynamic_lookahead_dist ,geometry_msgs::msg::Point& lookahead_point)
+   {
         for (size_t i = current_path_index_; i < path_points_.size(); ++i) {
             double dx = path_points_[i].x - robot_x_;
             double dy = path_points_[i].y - robot_y_;
             double distance = std::sqrt(dx*dx + dy*dy);
             
-            if (distance >= lookahead_distance_) {
+            if (distance >= dynamic_lookahead_dist) {
                 lookahead_point = path_points_[i];
                 return true;
             }
         }
         
-        // Si no encontramos un punto con la distancia lookahead, usamos el punto final del path
         if (!path_points_.empty()) {
             lookahead_point = path_points_.back();
             return true;
         }
-        
         return false;
     }
 
@@ -279,36 +345,6 @@ private:
         return 0.0;
     }
 
-    geometry_msgs::msg::Twist calculateControlCommands(double curvature, double distance_to_goal)
-    {
-        geometry_msgs::msg::Twist cmd_vel;
-        
-        // Velocidad angular basada en curvatura: ω = v * κ
-        double angular_vel = curvature * max_linear_vel_;
-        angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
-        
-        // Velocidad lineal 
-        double linear_vel = max_linear_vel_;
-        
-        // Reducir velocidad si la curvatura es grande
-        if (std::abs(curvature) > 0.5) {
-            linear_vel *= (1.0 - std::abs(curvature) * 0.6);
-        }
-        
-        // Reducir velocidad al acercarse al goal (Waypoint Original)
-        if (distance_to_goal < lookahead_distance_ * 2.0) {
-            linear_vel *= std::max(0.0, distance_to_goal / (lookahead_distance_ * 2.0));
-        }
-        
-        // Velocidad mínima (para evitar detenerse totalmente a menos que se llegue al goal)
-        linear_vel = std::max(0.1, linear_vel);
-
-        cmd_vel.linear.x = linear_vel;
-        cmd_vel.angular.z = angular_vel;
-        
-        return cmd_vel;
-    }
-
     void publishLookaheadMarker(const geometry_msgs::msg::Point& point)
     {
         auto marker = visualization_msgs::msg::Marker();
@@ -331,7 +367,7 @@ private:
         marker.color.b = 1.0;
         marker.color.a = 1.0;
         
-        marker.lifetime = rclcpp::Duration::from_seconds(0.2);
+        marker.lifetime = rclcpp::Duration::from_seconds(0);
         
         marker_pub_->publish(marker);
     }
@@ -391,7 +427,7 @@ private:
     }
 
     // Variables
-    double robot_x_, robot_y_, robot_yaw_;
+    double robot_x_, robot_y_, robot_yaw_, robot_linear_vel_;
     geometry_msgs::msg::Pose current_goal_;
     std::vector<geometry_msgs::msg::Point> path_points_;
     bool has_goal_ = false;
@@ -405,6 +441,10 @@ private:
     double max_linear_vel_;
     double max_angular_vel_;
     double goal_tolerance_;
+
+    double delta_min_;
+    double delta_max_;
+    double gamma_;
 
     // ROS2
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;

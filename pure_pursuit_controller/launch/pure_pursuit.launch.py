@@ -15,9 +15,14 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'lookahead_distance': 0.3,
+
                 'max_linear_vel': 0.5,
-                'max_angular_vel': 0.5,
-                'goal_tolerance': 0.3
+                'max_angular_vel': 2.5,
+                'goal_tolerance': 0.25,
+
+                'lookahead_min': 0.1,
+                'lookahead_max': 1.2,
+                'lookahead_gamma': 4.0
             }]
         ),
 
@@ -29,7 +34,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'loop_route': False,
-                'interpolation_points_per_segment': 20,
+                'interpolation_points_per_segment': 50,
                 'selected_route': selected_route
             }]
         ),

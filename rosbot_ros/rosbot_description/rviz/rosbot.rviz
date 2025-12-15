@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Map1
+        - /Map1/Grid1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -45,7 +47,7 @@ Visualization Manager:
             Y: 0
             Z: 0
           Plane: XY
-          Plane Cell Count: 10
+          Plane Cell Count: 30
           Reference Frame: <Fixed Frame>
           Value: true
       Enabled: true
@@ -207,8 +209,6 @@ Visualization Manager:
               Value: true
             laser:
               Value: true
-            map:
-              Value: true
             odom:
               Value: true
             rl_range:
@@ -227,34 +227,7 @@ Visualization Manager:
           Show Axes: true
           Show Names: true
           Tree:
-            map:
-              odom:
-                base_link:
-                  body_link:
-                    camera_mount_link:
-                      camera_link:
-                        camera_color_frame:
-                          camera_color_optical_frame:
-                            {}
-                        camera_depth_frame:
-                          camera_depth_optical_frame:
-                            {}
-                      camera_orbbec_astra_link:
-                        {}
-                    cover_link:
-                      slamtec_rplidar_link:
-                        laser:
-                          {}
-                    fl_range:
-                      {}
-                    fr_range:
-                      {}
-                    imu_link:
-                      {}
-                    rl_range:
-                      {}
-                    rr_range:
-                      {}
+            {}
           Update Interval: 0
           Value: true
         - Angle Tolerance: 0.10000000149011612
@@ -302,10 +275,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        original_route: true
-        original_waypoints: true
-        spline_route: true
-        spline_waypoints: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -317,7 +287,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        pure_pursuit: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -372,7 +342,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.604106068611145
+      Distance: 9.158024787902832
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
