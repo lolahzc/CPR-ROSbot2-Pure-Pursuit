@@ -1,6 +1,25 @@
-% Data analyzer
-data = csvread('robot_data_log.csv', 1, 0); % El 1,0 salta la cabecera
+% --- SELECCIÓN DE ARCHIVO ---
+% Abre una ventana para seleccionar archivos .csv
+[file, path] = uigetfile('*.csv', 'Selecciona el log del robot a analizar');
 
+% Validación de seguridad: Si el usuario cancela, detenemos el script
+if isequal(file, 0)
+   disp('Selección cancelada por el usuario.');
+   return;
+end
+
+% Construimos la ruta completa
+fullFileName = fullfile(path, file);
+disp(['Analizando archivo: ', fullFileName]);
+
+% Lectura de datos (Mantenemos tu lógica original de csvread)
+try
+    data = csvread(fullFileName, 1, 0); % 1,0 salta la cabecera
+catch ME
+    error('Error al leer el archivo. Asegúrate de que es un CSV válido generado por el robot.');
+end
+
+% ---------------------------------------------------------------------------
 
 t = data(:,1)-data(1,1);
 rx = data(:,2);

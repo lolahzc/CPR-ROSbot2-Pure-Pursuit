@@ -15,6 +15,10 @@
 #include <algorithm> 
 #include <fstream> 
 #include <iomanip>
+#include <chrono>
+#include <ctime>
+#include <sstream>
+#include <string>
 
 class PurePursuitNode : public rclcpp::Node
 {
@@ -28,6 +32,9 @@ public:
         this->declare_parameter("lookahead_min", 1.0);      
         this->declare_parameter("lookahead_max", 3.0);      
         this->declare_parameter("lookahead_gamma", 0.8);    
+        this->declare_parameter("selected_route", 1);
+
+        selected_route_ = this->get_parameter("selected_route").as_int();
         
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         max_linear_vel_ = this->get_parameter("max_linear_vel").as_double();
@@ -59,12 +66,33 @@ public:
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
         robot_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/robot_marker", 10);
 
-        data_log_file_.open("robot_data_log.csv");
-        
+        std::string base_name;
+
+        switch(selected_route_) {
+            case 1: base_name = "ruta_defecto"; break;
+            case 2: base_name = "ruta_recta"; break;
+            case 3: base_name = "ruta_zigzag"; break;
+            case 4: base_name = "ruta_ocho"; break;
+            case 5: base_name = "ruta_espiral"; break;
+            case 6: base_name = "ruta_cur_amplias"; break;
+            case 7: base_name = "ruta_cur_cerradas"; break;
+            default: base_name = "ruta_desconocida"; break;
+        }
+
+        auto now = std::chrono::system_clock::now();
+        std::time_t in_time_t = std::chrono::system_clock::to_time_t(now);
+
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&in_time_t), "_%Y-%m-%d_%H-%M-%S");
+
+        std::string final_filename = base_name + ss.str() + ".csv";
+
+        data_log_file_.open(final_filename);
+
         if (data_log_file_.is_open()) {
             data_log_file_ << "time,robot_x,robot_y,robot_yaw,goal_x,goal_y,dist_error,linear_v,angular_w\n";
         } else {
-            RCLCPP_ERROR(this->get_logger(), "No se pudo crear el archivo de log!");
+            RCLCPP_ERROR(this->get_logger(), "No se pudo crear el archivo de log: %s", final_filename.c_str());
         }
 
         robot_x_ = 0.0;
@@ -384,6 +412,8 @@ private:
     double delta_min_;
     double delta_max_;
     double gamma_;
+
+    int selected_route_;
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr goal_reached_pub_;
