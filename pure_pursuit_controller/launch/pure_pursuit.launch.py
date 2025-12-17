@@ -19,9 +19,9 @@ def generate_launch_description():
                 'max_angular_vel': 2.5,
                 'goal_tolerance': 0.25,
 
-                'lookahead_min': 0.1,
-                'lookahead_max': 1.5,
-                'lookahead_gamma': 4.0
+                'lookahead_min': 0.3,
+                'lookahead_max': 1.0,
+                'lookahead_gamma': 25.0
             }]
         ),
 

@@ -202,8 +202,8 @@ private:
 
     double calculateLookaheadDistance(double cross_track_error, double vx)
     {
-        double vel_f = std::clamp(vx/10.0, 0.5, 2.0);
-        
+        double vel_f = std::clamp(vx/5.0, 0.05, 0.2)*5.0;
+
         return vel_f * (delta_max_ - delta_min_) * std::exp(-gamma_ * std::abs(cross_track_error)) + delta_min_;
     }
 
