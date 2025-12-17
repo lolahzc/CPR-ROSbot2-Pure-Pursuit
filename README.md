@@ -5,21 +5,59 @@ Este proyecto utiliza el algoritmo **Pure Pursuit** para que el robot siga una t
 
 ---
 
-## Archivos modificados
+## Instrucciones instalación
+He hecho la instalación oficial de los paquetes y lo he subido todo en local sin ningún paquete embebido para mayor comodidad al trabajar juntos en paralelo.
+
+Estos paquetes son los que se instalan al poner al variable de Husarion en **simulation**. No sé que se instalaría al poner la variable en **hardware**, que asumo que lo necesitaríamos para probar el código en el robot físico.
+```
+export HUSARION_ROS_BUILD_TYPE=simulation
+```
+
+#### Actualizar e instalar dependencias (deberíais tenerlas de las prácticas).
+```
+sudo apt-get update
+sudo apt-get install -y python3-pip ros-dev-tools stm32flash
+```
+
+#### Clonar el repositorio.
+```
+mkdir proy_cpr
+cd proy_cpr
+mkdir src
+cd src
+git clone git@github.com:lolahzc/CPR-ROSbot2-Pure-Pursuit.git
+```
+
+#### Volver a carpeta raíz del workspace (proy_cpr) y compilar.
+```
+colcon build --symlink-install --packages-up-to rosbot --cmake-args -DCMAKE_BUILD_TYPE=Release
+```
+Creo que da un warning de uno de los paquetes por movidas de cosas deprecadas pero ignorarlo.
+
+#### Lanzar repositorio
+```
+source install/setup.bash
+```
+Os recomiendo añadiros esto en el .bashrc para no tener que hacerlo cada vez que queráis trabajar en el proyecto.
+
+```
+ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
+```
 
 
-**pure_pursuit.launch.py**
-- Se ha modificado para que la llamada reciba el parámetro selected_route
+## Paquete creado
+
+
+**pure_pursuit_node.cpp**
+- Es el responsable del seguimiento de la trayectoria y de la evitación de obstáculos. Las funcionalidades que tiene actualmente son:
+    - Controlador pure pursuit
+    - Lookahead distance variable según la distancia a la trayectoria
+    - Velocidad lineal y angular variable
 
 **route_publisher.cpp**
-- Se han creado trayectorias nuevas (anotaciones):
-  1. Ruta original ✅ 
-  2. Línea recta  ✅
-  3. Zig-zag ❌ (cuando llega al final el robot sigue hacia la nada indefinidamente)
-  4. Ocho  ❌ (solo se hace 1 de las ramas del 8)
-  5. Espiral ✅
-  6. Curvas abiertas en todo el plano en ambas direcciones ❌ (cuando llega al punto final se queda varias veces dando  vueltas y luego sigue moviéndose hasta que vuelve a detectar otro punto en medio de la trayectoria entrando así en bucle)
-  7. Curvas cerradas ❌ No hace todos los checkpoints (puntos a gris) y al terminar la segunda vuelta se aleja y se va por completo del plano y las que son muy cerradas no lo hace con muchas precisión (ya todo depende de cuánto queramos afinarlo)
+- Publicador de trayectorias, se crean unos waypoints y se interpola cúbicamente entre ellos
+
+Se ha creado una configuración de Rvizz para visualizar el comportamiento del robot
 
 ---
 
@@ -37,7 +75,7 @@ Cargar el entorno y lanzar el nodo Pure Pursuit (despues de haber compilado):
 source install/setup.bash
 ```
 
-Lanzar la simulacion. Se recomienda hacerlo en proy_cpr>src>CPR-ROSBOT2-PURE-PURSUIT para guardar los datos del log en la misma carpeta que el código de matlab
+Lanzar la simulacion. Se recomienda hacerlo en proy_cpr/src/CPR-ROSBOT2-PURE-PURSUIT para guardar los datos del log en la misma carpeta que el código de matlab
 ```bash
 ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 ```
@@ -66,20 +104,6 @@ Cuando el robot complete el recorrido, verás:
 [pure_pursuit_node-1] [INFO] [...] [pure_pursuit_node]: Goal reached!
 ```
 
-
-## Control manual del robot y velocidades
-
-mover el robot con el teleoperador
-```bash
-
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
-```
-
-visualizar las velocidades enviadas al robot
-```bash
-ros2 topic echo /cmd_vel
-```
-
 ### Selección de ruta en el momento mediante la implementación de un parámetro dinámico
 Para ello se ha creado un nuevo tópico denominado changeroute.
 Para usarlo, hay que abrir un nuevo terminal, hacer source y enviar el siguiente mensaje:
@@ -87,3 +111,46 @@ Para usarlo, hay que abrir un nuevo terminal, hacer source y enviar el siguiente
 ros2 topic pub /change_route std_msgs/msg/Int32 "{data: 4}"
 
 en el topico de changeroute siendo 4 el número de la ruta seleccionada.
+
+
+## Ejecución del robot real
+
+Para trabajar con el robot real el primer paso es realizar la conexión por ssh con el mismo. Actualmente la configuración de red que tiene es la siguiente:
+
+Red: ROB_6
+Contraseña: robotica
+
+Tras conectarlo (preferiblemente siempre al mismo dispositivo para que no cambie la dirección IP, ya que se necesitaría una pantalla para cambiar el archivo de configuración de red del robot), en el portátil se ejecuta el siguiente comando:
+```bash
+ssh husarion@10.55.55.163
+```
+Contraseña: husarion
+
+El siguiente paso es comprobar la versión del proyecto que está subida en el robot. Para ello, en la carpeta home/husarion está clonado este repositorio y sólo habría que copiar los archivos de esta carpeta a la home/husarion/proy_cpr/src. Esto se hace con:
+```bash
+cp -r home/husarion/CPR-ROSbot2-Pure-Pursuit/pure_pursuit_controller home/husarion/proy_cpr/src
+```
+
+Después hay que compilar, pero para no hacerlo todo se puede hacer :
+```bash
+cd home/husarion/proy_cpr
+colcon build --packages-select pure_pursuit_controller
+```
+
+Una vez que acabe, se vuelve a hacer source:
+```bash
+source install/setup.bash
+```
+
+Tras esto, ya se pueden mandar los comandos necesarios. Hacen falta dos terminales, una para cada comando:
+```bash
+ros2 launch rplidar_ros rplidar_a2m8_launch.py serial_baudrate:=256000
+```
+```bash
+ros2 launch pure_pursuit_controller pure_pursuit.launch.py selected_route:=<número de la ruta>
+```
+
+Además, si se quiere crear un rosbag de lo que está pasando para analizarlo posteriormente en foxglove:
+```bash
+ros2 bag record -a -o <nombre del archivo>
+```
