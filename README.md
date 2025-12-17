@@ -53,7 +53,7 @@ ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 - Es el responsable del seguimiento de la trayectoria y de la evitación de obstáculos. Las funcionalidades que tiene actualmente son:
     - Controlador pure pursuit
     - Lookahead distance variable según la distancia a la trayectoria
-    - Velocidad lineal y angular variable
+    - Control de velocidad linear (depende de cte y curvatura) y angular (depende de lookahead)
     - Datalogger
 
 **route_publisher.cpp**

@@ -244,7 +244,7 @@ private:
             }
             return;
         }
-        
+
         double cte = getCrossTrackError();
         double lookahead_dist = calculateLookaheadDistance(cte, std::abs(robot_linear_vel_));
 
@@ -257,26 +257,36 @@ private:
 
         publishLookaheadMarker(lookahead_point);
 
+        // Limitar la velocidad basado en el cross track error
+        double cmd_cte = 1.0;
+
+        cmd_cte = 1.0-std::abs(cte)*2.0;
+
+        // Limitar la velocidad basado en la curvatura
+        double curv = calculateCurvature(lookahead_point);
+        double cmd_curva = 1.0-std::abs(curv)/8.0;
+
+
+        cmd_curva = std::clamp(cmd_curva, 0.01, 1.0);
+        cmd_cte = std::clamp(cmd_cte, 0.01, 1.0);
+
+        // Calcular el comando de velocidad
+        current_vel_cmd_ = max_linear_vel_ * cmd_curva * cmd_cte;
+
+        // Si estás llegando al último punto, reduce la velocidad proporcionalmente a la distancia restante
         double target_angle = std::atan2(lookahead_point.y - robot_y_, lookahead_point.x - robot_x_);
         double alpha = normalizeAngle(target_angle - robot_yaw_);
-
-        double target_vel = max_linear_vel_;
-
-        if (std::abs(cte) > 0.04){
-            target_vel *= 0.30;
-        }
 
         geometry_msgs::msg::Point last_path_point = path_points_.back();
         double dist_lookahead_to_end = std::hypot(lookahead_point.x - last_path_point.x, 
                                                   lookahead_point.y - last_path_point.y);
         bool is_aiming_last_point = (dist_lookahead_to_end < 0.01);
+
         if (is_aiming_last_point && distance_to_goal < lookahead_dist){
-            target_vel *= (distance_to_goal / lookahead_dist);
+            current_vel_cmd_ *= (distance_to_goal / lookahead_dist);
         }
 
-        target_vel = std::max(0.1, target_vel);
-
-        current_vel_cmd_ = (current_vel_cmd_ * 0.5) + (target_vel * 0.5);
+        current_vel_cmd_ = std::clamp(current_vel_cmd_, 0.001, max_linear_vel_);
 
         double linear_vel = current_vel_cmd_;
 
@@ -303,7 +313,8 @@ private:
                            << current_path_index_ << ","
                            << distance_to_goal << ","         
                            << cmd_vel.linear.x << ","         
-                           << cmd_vel.angular.z << "\n";      
+                           << cmd_vel.angular.z << ","         
+                           << curv << "\n";    
         }
     }
 

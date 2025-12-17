@@ -25,6 +25,7 @@ ld = data(:,7);
 cte = data(:,8);
 dist_err = data(:,10);
 v = data(:,11);
+k = data(:,end);
 
 % -------------------------------------------------------------------------------
 
@@ -108,4 +109,11 @@ c = colorbar;
 %c.Label.String = 'Error Lateral Absoluto [m]';
 colormap jet; 
 axis equal;
+caxis([0 0.21]);
+
+% Plotear curvatura
+figure;
+plot(t,k);
+
+
 
