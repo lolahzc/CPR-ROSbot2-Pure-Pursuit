@@ -54,11 +54,26 @@ ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
     - Controlador pure pursuit
     - Lookahead distance variable según la distancia a la trayectoria
     - Velocidad lineal y angular variable
+    - Datalogger
 
 **route_publisher.cpp**
 - Publicador de trayectorias, se crean unos waypoints y se interpola cúbicamente entre ellos
+- Publicador de los markers para rvizz
+
+**pure_pursuit.launch.py**
+- Configuración de parámetros:
+    - Velocidad lineal máxima
+    - Velocidad angular máxima
+    - Lookahead distance mínima
+    - Lookahead distance máxima
+    - Lookahead distance gamma
+    - Cantidad de puntos interpolados entre waypoints
 
 Se ha creado una configuración de Rvizz para visualizar el comportamiento del robot
+
+Se ha creado un código de matlab ejecutable en Octave para analizar el comportamiento del robot, tanto en simulación como en la vida real. Su nombre es analyzer.m
+
+Se han empleado grabaciones de rosbag que se han analizado con foxglove para comprobar el comportamiento del robot en la vida real
 
 ---
 
