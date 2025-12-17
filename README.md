@@ -45,8 +45,9 @@ ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 ```
 
 
-## Paquete creado
+---
 
+## Paquete creado
 
 **pure_pursuit_node.cpp**
 - Es el responsable del seguimiento de la trayectoria y de la evitación de obstáculos. Las funcionalidades que tiene actualmente son:
@@ -112,6 +113,8 @@ ros2 topic pub /change_route std_msgs/msg/Int32 "{data: 4}"
 ```
 en el topico de changeroute siendo 4 el número de la ruta seleccionada.
 
+
+---
 
 ## Ejecución del robot real
 
