@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Map1
+        - /Map1/Grid1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -45,7 +47,7 @@ Visualization Manager:
             Y: 0
             Z: 0
           Plane: XY
-          Plane Cell Count: 10
+          Plane Cell Count: 30
           Reference Frame: <Fixed Frame>
           Value: true
       Enabled: true
@@ -70,98 +72,6 @@ Visualization Manager:
             Expand Link Details: false
             Expand Tree: false
             Link Tree Style: Links in Alphabetic Order
-            base_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            body_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
-            camera_color_frame:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            camera_color_optical_frame:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            camera_depth_frame:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            camera_depth_optical_frame:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            camera_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            camera_mount_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            camera_orbbec_astra_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
-            cover_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
-            fl_range:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            fl_wheel_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
-            fr_range:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            fr_wheel_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
-            imu_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            laser:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            rl_range:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            rl_wheel_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
-            rr_range:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-            rr_wheel_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
-            slamtec_rplidar_link:
-              Alpha: 1
-              Show Axes: false
-              Show Trail: false
-              Value: true
           Mass Properties:
             Inertia: false
             Mass: false
@@ -175,86 +85,13 @@ Visualization Manager:
           Frame Timeout: 15
           Frames:
             All Enabled: true
-            base_link:
-              Value: true
-            body_link:
-              Value: true
-            camera_color_frame:
-              Value: true
-            camera_color_optical_frame:
-              Value: true
-            camera_depth_frame:
-              Value: true
-            camera_depth_optical_frame:
-              Value: true
-            camera_link:
-              Value: true
-            camera_mount_link:
-              Value: true
-            camera_orbbec_astra_link:
-              Value: true
-            cover_link:
-              Value: true
-            fl_range:
-              Value: true
-            fl_wheel_link:
-              Value: true
-            fr_range:
-              Value: true
-            fr_wheel_link:
-              Value: true
-            imu_link:
-              Value: true
-            laser:
-              Value: true
-            map:
-              Value: true
-            odom:
-              Value: true
-            rl_range:
-              Value: true
-            rl_wheel_link:
-              Value: true
-            rr_range:
-              Value: true
-            rr_wheel_link:
-              Value: true
-            slamtec_rplidar_link:
-              Value: true
           Marker Scale: 0.10000000149011612
           Name: TF
           Show Arrows: true
           Show Axes: true
           Show Names: true
           Tree:
-            map:
-              odom:
-                base_link:
-                  body_link:
-                    camera_mount_link:
-                      camera_link:
-                        camera_color_frame:
-                          camera_color_optical_frame:
-                            {}
-                        camera_depth_frame:
-                          camera_depth_optical_frame:
-                            {}
-                      camera_orbbec_astra_link:
-                        {}
-                    cover_link:
-                      slamtec_rplidar_link:
-                        laser:
-                          {}
-                    fl_range:
-                      {}
-                    fr_range:
-                      {}
-                    imu_link:
-                      {}
-                    rl_range:
-                      {}
-                    rr_range:
-                      {}
+            {}
           Update Interval: 0
           Value: true
         - Angle Tolerance: 0.10000000149011612
@@ -296,16 +133,16 @@ Visualization Manager:
             Reliability Policy: Reliable
             Value: odometry/filtered
           Value: false
-      Enabled: true
+      Enabled: false
       Name: Robot
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
       Name: MarkerArray
       Namespaces:
+        current_goal: true
         original_route: true
         original_waypoints: true
         spline_route: true
-        spline_waypoints: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -325,6 +162,19 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /lookahead_marker
+      Value: true
+    - Class: rviz_default_plugins/Marker
+      Enabled: true
+      Name: Marker
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_marker
       Value: true
   Enabled: true
   Global Options:
@@ -372,7 +222,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.604106068611145
+      Distance: 10.530332565307617
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

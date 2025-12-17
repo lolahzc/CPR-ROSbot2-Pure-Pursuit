@@ -3,8 +3,7 @@ from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
-    # Declaración de configuración para selected_route
-    selected_route = LaunchConfiguration('selected_route', default='4')
+    selected_route = LaunchConfiguration('selected_route', default='1')
 
     return LaunchDescription([
         # Pure Pursuit controller
@@ -15,9 +14,14 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'lookahead_distance': 0.3,
-                'max_linear_vel': 0.5,
-                'max_angular_vel': 0.5,
-                'goal_tolerance': 0.3
+
+                'max_linear_vel': 1.0,
+                'max_angular_vel': 2.5,
+                'goal_tolerance': 0.25,
+
+                'lookahead_min': 0.1,
+                'lookahead_max': 1.5,
+                'lookahead_gamma': 4.0
             }]
         ),
 
@@ -29,7 +33,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'loop_route': False,
-                'interpolation_points_per_segment': 20,
+                'interpolation_points_per_segment': 50,
                 'selected_route': selected_route
             }]
         ),
