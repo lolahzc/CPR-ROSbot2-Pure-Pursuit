@@ -17,84 +17,62 @@ class RoutePublisher : public rclcpp::Node
 public:
     RoutePublisher() : Node("route_publisher")
     {
-        // Publishers 
         goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/goal_pose", 10);
         path_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/waypoints_path", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/waypoints_markers", 10);
         
-        // Subscriber para goal reached
         goal_reached_sub_ = this->create_subscription<std_msgs::msg::Bool>(
             "/goal_reached", 10,
             std::bind(&RoutePublisher::goalReachedCallback, this, std::placeholders::_1));
            
-        // Subscriptor al topic change_route 
         route_change_sub_ = this->create_subscription<std_msgs::msg::Int32>(
             "/change_route", 10,
             [this](const std_msgs::msg::Int32::SharedPtr msg){
                 changeRoute(msg->data);
             });
 
-        // seleccion de rutas
+       
         this->declare_parameter("selected_route", 1);
 		selected_route_ = this->get_parameter("selected_route").as_int();
-		RCLCPP_INFO(this->get_logger(), "Selected route: %d", selected_route_);
 
-        // TF Broadcaster
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-        // Parámetros
         this->declare_parameter("loop_route", false);
         this->declare_parameter("interpolation_points_per_segment", 10);
         
         loop_route_ = this->get_parameter("loop_route").as_bool();
         interpolation_points_ = this->get_parameter("interpolation_points_per_segment").as_int();
         
-        // Definir waypoints de la ruta original
         defineRoute();
         
-        // Generar ruta interpolada con splines cúbicos
         generateSplineRoute();
         
-        // Timer para publicar TF estático del mapa
         tf_timer_ = this->create_wall_timer(
             std::chrono::milliseconds(50),
             std::bind(&RoutePublisher::publishStaticTF, this));
 
-        // Timer para publicar el primer waypoint con retraso 
         start_timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(5000),  // 5s de retraso
+            std::chrono::milliseconds(5000), 
             [this]() {
-                // Publicar el primer waypoint después del retraso
-                current_segment_index_ = 0; // Usamos el índice de Waypoints Originales
+                current_segment_index_ = 0; 
                 publishCurrentWaypoint();
                 publishWaypointsMarkers();
                 
-                // Cancelar este timer después de ejecutarse una vez
                 start_timer_->cancel();
-                
-                RCLCPP_INFO(this->get_logger(), "First waypoint published after delay");
-                RCLCPP_INFO(this->get_logger(), "Original waypoints: %zu, Spline waypoints: %zu", 
-                           original_waypoints_.size(), spline_waypoints_.size());
             });
-
-        RCLCPP_INFO(this->get_logger(), "Route publisher started with %zu original waypoints", original_waypoints_.size());
-        RCLCPP_INFO(this->get_logger(), "Generated %zu spline waypoints", spline_waypoints_.size());
-        RCLCPP_INFO(this->get_logger(), "Publishing to /goal_pose (PoseStamped)");
-        RCLCPP_INFO(this->get_logger(), "Waiting for goal reached signal to advance to next waypoint");
-        RCLCPP_INFO(this->get_logger(), "First waypoint will be published in 5s...");
     }
 
 private:
 
 	int selected_route_;
-    size_t current_segment_index_ = 0; // Índice para los Waypoints Originales
+    size_t current_segment_index_ = 0;
 	
 
     void defineRoute()
     {
     
      switch (selected_route_) {
-        case 1: // original lola
+        case 1: 
             original_waypoints_ = {
                 {0.0,0.0,0.0},
                 {1.0,1.0,0.0},
@@ -108,7 +86,7 @@ private:
             };
             break;
 
-        case 2: //linea recta
+        case 2: 
             original_waypoints_ = {
                 {1.0, 0.0, 0.0},
                 {2.0, 0.0, 0.0},
@@ -117,7 +95,7 @@ private:
                 {5.0, 0.0, 0.0}
             };
             break;
-        case 3: //zigzag
+        case 3:
        		original_waypoints_={
                 {0.0, 0.0, 0.0},
        			{1.0, 0.0, 0.0},    
@@ -128,7 +106,7 @@ private:
     			{3.0, -6.0, 0.0}    
 	     	};
 	     	break;
-	    case 4: // ocho
+	    case 4:
    		    original_waypoints_ = {
        		   {2.0, 0.0, 0.0},
 			   {3.5, 1.5, 0.0},
@@ -145,7 +123,7 @@ private:
 			   {2.0, 0.0, 0.0}
             };
             break;
-	    case 5: // espiral (creciendo hacia afuera)
+	    case 5: 
             original_waypoints_ = {
                 {0.0, 0.0, 0.0},
                 {1.0, 0.0, 0.0},
@@ -165,9 +143,9 @@ private:
             };
             break; 
             
-        case 6: // Curvas abiertas en todo el plano en ambas direcciones
+        case 6: 
             original_waypoints_ = {
-                {0.0, 0.0, 0.0}, // Inicio
+                {0.0, 0.0, 0.0}, 
                 {1.0, 1.0, 0.0},
                 {2.0, -0.5, 0.0},
                 {3.0, 1.5, 0.0},
@@ -186,7 +164,7 @@ private:
 	        };
             break;   
             
-        case 7: // Curvas cerradas
+        case 7: 
             original_waypoints_ = {
                 {0.0, 0.0, 0.0},
                 {0.2, 0.6, 0.0},
@@ -203,16 +181,14 @@ private:
             break;          
 
         default:
-            RCLCPP_WARN(this->get_logger(), "Unknown route, using default Route 1");
             selected_route_ = 1;
-            defineRoute(); // recursivo solo para fallback
+            defineRoute(); 
             break;
     }
         
        
     }
 
-    // Implementación de splines cúbicos naturales (SIN CAMBIOS)
     void generateSplineRoute()
     {
         spline_waypoints_.clear();
@@ -222,37 +198,31 @@ private:
             return;
         }
 
-        // Extraer coordenadas x e y
         std::vector<double> x_vals, y_vals;
         for (const auto& wp : original_waypoints_) {
             x_vals.push_back(wp[0]);
             y_vals.push_back(wp[1]);
         }
 
-        // Calcular splines cúbicos naturales para x e y
         std::vector<double> x_spline = computeNaturalCubicSpline(x_vals);
         std::vector<double> y_spline = computeNaturalCubicSpline(y_vals);
 
-        // Generar puntos interpolados usando el parámetro t
         int total_points = (original_waypoints_.size() - 1) * interpolation_points_;
         for (int i = 0; i <= total_points; ++i) {
             double t = static_cast<double>(i) / total_points;
             
-            // Encontrar el segmento correspondiente
             int segment = static_cast<int>(t * (original_waypoints_.size() - 1));
             segment = std::min(segment, static_cast<int>(original_waypoints_.size() - 2));
             
             double local_t = t * (original_waypoints_.size() - 1) - segment;
             local_t = std::clamp(local_t, 0.0, 1.0);
             
-            // Evaluar spline cúbico
             double x = evaluateCubicSpline(x_vals, x_spline, segment, local_t);
             double y = evaluateCubicSpline(y_vals, y_spline, segment, local_t);
             
             spline_waypoints_.push_back({x, y, 0.0});
         }
 
-        // Asegurar que pasamos exactamente por los waypoints originales
         for (size_t i = 0; i < original_waypoints_.size(); ++i) {
             double t = static_cast<double>(i) / (original_waypoints_.size() - 1);
             int index = static_cast<int>(t * total_points);
@@ -299,36 +269,28 @@ private:
         return a + b * t + c * t * t + d * t * t * t;
     }
 
-    // Al recibir señal de Goal Reached, avanzamos al siguiente waypoint ORIGINAL
     void goalReachedCallback(const std_msgs::msg::Bool::SharedPtr msg)
     {
         if (msg->data) {
-            RCLCPP_INFO(this->get_logger(), "Final segment goal reached! Advancing to next original waypoint...");
             advanceToNextWaypoint();
         }
     }
 
-    // Publica el Waypoint ORIGINAL como el Goal Final del segmento
     void publishCurrentWaypoint()
     {
-        // Verificar si el índice está dentro de los límites
         if (current_segment_index_ >= original_waypoints_.size()) {
-            RCLCPP_WARN(this->get_logger(), "Intento de publicar un waypoint fuera de límites.");
             return;
         }
 
-        // Publicar goal point como PoseStamped (SOLO EL WAYPOINT ORIGINAL)
         auto goal_msg = geometry_msgs::msg::PoseStamped();
         goal_msg.header.stamp = this->now();
         goal_msg.header.frame_id = "map";
         
-        // Usar el waypoint ORIGINAL como el goal final (es el punto al que debe llegar el robot)
         const auto& wp = original_waypoints_[current_segment_index_]; 
         goal_msg.pose.position.x = wp[0];
         goal_msg.pose.position.y = wp[1];
         goal_msg.pose.position.z = wp[2];
         
-        // Calcular orientación hacia el siguiente waypoint para curvas más suaves
         if (current_segment_index_ < original_waypoints_.size() - 1) {
             const auto& next_wp = original_waypoints_[current_segment_index_ + 1];
             double yaw = std::atan2(next_wp[1] - wp[1], next_wp[0] - wp[0]);
@@ -337,30 +299,23 @@ private:
             goal_msg.pose.orientation.z = std::sin(yaw / 2.0);
             goal_msg.pose.orientation.w = std::cos(yaw / 2.0);
         } else {
-            goal_msg.pose.orientation.w = 1.0;  // Orientación neutral para el último punto
+            goal_msg.pose.orientation.w = 1.0; 
         }
         
         goal_pub_->publish(goal_msg);
         
-        // Publicar ruta completa (todos los puntos interpolados)
         publishWaypointsPath();
         
-        // Publicar marcadores actualizados
         publishWaypointsMarkers();
         
-        RCLCPP_INFO(this->get_logger(), "Publicado Goal Final (Waypoint %zu/%zu): (%.2f, %.2f)", 
-                   current_segment_index_ + 1, original_waypoints_.size(), wp[0], wp[1]);
-        RCLCPP_INFO(this->get_logger(), "Pure Pursuit seguirá la ruta interpolada hasta este punto.");
     }
 
-    // SIN CAMBIOS: Sigue publicando la ruta interpolada completa
     void publishWaypointsPath()
     {
         auto path_msg = geometry_msgs::msg::PoseArray();
         path_msg.header.stamp = this->now();
         path_msg.header.frame_id = "map";
         
-        // Publicar waypoints de spline
         for (const auto& wp : spline_waypoints_) {
             geometry_msgs::msg::Pose pose;
             pose.position.x = wp[0];
@@ -374,12 +329,10 @@ private:
         path_pub_->publish(path_msg);
     }
 
-    // Se elimina el bucle de marcadores de spline y se añade un marcador para el goal actual
     void publishWaypointsMarkers()
     {
         auto marker_array = visualization_msgs::msg::MarkerArray();
         
-        // Limpiar marcadores anteriores
         auto clear_marker = visualization_msgs::msg::Marker();
         clear_marker.header.stamp = this->now();
         clear_marker.header.frame_id = "map";
@@ -387,7 +340,6 @@ private:
         clear_marker.action = visualization_msgs::msg::Marker::DELETEALL;
         marker_array.markers.push_back(clear_marker);
         
-        // Marcador para la ruta spline (línea verde suave)
         auto spline_line_marker = visualization_msgs::msg::Marker();
         spline_line_marker.header.stamp = this->now();
         spline_line_marker.header.frame_id = "map";
@@ -410,7 +362,6 @@ private:
         }
         marker_array.markers.push_back(spline_line_marker);
         
-        // Marcador para waypoints originales (línea roja discontinua)
         auto original_line_marker = visualization_msgs::msg::Marker();
         original_line_marker.header.stamp = this->now();
         original_line_marker.header.frame_id = "map";
@@ -433,7 +384,6 @@ private:
         }
         marker_array.markers.push_back(original_line_marker);
         
-        // Marcadores para waypoints originales (esferas grandes rojas)
         for (size_t i = 0; i < original_waypoints_.size(); ++i) {
             auto sphere_marker = visualization_msgs::msg::Marker();
             sphere_marker.header.stamp = this->now();
@@ -459,13 +409,12 @@ private:
             marker_array.markers.push_back(sphere_marker);
         }
         
-        // MARCADOR PARA EL GOAL ACTUAL (WAYPOINT ORIGINAL AL QUE SE DIRIGE EL ROBOT)
         if (current_segment_index_ < original_waypoints_.size()) {
             auto goal_marker = visualization_msgs::msg::Marker();
             goal_marker.header.stamp = this->now();
             goal_marker.header.frame_id = "map";
             goal_marker.ns = "current_goal";
-            goal_marker.id = 99; // ID único para el goal
+            goal_marker.id = 99;
             goal_marker.type = visualization_msgs::msg::Marker::SPHERE;
             goal_marker.action = visualization_msgs::msg::Marker::ADD;
             
@@ -478,7 +427,7 @@ private:
             goal_marker.scale.z = 0.35;
             goal_marker.color.r = 1.0;
             goal_marker.color.g = 1.0;
-            goal_marker.color.b = 0.0; // Amarillo brillante para el goal
+            goal_marker.color.b = 0.0; 
             goal_marker.color.a = 0.8;
             
             marker_array.markers.push_back(goal_marker);
@@ -505,17 +454,14 @@ private:
         tf_broadcaster_->sendTransform(transform);
     }
 
-    // Avanza al siguiente Waypoint Original
     void advanceToNextWaypoint()
     {
         current_segment_index_++; 
         
         if (current_segment_index_ >= original_waypoints_.size()) {
             if (loop_route_) {
-                RCLCPP_INFO(this->get_logger(), "Ruta completada! Reiniciando...");
                 current_segment_index_ = 0;
             } else {
-                RCLCPP_INFO(this->get_logger(), "Ruta completada! Finalizando.");
                 return;
             }
         }
@@ -523,23 +469,19 @@ private:
         publishCurrentWaypoint();
     }
     
-    // Resetea el índice original al cambiar de ruta
     void changeRoute(int new_route)
     {
         selected_route_ = new_route;
-
-        RCLCPP_INFO(this->get_logger(), "Cambiando a la ruta %d", selected_route_);
 
         defineRoute();
         generateSplineRoute();
         current_segment_index_ = 0; 
 	
-	    // Borramos los marcadores
 	    visualization_msgs::msg::MarkerArray marker_array;
         auto clear_marker = visualization_msgs::msg::Marker();
         clear_marker.header.stamp = this->now();
         clear_marker.header.frame_id = "map";
-        clear_marker.action = visualization_msgs::msg::Marker::DELETEALL; // borrar todos los namespaces
+        clear_marker.action = visualization_msgs::msg::Marker::DELETEALL; 
         marker_array.markers.push_back(clear_marker);
         marker_pub_->publish(marker_array);	
         
@@ -547,13 +489,11 @@ private:
         publishWaypointsMarkers();
     }
 
-    // Variables
     std::vector<std::array<double, 3>> original_waypoints_;
     std::vector<std::array<double, 3>> spline_waypoints_;
     bool loop_route_;
     int interpolation_points_;
     
-    // ROS2
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr path_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;

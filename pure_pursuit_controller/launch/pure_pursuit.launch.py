@@ -3,8 +3,7 @@ from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
-    # Declaración de configuración para selected_route
-    selected_route = LaunchConfiguration('selected_route', default='4')
+    selected_route = LaunchConfiguration('selected_route', default='1')
 
     return LaunchDescription([
         # Pure Pursuit controller

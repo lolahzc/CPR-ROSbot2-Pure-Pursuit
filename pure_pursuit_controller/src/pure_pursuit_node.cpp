@@ -12,8 +12,8 @@
 #include <visualization_msgs/msg/marker.hpp>
 #include <cmath>
 #include <vector>
-#include <algorithm> // Necesario para std::clamp y std::min/std::max
-#include <fstream>  // Necesario para escribir en ficheros
+#include <algorithm> 
+#include <fstream> 
 #include <iomanip>
 
 class PurePursuitNode : public rclcpp::Node
@@ -21,15 +21,13 @@ class PurePursuitNode : public rclcpp::Node
 public:
     PurePursuitNode() : Node("pure_pursuit_node")
     {
-        // Parámetros
         this->declare_parameter("lookahead_distance", 1.0);
         this->declare_parameter("max_linear_vel", 0.5);
         this->declare_parameter("max_angular_vel", 0.5);
         this->declare_parameter("goal_tolerance", 0.2);
-
-        this->declare_parameter("lookahead_min", 1.0);      // delta_min
-        this->declare_parameter("lookahead_max", 3.0);      // delta_max
-        this->declare_parameter("lookahead_gamma", 0.8);    // gamma
+        this->declare_parameter("lookahead_min", 1.0);      
+        this->declare_parameter("lookahead_max", 3.0);      
+        this->declare_parameter("lookahead_gamma", 0.8);    
         
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         max_linear_vel_ = this->get_parameter("max_linear_vel").as_double();
@@ -40,15 +38,12 @@ public:
         delta_max_ = this->get_parameter("lookahead_max").as_double();
         gamma_ = this->get_parameter("lookahead_gamma").as_double();
 
-        // TF Broadcaster
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-        // Publicadores
         odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
         goal_reached_pub_ = this->create_publisher<std_msgs::msg::Bool>("/goal_reached", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/lookahead_marker", 10);
 
-        // Subscriptores
         goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
             "/goal_pose", 10,
             std::bind(&PurePursuitNode::goalCallback, this, std::placeholders::_1));
@@ -61,11 +56,9 @@ public:
             "/odometry/filtered", 10,  
             std::bind(&PurePursuitNode::odomCallback, this, std::placeholders::_1)); 
 
-        // Publicadores
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
         robot_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/robot_marker", 10);
 
-        // Abrir archivo de log
         data_log_file_.open("robot_data_log.csv");
         
         if (data_log_file_.is_open()) {
@@ -73,24 +66,17 @@ public:
         } else {
             RCLCPP_ERROR(this->get_logger(), "No se pudo crear el archivo de log!");
         }
-        RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized...");
 
-        // Posición inicial del robot
         robot_x_ = 0.0;
         robot_y_ = 0.0;
         robot_yaw_ = 0.0;
         robot_linear_vel_ = 0.0;
 
-        // Timer para el control
+
         control_timer_ = this->create_wall_timer(
             std::chrono::milliseconds(50),
             std::bind(&PurePursuitNode::controlLoop, this));
-            
-        // Timer para TF y odometría
 
-
-        RCLCPP_INFO(this->get_logger(), "Pure Pursuit node initialized - Continuous path following mode (Sequential)");
-        RCLCPP_INFO(this->get_logger(), "Lookahead distance: %.2f", lookahead_distance_);
     }
 
 private:
@@ -99,9 +85,6 @@ private:
         current_goal_ = msg->pose;
         has_goal_ = true;
         goal_reached_ = false;
-        
-        RCLCPP_DEBUG(this->get_logger(), "Goal updated: (%.2f, %.2f)", 
-                    current_goal_.position.x, current_goal_.position.y);
     }
 
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
@@ -149,7 +132,6 @@ private:
              current_path_index_ = 0;
         }
 
-        RCLCPP_INFO(this->get_logger(), "Path updated. Resumed at index %zu", current_path_index_);
     }
 
     void updateCurrentPathIndex()
@@ -211,21 +193,18 @@ private:
 
         updateCurrentPathIndex();
 
-        // Verificar si se alcanzó el goal final del SEGMENTO (el waypoint original)
         double dx = current_goal_.position.x - robot_x_;
         double dy = current_goal_.position.y - robot_y_;
         double distance_to_goal = std::sqrt(dx*dx + dy*dy);
 
         if (distance_to_goal < goal_tolerance_) {
             if (!goal_reached_) {
-                RCLCPP_INFO(this->get_logger(), "Final segment goal reached! Distance: %.3f", distance_to_goal);
                 goal_reached_ = true;
                 
                 auto goal_reached_msg = std_msgs::msg::Bool();
                 goal_reached_msg.data = true;
                 goal_reached_pub_->publish(goal_reached_msg);
                 
-                // Detener el robot brevemente
                 geometry_msgs::msg::Twist cmd_vel;
                 cmd_vel.linear.x = 0.0;
                 cmd_vel.angular.z = 0.0;
@@ -233,8 +212,6 @@ private:
             }
             return;
         }
-        
-        // PURE PURSUIT CON SEGUIMIENTO DE TRAYECTORIA CONTINUA SECUENCIAL
         
         double cte = getCrossTrackError();
         double lookahead_dist = calculateLookaheadDistance(cte, std::abs(robot_linear_vel_));
@@ -247,8 +224,6 @@ private:
         }
 
         publishLookaheadMarker(lookahead_point);
-
-        RCLCPP_INFO(this->get_logger(), "L: %.3f | CTE: %.3f | Idx: %zu", lookahead_dist, cte, current_path_index_);
 
         double target_angle = std::atan2(lookahead_point.y - robot_y_, lookahead_point.x - robot_x_);
         double alpha = normalizeAngle(target_angle - robot_yaw_);
@@ -273,32 +248,22 @@ private:
         cmd_vel.angular.z = angular_vel;
         cmd_vel_pub_->publish(cmd_vel);
 
-        // 5. Actualizar posición del robot (simulación)
-        // updateRobotPose(cmd_vel.linear.x, cmd_vel.angular.z);
-        
-        double curvature = calculateCurvature(lookahead_point);
-
-        RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                    "PurePursuit: Path Index: %zu/%zu, Curvature: %.3f, Lin: %.2f, Ang: %.2f, Dist2Goal: %.3f",
-                    current_path_index_, path_points_.size(), curvature, cmd_vel.linear.x, cmd_vel.angular.z, distance_to_goal);
-
-        // 6. Registrar datos en el archivo de log
         if (data_log_file_.is_open()) {
             double current_time = this->now().seconds();
             
             data_log_file_ << std::fixed << std::setprecision(9)
-                           << current_time << ","             // Tiempo
-                           << robot_x_ << ","                 // Robot X
-                           << robot_y_ << ","                 // Robot Y
-                           << robot_yaw_ << ","               // Robot Yaw
-                           << current_goal_.position.x << "," // Goal X actual
-                           << current_goal_.position.y << "," // Goal Y actual
+                           << current_time << ","             
+                           << robot_x_ << ","                 
+                           << robot_y_ << ","                 
+                           << robot_yaw_ << ","               
+                           << current_goal_.position.x << "," 
+                           << current_goal_.position.y << "," 
                            << lookahead_dist << ","
                            << cte << ","    
                            << current_path_index_ << ","
-                           << distance_to_goal << ","         // Distancia al objetivo
-                           << cmd_vel.linear.x << ","         // Velocidad Lineal enviada
-                           << cmd_vel.angular.z << "\n";      // Velocidad Angular enviada
+                           << distance_to_goal << ","         
+                           << cmd_vel.linear.x << ","         
+                           << cmd_vel.angular.z << "\n";      
         }
     }
 
@@ -324,19 +289,15 @@ private:
 
     double calculateCurvature(const geometry_msgs::msg::Point& lookahead_point)
     {
-        // Transformar punto lookahead al marco del robot
         double rel_x = lookahead_point.x - robot_x_;
         double rel_y = lookahead_point.y - robot_y_;
         
-        // Rotar al marco del robot
         double robot_rel_x = rel_x * cos(robot_yaw_) + rel_y * sin(robot_yaw_);
         double robot_rel_y = -rel_x * sin(robot_yaw_) + rel_y * cos(robot_yaw_);
         
-        // Calcular curvatura (L = distancia al punto lookahead)
         double L = std::sqrt(robot_rel_x*robot_rel_x + robot_rel_y*robot_rel_y);
         
         if (L > 0.001) {
-            // Curvatura = 2 * y_rel_robot / L^2
             return 2.0 * robot_rel_y / (L * L);
         }
         
@@ -376,45 +337,28 @@ private:
         marker.header.stamp = this->now();
         marker.header.frame_id = "map";
         marker.ns = "robot_viz";
-        marker.id = 1; // ID 1 para el robot
+        marker.id = 1; 
         marker.type = visualization_msgs::msg::Marker::SPHERE;
         marker.action = visualization_msgs::msg::Marker::ADD;
         
-        // Posición del robot
         marker.pose.position.x = robot_x_;
         marker.pose.position.y = robot_y_;
-        marker.pose.position.z = 0.0; // Asumimos 2D
+        marker.pose.position.z = 0.0;
         marker.pose.orientation.w = 1.0;
         
-        // Escala
         marker.scale.x = 0.3; 
         marker.scale.y = 0.3; 
         marker.scale.z = 0.3; 
         
-        // Color Azul
         marker.color.r = 0.0; 
         marker.color.g = 0.0;
         marker.color.b = 1.0;
-        marker.color.a = 1.0; // Opaco
+        marker.color.a = 1.0; 
         
         marker.lifetime = rclcpp::Duration::from_seconds(0);
         
         robot_marker_pub_->publish(marker);
     }
-/*
-    void updateRobotPose(double linear_vel, double angular_vel)
-    {
-        double dt = 0.05;
-
-        robot_yaw_ += angular_vel * dt;
-        robot_yaw_ = normalizeAngle(robot_yaw_);
-
-        robot_x_ += linear_vel * cos(robot_yaw_) * dt;
-        robot_y_ += linear_vel * sin(robot_yaw_) * dt;
-    }
-*/
-
-
 
     double normalizeAngle(double angle)
     {
@@ -423,17 +367,15 @@ private:
         return angle;
     }
 
-    // Variables
     double robot_x_, robot_y_, robot_yaw_, robot_linear_vel_;
     geometry_msgs::msg::Pose current_goal_;
     std::vector<geometry_msgs::msg::Point> path_points_;
     bool has_goal_ = false;
     bool has_path_ = false;
     bool goal_reached_ = false;
-    size_t current_path_index_ = 0; // ÍNDICE SECUENCIAL para /waypoints_path
+    size_t current_path_index_ = 0;
     std::ofstream data_log_file_;
     
-    // Parámetros
     double lookahead_distance_;
     double max_linear_vel_;
     double max_angular_vel_;
@@ -443,7 +385,6 @@ private:
     double delta_max_;
     double gamma_;
 
-    // ROS2
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr goal_reached_pub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
