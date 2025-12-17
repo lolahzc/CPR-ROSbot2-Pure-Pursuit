@@ -128,6 +128,32 @@ ros2 topic pub /change_route std_msgs/msg/Int32 "{data: 4}"
 ```
 en el topico de changeroute siendo 4 el número de la ruta seleccionada.
 
+---
+
+## Ejecución alternativa del robot - Automatizado Completamente
+
+Para agilizar el proceso de pruebas se ha creado el script `lanzar_simulacion.sh`. Este script unifica todo el flujo de trabajo en una sola terminal: lanza Gazebo, inicia el controlador Pure Pursuit y, al finalizar, ejecuta automáticamente el análisis de datos.
+
+### Funcionalidades del script
+1. **Entorno:** Carga automáticamente `setup.bash` de ROS 2 y del workspace.
+2. **Ejecución:** Lanza Gazebo y el nodo de Pure Pursuit en segundo plano.
+3. **Gestión de procesos:** Al detener la simulación, se encarga de matar (kill) todos los procesos relacionados para evitar nodos "zombies".
+4. **Análisis automático:** Tras cerrar la simulación, lanza inmediatamente `analyzer_automatico.m` en Octave para mostrar las gráficas del experimento recién concluido.
+
+### Uso
+Primero de todo, tanto `lanzar_simulacion.sh` como `analyzer_automatico.m` tienen que estar en la carpera raíz del proyecto, `/proy_cpr`. Ya que el script realiza los `source` necesarios. Por eso mismo, al lanzar el script desde esa carpeta los logs se guardarán también en dicha ubicación, por lo que el script de análisis también tiene que estar.
+
+Asegúrate de dar permisos de ejecución al script (solo la primera vez):
+```
+chmod +x lanzar_simulacion.sh
+```
+Después, basta con realizar:
+```
+./lanzar_simulacion.sh <numero_de_ruta>
+```
+Esto lanzará todos los launch necesarios del simulador y del nodo de pure_pursuit, asegurándose de esperar un tiempo para que el simulador se lance por completo antes de lanzar el script de control. Cuando termine la simulación, habrá que realizar **Ctrl + C**, para acabar prueba y automaticamente se abrirán las gráficas resultantes del log de la prueba que acaba de terminar. Para cerrar, bastará con pulsar **Enter** en terminal.
+
+Todas estas instrucciones se indican por terminal al lanzar el script. 
 
 ---
 
