@@ -1,18 +1,13 @@
-% --- SELECCIÓN DE ARCHIVO ---
-% Abre una ventana para seleccionar archivos .csv
 [file, path] = uigetfile('*.csv', 'Selecciona el log del robot a analizar');
 
-% Validación de seguridad: Si el usuario cancela, detenemos el script
 if isequal(file, 0)
    disp('Selección cancelada por el usuario.');
    return;
 end
 
-% Construimos la ruta completa
 fullFileName = fullfile(path, file);
 disp(['Analizando archivo: ', fullFileName]);
 
-% Lectura de datos (Mantenemos tu lógica original de csvread)
 try
     data = csvread(fullFileName, 1, 0); % 1,0 salta la cabecera
 catch ME
@@ -56,24 +51,45 @@ grid on;
 % -------------------------------------------------------------------------------
 
 %% Comparativa Temporal (Causa - Efecto)
-figure;
+figure; 
+umbral_val = 0.04; 
+logic_vector = abs(cte) > umbral_val;
+indices_cruces = find(diff(logic_vector) != 0);
+tiempos_cruces = t(indices_cruces);
 
 % Subplot 1
 ax1 = subplot(2,1,1);
-plot(t, abs(cte), 'r-', 'LineWidth', 1.5);
+plot(t, abs(cte), 'r-', 'LineWidth', 1.5); hold on;
+plot(t, umbral_val * ones(size(t)), 'k--', 'LineWidth', 1.2);
+text(t(1), umbral_val * 1.1, 'Umbral 0.05m', 'FontSize', 10, 'Color', 'black');
+
+y_limits_1 = ylim;
+for i = 1:length(tiempos_cruces)
+    tc = tiempos_cruces(i);
+    plot([tc tc], y_limits_1, 'g--', 'LineWidth', 1);
+end
+
 grid on;
 ylabel('|CTE| [m]');
 title('Magnitud del Error Lateral (CTE)');
+legend('Error Actual', 'Umbral', 'Cruce de Umbral');
+hold off;
 
 % Subplot 2
-ax2 = subplot(2,1,2);
+ax2 = subplot(2,1,2);hold on;
 plot(t, v, 'b-', 'LineWidth', 1.5);
+
+y_limits_2 = ylim; % Limites verticales de la gráfica de velocidad
+for i = 1:length(tiempos_cruces)
+    tc = tiempos_cruces(i);
+    plot([tc, tc], y_limits_2, 'g--', 'LineWidth', 1);
+end
+
 grid on;
 xlabel('Tiempo [s]');
 ylabel('Velocidad [m/s]');
 title('Velocidad Lineal del Robot');
 
-% linkaxes funciona bien en general, pero si te da guerra, comentalo
 linkaxes([ax1, ax2], 'x');
 
 % -------------------------------------------------------------------------------

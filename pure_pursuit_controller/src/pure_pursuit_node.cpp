@@ -100,6 +100,7 @@ public:
         robot_yaw_ = 0.0;
         robot_linear_vel_ = 0.0;
 
+        current_vel_cmd_ = 0.0;
 
         control_timer_ = this->create_wall_timer(
             std::chrono::milliseconds(50),
@@ -216,6 +217,7 @@ private:
             cmd_vel.linear.x = 0.0;
             cmd_vel.angular.z = 0.0;
             cmd_vel_pub_->publish(cmd_vel);
+            current_vel_cmd_ = 0.0;
             return;
         }
 
@@ -237,6 +239,8 @@ private:
                 cmd_vel.linear.x = 0.0;
                 cmd_vel.angular.z = 0.0;
                 cmd_vel_pub_->publish(cmd_vel);
+
+                current_vel_cmd_ = 0.0;
             }
             return;
         }
@@ -256,17 +260,25 @@ private:
         double target_angle = std::atan2(lookahead_point.y - robot_y_, lookahead_point.x - robot_x_);
         double alpha = normalizeAngle(target_angle - robot_yaw_);
 
-        double linear_vel = max_linear_vel_;
+        double target_vel = max_linear_vel_;
 
         if (std::abs(cte) > 0.04){
-            linear_vel *= 0.3;
+            target_vel *= 0.30;
         }
 
-        if (distance_to_goal < lookahead_dist){
-            linear_vel *= (distance_to_goal / lookahead_dist);
+        geometry_msgs::msg::Point last_path_point = path_points_.back();
+        double dist_lookahead_to_end = std::hypot(lookahead_point.x - last_path_point.x, 
+                                                  lookahead_point.y - last_path_point.y);
+        bool is_aiming_last_point = (dist_lookahead_to_end < 0.01);
+        if (is_aiming_last_point && distance_to_goal < lookahead_dist){
+            target_vel *= (distance_to_goal / lookahead_dist);
         }
 
-        linear_vel = std::max(0.1, linear_vel);
+        target_vel = std::max(0.1, target_vel);
+
+        current_vel_cmd_ = (current_vel_cmd_ * 0.5) + (target_vel * 0.5);
+
+        double linear_vel = current_vel_cmd_;
 
         double angular_vel = (2.0 * linear_vel * std::sin(alpha)) / lookahead_dist;
         angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
@@ -412,6 +424,8 @@ private:
     double delta_min_;
     double delta_max_;
     double gamma_;
+
+    double current_vel_cmd_;
 
     int selected_route_;
 
