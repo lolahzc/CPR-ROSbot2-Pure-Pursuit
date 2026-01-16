@@ -23,6 +23,12 @@ def generate_launch_description():
                 'lookahead_max': 1.0,
                 'lookahead_gamma': 25.0,
 
+                'bubble_base_radius': 0.5,
+                'critical_distance': 0.25,
+                'detour_offset': 1.0,
+                'rejoin_distance': 2.0,
+                'forward_offset': 0.5,
+
                 'selected_route': selected_route
             }]
         ),

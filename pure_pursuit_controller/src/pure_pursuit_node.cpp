@@ -40,8 +40,9 @@ public:
         // --- PARÁMETROS DE EVASIÓN ---
         this->declare_parameter("bubble_base_radius", 0.5);
         this->declare_parameter("critical_distance", 0.25);
-        this->declare_parameter("detour_offset", 1.0); 
-        this->declare_parameter("rejoin_distance", 2.0); 
+        this->declare_parameter("detour_offset", 1.0);
+        this->declare_parameter("rejoin_distance", 2.0);
+        this->declare_parameter("forward_offset", 0.5);
 
         // Lectura de parámetros
         selected_route_ = this->get_parameter("selected_route").as_int();
@@ -53,6 +54,7 @@ public:
         critical_distance_ = this->get_parameter("critical_distance").as_double();
         detour_offset_ = this->get_parameter("detour_offset").as_double();
         rejoin_distance_ = this->get_parameter("rejoin_distance").as_double();
+        forward_offset_ = this->get_parameter("forward_offset").as_double();
 
         delta_min_ = this->get_parameter("lookahead_min").as_double();
         delta_max_ = this->get_parameter("lookahead_max").as_double();
@@ -274,14 +276,13 @@ private:
         double perp_x = -heading_y * side_sign;
         double perp_y = heading_x * side_sign;
 
-        double forward_offset = 0.5;
         geometry_msgs::msg::Point p_start;
         p_start.x = robot_x_; 
         p_start.y = robot_y_;
 
         geometry_msgs::msg::Point p_apex;
-        p_apex.x = robot_x_ + (heading_x * forward_offset) + (perp_x * detour_offset_);
-        p_apex.y = robot_y_ + (heading_y * forward_offset) + (perp_y * detour_offset_);
+        p_apex.x = robot_x_ + (heading_x * forward_offset_) + (perp_x * detour_offset_);
+        p_apex.y = robot_y_ + (heading_y * forward_offset_) + (perp_y * detour_offset_);
 
         size_t rejoin_idx = current_path_index_;
         bool found_rejoin = false;
@@ -591,7 +592,7 @@ private:
     double lookahead_distance_, max_linear_vel_, max_angular_vel_, goal_tolerance_;
     double delta_min_, delta_max_, gamma_;
     double bubble_base_radius_, critical_distance_;
-    double detour_offset_, rejoin_distance_;
+    double detour_offset_, rejoin_distance_, forward_offset_;
     int selected_route_;
     
     double current_vel_cmd_;
