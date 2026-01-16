@@ -257,7 +257,7 @@ private:
 
         double left_obst_weight = 0;
         double right_obst_weight = 0;
-        double fov = 90.0 * M_PI / 180.0;
+        double fov = 190.0 * M_PI / 180.0;
 
         for (size_t i = 0; i < last_scan_->ranges.size(); ++i) {
             double r = last_scan_->ranges[i];
