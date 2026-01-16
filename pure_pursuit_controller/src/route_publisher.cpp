@@ -179,7 +179,18 @@ private:
                 {2.4, 1.0, 0.0},
                 {3.0, -0.6, 0.0},     
             };
-            break;          
+            break;     
+            
+        case 8: // obtaculo
+   		    original_waypoints_ = {
+                {-0.5, 0.0, 0.0},
+                {0.0, -5.0, 0.0},
+                {-3.0, -5.0, 0.0},
+                {-6.5,-5.0, 0.0},
+                {-8.0,-3.5, 0.0},
+                {-6.0,-1.5, 0.0}
+            };  
+            break;    
 
         default:
             selected_route_ = 1;
@@ -226,7 +237,7 @@ private:
 
         for (size_t i = 0; i < original_waypoints_.size(); ++i) {
             double t = static_cast<double>(i) / (original_waypoints_.size() - 1);
-            int index = static_cast<int>(t * total_points);
+            size_t index = static_cast<size_t>(t * total_points); 
             if (index < spline_waypoints_.size()) {
                 spline_waypoints_[index] = original_waypoints_[i];
             }

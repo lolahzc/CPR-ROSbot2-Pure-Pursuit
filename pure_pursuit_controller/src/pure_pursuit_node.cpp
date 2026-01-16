@@ -10,6 +10,7 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <visualization_msgs/msg/marker.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <cmath>
 #include <vector>
 #include <algorithm> 
@@ -36,10 +37,29 @@ public:
 
         selected_route_ = this->get_parameter("selected_route").as_int();
         
+        // --- PARÁMETROS DE LA BURBUJA SENSIBLE (NUEVOS) ---
+        // Radio base: Zona de seguridad mínima cuando el robot está quieto
+        this->declare_parameter("bubble_base_radius", 0.30);
+        // Factor de velocidad: Cuánto crece la burbuja por cada m/s (R = Base + Factor * Vel)
+        this->declare_parameter("bubble_speed_factor", 1.0);
+        // Ganancia repulsiva: Cuánto gira el robot para evitar el obstáculo
+        this->declare_parameter("repulsive_gain", 2.0);
+        // Distancia crítica: Si algo entra aquí, paramos (EMERGENCY)
+        this->declare_parameter("critical_distance", 0.20);
+        // Campo de visión de la burbuja (para no asustarse por cosas detrás)
+        this->declare_parameter("bubble_fov_degrees", 190.0);
+        
+        // Lectura de parámetros
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         max_linear_vel_ = this->get_parameter("max_linear_vel").as_double();
         max_angular_vel_ = this->get_parameter("max_angular_vel").as_double();
         goal_tolerance_ = this->get_parameter("goal_tolerance").as_double();
+        
+        bubble_base_radius_ = this->get_parameter("bubble_base_radius").as_double();
+        bubble_speed_factor_ = this->get_parameter("bubble_speed_factor").as_double();
+        repulsive_gain_ = this->get_parameter("repulsive_gain").as_double();
+        critical_distance_ = this->get_parameter("critical_distance").as_double();
+        scan_fov_rad_ = (this->get_parameter("bubble_fov_degrees").as_double()) * M_PI / 180.0;
 
         delta_min_ = this->get_parameter("lookahead_min").as_double();
         delta_max_ = this->get_parameter("lookahead_max").as_double();
@@ -50,6 +70,10 @@ public:
         odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
         goal_reached_pub_ = this->create_publisher<std_msgs::msg::Bool>("/goal_reached", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/lookahead_marker", 10);
+        cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+        
+        // [NUEVO] Visualización de la burbuja en RViz
+        bubble_viz_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/bubble_viz", 10);
 
         goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
             "/goal_pose", 10,
@@ -62,6 +86,10 @@ public:
         odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "/odometry/filtered", 10,  
             std::bind(&PurePursuitNode::odomCallback, this, std::placeholders::_1)); 
+
+        scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+            "/scan", rclcpp::SensorDataQoS(),
+            std::bind(&PurePursuitNode::scanCallback, this, std::placeholders::_1));
 
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
         robot_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/robot_marker", 10);
@@ -109,31 +137,37 @@ public:
     }
 
 private:
-    void goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
-    {
+    // --- MÁQUINA DE ESTADOS ACTUALIZADA ---
+    enum class AvoidanceState { 
+        NORMAL,           // Pure Pursuit sin obstáculos
+        BUBBLE_AVOIDANCE, // Obstáculo detectado en la burbuja (Evasión suave)
+        EMERGENCY         // Obstáculo crítico (Parada)
+    };
+
+    void goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
         current_goal_ = msg->pose;
         has_goal_ = true;
         goal_reached_ = false;
     }
 
-    void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
-    {
+    void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
         robot_x_ = msg->pose.pose.position.x;
         robot_y_ = msg->pose.pose.position.y;
 
         robot_linear_vel_ = msg->twist.twist.linear.x;
         
         tf2::Quaternion q(
-            msg->pose.pose.orientation.x,
-            msg->pose.pose.orientation.y,
-            msg->pose.pose.orientation.z,
-            msg->pose.pose.orientation.w);
-            
+            msg->pose.pose.orientation.x, msg->pose.pose.orientation.y,
+            msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
         tf2::Matrix3x3 m(q);
         double roll, pitch;
         m.getRPY(roll, pitch, robot_yaw_);
-        
         robot_yaw_ = normalizeAngle(robot_yaw_);
+    }
+
+    void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
+    {
+        last_scan_ = msg;
     }
 
     void pathCallback(const geometry_msgs::msg::PoseArray::SharedPtr msg)
@@ -296,7 +330,31 @@ private:
         geometry_msgs::msg::Twist cmd_vel;
         cmd_vel.linear.x = linear_vel;
         cmd_vel.angular.z = angular_vel;
-        cmd_vel_pub_->publish(cmd_vel);
+
+        updateAvoidanceState();
+
+        geometry_msgs::msg::Twist final_cmd;
+
+        switch (avoidance_state_) {
+            case AvoidanceState::NORMAL:
+                // Si estamos normal, pasamos el comando de Pure Pursuit tal cual
+                final_cmd = cmd_vel;
+                break;
+
+            case AvoidanceState::BUBBLE_AVOIDANCE:
+                // Aplicamos la evasión de la burbuja
+                // Calculamos fuerza repulsiva y modificamos el comando PP
+                final_cmd = applyBubbleRepulsion(cmd_vel);
+                break;
+
+            case AvoidanceState::EMERGENCY:
+                // Parada de seguridad
+                final_cmd.linear.x = 0.0;
+                final_cmd.angular.z = 0.0;
+                break;
+        }
+
+        cmd_vel_pub_->publish(final_cmd);
 
         if (data_log_file_.is_open()) {
             double current_time = this->now().seconds();
@@ -316,7 +374,121 @@ private:
                            << cmd_vel.angular.z << ","         
                            << curv << "\n";    
         }
+
+        double current_radius = bubble_base_radius_ + (bubble_speed_factor_ * std::abs(robot_linear_vel_));
+        publishBubbleViz(current_radius);
+
     }
+
+
+    void updateAvoidanceState()
+    {
+        if (!last_scan_) return;
+
+        double current_radius = bubble_base_radius_ + (bubble_speed_factor_ * std::abs(robot_linear_vel_));
+        double min_dist_in_fov = 999.0;
+        bool obstacle_in_bubble = false;
+        double half_fov = scan_fov_rad_ / 2.0;
+
+        for (size_t i = 0; i < last_scan_->ranges.size(); ++i) {
+            double r = last_scan_->ranges[i];
+            if (std::isnan(r) || std::isinf(r) || r < 0.1) continue;
+
+            // TU CÁLCULO DE ÁNGULO (CÓDIGO 1) + PI
+            double angle = normalizeAngle(last_scan_->angle_min + i * last_scan_->angle_increment + M_PI);
+
+            // Solo miramos en el FOV frontal
+            if (std::abs(angle) > half_fov) continue;
+
+            if (r < min_dist_in_fov) min_dist_in_fov = r;
+
+            if (r < current_radius) {
+                obstacle_in_bubble = true;
+            }
+        }
+
+        // Lógica de transición de estados
+        if (min_dist_in_fov < critical_distance_) {
+            avoidance_state_ = AvoidanceState::EMERGENCY;
+        } else if (obstacle_in_bubble) {
+            avoidance_state_ = AvoidanceState::BUBBLE_AVOIDANCE;
+        } else {
+            avoidance_state_ = AvoidanceState::NORMAL;
+        }
+    }
+
+    geometry_msgs::msg::Twist applyBubbleRepulsion(geometry_msgs::msg::Twist pp_cmd)
+    {
+        geometry_msgs::msg::Twist mod_cmd = pp_cmd;
+        
+        if (!last_scan_) return mod_cmd;
+
+        double current_radius = bubble_base_radius_ + (bubble_speed_factor_ * std::abs(robot_linear_vel_));
+        
+        double repulsion_x = 0.0;
+        double repulsion_y = 0.0;
+        double total_weight = 0.0; 
+
+        // Calcular vector repulsivo
+        for (size_t i = 0; i < last_scan_->ranges.size(); ++i) {
+            double r = last_scan_->ranges[i];
+
+            // Filtro básico de validez y chasis
+            if (std::isnan(r) || std::isinf(r) || r < 0.1) continue;
+
+            // Si está dentro de la burbuja
+            if (r < current_radius) {
+                
+                // TU CÁLCULO DE ÁNGULO (Correcto con + PI)
+                double angle = normalizeAngle(last_scan_->angle_min + i * last_scan_->angle_increment + M_PI);
+
+                // --- PONDERACIÓN CUADRÁTICA (Inverse Distance Weighting) ---
+                // Damos muchísima más fuerza a los objetos cercanos que a los lejanos.
+                // Fórmula: (1 - (dist / radio))^3
+                double weight = (current_radius - r) / current_radius;
+                weight = weight * weight * weight; // Al cubo para ser muy agresivo con lo cercano
+                
+                // Acumulamos el vector opuesto ponderado
+                repulsion_x -= std::cos(angle) * weight;
+                repulsion_y -= std::sin(angle) * weight;
+                
+                total_weight += weight;
+            }
+        }    
+
+        // Si hay obstáculos significativos (peso acumulado > 0)
+        if (total_weight > 0.001) {
+            // Normalizamos el vector repulsivo por el peso total
+            repulsion_x /= total_weight;
+            repulsion_y /= total_weight;
+
+            // Calcular ángulo de evasión resultante
+            double avoidance_angle = std::atan2(repulsion_y, repulsion_x);
+
+            // --- FUSIÓN DINÁMICA: Pure Pursuit + Repulsión ---
+            
+            // 1. Ganancia dinámica: 
+            // Si total_weight es bajo (pocos obstáculos/lejos), giramos poco.
+            // Si total_weight es alto (obstáculos cerca/densos), giramos mucho (hasta un tope de 4.0).
+            double dynamic_gain = std::min(repulsive_gain_ + total_weight, 4.0);
+            
+            // Mezcla: 40% Pure Pursuit, 60% Evasión (ajustado por la ganancia)
+            mod_cmd.angular.z = (pp_cmd.angular.z * 0.4) + (avoidance_angle * dynamic_gain * 0.6);
+            
+            // 2. Frenado inteligente:
+            // Cuanto mayor sea la densidad de obstáculos (total_weight), más frenamos.
+            // clamp asegura que no bajemos del 10% de la velocidad original.
+            double slow_down_factor = std::clamp(1.0 - total_weight, 0.1, 1.0);
+            mod_cmd.linear.x = pp_cmd.linear.x * slow_down_factor;
+        }
+
+        // Saturación final de seguridad para no exceder límites del robot
+        mod_cmd.angular.z = std::clamp(mod_cmd.angular.z, -max_angular_vel_, max_angular_vel_);
+        
+        return mod_cmd;
+    }
+
+
 
     bool findLookaheadPoint(double dynamic_lookahead_dist ,geometry_msgs::msg::Point& lookahead_point)
    {
@@ -353,6 +525,20 @@ private:
         }
         
         return 0.0;
+    }
+
+    void publishBubbleViz(double radius) {
+        auto m = visualization_msgs::msg::Marker();
+        m.header.frame_id = "base_link"; m.header.stamp = now();
+        m.ns = "bubble"; m.id = 1; m.type = 3; m.action = 0;
+        m.scale.x = radius * 2.0; m.scale.y = radius * 2.0; m.scale.z = 0.05;
+        
+        // Color según estado
+        if (avoidance_state_ == AvoidanceState::NORMAL) { m.color.g = 1.0; m.color.b = 1.0; m.color.a = 0.2; }
+        else if (avoidance_state_ == AvoidanceState::BUBBLE_AVOIDANCE) { m.color.r = 1.0; m.color.g = 1.0; m.color.a = 0.4; }
+        else { m.color.r = 1.0; m.color.a = 0.6; }
+        
+        bubble_viz_pub_->publish(m);
     }
 
     void publishLookaheadMarker(const geometry_msgs::msg::Point& point)
@@ -426,6 +612,7 @@ private:
     bool goal_reached_ = false;
     size_t current_path_index_ = 0;
     std::ofstream data_log_file_;
+    sensor_msgs::msg::LaserScan::SharedPtr last_scan_;
     
     double lookahead_distance_;
     double max_linear_vel_;
@@ -440,24 +627,26 @@ private:
 
     int selected_route_;
 
+    double bubble_base_radius_, bubble_speed_factor_, repulsive_gain_, critical_distance_, scan_fov_rad_;
+
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr goal_reached_pub_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_, bubble_viz_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseArray>::SharedPtr path_sub_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
-    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    rclcpp::TimerBase::SharedPtr control_timer_;
-    rclcpp::TimerBase::SharedPtr tf_timer_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    rclcpp::TimerBase::SharedPtr control_timer_, tf_timer_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr robot_marker_pub_;
+
+    AvoidanceState avoidance_state_ = AvoidanceState::NORMAL;
 };
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<PurePursuitNode>();
-    rclcpp::spin(node);
+    rclcpp::spin(std::make_shared<PurePursuitNode>());
     rclcpp::shutdown();
     return 0;
 }
