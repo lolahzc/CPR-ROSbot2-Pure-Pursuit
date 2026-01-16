@@ -40,7 +40,7 @@ public:
         // --- PARÁMETROS DE EVASIÓN ---
         this->declare_parameter("bubble_base_radius", 0.5);
         this->declare_parameter("critical_distance", 0.25);
-        this->declare_parameter("detour_offset", 0.6); 
+        this->declare_parameter("detour_offset", 1.0); 
         this->declare_parameter("rejoin_distance", 2.0); 
 
         // Lectura de parámetros
@@ -87,7 +87,7 @@ public:
             "/scan", rclcpp::SensorDataQoS(),
             std::bind(&PurePursuitNode::scanCallback, this, std::placeholders::_1));
 
-        // --- CONFIGURACIÓN DE LOGS (Corregido para Octave) ---
+        // --- CONFIGURACIÓN DE LOGS ---
         std::string base_name;
         switch(selected_route_) {
             case 1: base_name = "ruta_defecto"; break;
@@ -110,7 +110,6 @@ public:
         data_log_file_.open(final_filename);
 
         if (data_log_file_.is_open()) {
-            // Header extendido (13 columnas) para coincidir con lo que espera tu script
             data_log_file_ << "time,robot_x,robot_y,robot_yaw,goal_x,goal_y,lookahead,dist_error,path_index,dist_goal,linear_v,angular_w,curvature\n";
         } else {
             RCLCPP_ERROR(this->get_logger(), "No se pudo crear el archivo de log: %s", final_filename.c_str());
@@ -275,7 +274,7 @@ private:
         double perp_x = -heading_y * side_sign;
         double perp_y = heading_x * side_sign;
 
-        double forward_offset = 0.8;
+        double forward_offset = 0.5;
         geometry_msgs::msg::Point p_start;
         p_start.x = robot_x_; 
         p_start.y = robot_y_;
@@ -413,12 +412,17 @@ private:
         double angular_vel = (2.0 * current_vel_cmd_ * std::sin(alpha)) / lookahead_dist;
         angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
 
-        double dist_to_goal = std::hypot(current_goal_.position.x - robot_x_, current_goal_.position.y - robot_y_);
-        
-        // --- GUARDADO DE LOGS (Corregido: 13 columnas) ---
+        // --- CAMBIO CLAVE AQUÍ ---
+        // Ignoramos 'current_goal_' para la parada. Calculamos distancia al ÚLTIMO punto de la ruta.
+        double dist_to_end = 999.9;
+        if (!path_points_.empty()) {
+             auto last_p = path_points_.back();
+             dist_to_end = std::hypot(last_p.x - robot_x_, last_p.y - robot_y_);
+        }
+
+        // --- GUARDADO DE LOGS ---
         if (data_log_file_.is_open()) {
             double current_time = this->now().seconds();
-            
             data_log_file_ << std::fixed << std::setprecision(9)
                            << current_time << ","             
                            << robot_x_ << ","                 
@@ -426,16 +430,17 @@ private:
                            << robot_yaw_ << ","               
                            << current_goal_.position.x << "," 
                            << current_goal_.position.y << "," 
-                           << lookahead_dist << ","   // Col 7
-                           << cte << ","              // Col 8
-                           << current_path_index_ << "," // Col 9
-                           << dist_to_goal << ","     // Col 10 (Lo que busca Octave)
-                           << current_vel_cmd_ << "," // Col 11
-                           << angular_vel << ","      // Col 12
-                           << curv << "\n";           // Col 13
+                           << lookahead_dist << ","   
+                           << cte << ","              
+                           << current_path_index_ << "," 
+                           << dist_to_end << ","      // Guardamos la distancia real al final, no al waypoint intermedio
+                           << current_vel_cmd_ << "," 
+                           << angular_vel << ","      
+                           << curv << "\n";           
         }
 
-        if (dist_to_goal < goal_tolerance_) {
+        // Condición de parada basada en el FINAL DE LA RUTA
+        if (dist_to_end < goal_tolerance_) {
             if (!goal_reached_) {
                 goal_reached_ = true;
                 std_msgs::msg::Bool msg; msg.data = true;
@@ -487,49 +492,46 @@ private:
     }
 
     void publishBubbleViz(double radius) {
-    auto m = visualization_msgs::msg::Marker();
-    m.header.frame_id = "map"; // Cambiar a "map"
-    m.header.stamp = now();
-    
-    // ¡ESTO ES LO QUE FALTABA!
-    m.pose.position.x = robot_x_;
-    m.pose.position.y = robot_y_;
-    m.pose.position.z = 0.0; // Elevarlo un poco para que se vea
-    m.pose.orientation.w = 1.0;
-    
-    m.ns = "bubble"; 
-    m.id = 1; 
-    m.type = visualization_msgs::msg::Marker::SPHERE; // Tipo 6 es mejor que 3 (SPHERE)
-    m.action = 0;
-    
-    m.scale.x = radius * 2.0; 
-    m.scale.y = radius * 2.0; 
-    m.scale.z = 0.05; // Más alto para que se vea mejor
-    
-    // Color según estado
-    if (avoidance_state_ == AvoidanceState::NORMAL) { 
-        m.color.r = 0.0;
-        m.color.g = 1.0; 
-        m.color.b = 1.0; 
-        m.color.a = 0.3; 
-    }
-    else if (avoidance_state_ == AvoidanceState::OBSTACLE_DETECTED) { 
-        m.color.r = 1.0; 
-        m.color.g = 0.65; 
-        m.color.b = 0.0;
-        m.color.a = 0.5; 
-    }
-    else { 
-        m.color.r = 1.0; 
-        m.color.g = 0.0;
-        m.color.b = 0.0;
-        m.color.a = 0.7; 
-    }
-    
-    m.lifetime = rclcpp::Duration::from_seconds(0);
-    
-    bubble_viz_pub_->publish(m);
-}
+        auto m = visualization_msgs::msg::Marker();
+        m.header.frame_id = "map"; // Cambiar a "map"
+        m.header.stamp = now();
+        // ¡ESTO ES LO QUE FALTABA!
+        m.pose.position.x = robot_x_;
+        m.pose.position.y = robot_y_;
+        m.pose.position.z = 0.0; // Elevarlo un poco para que se vea
+        m.pose.orientation.w = 1.0;
+        m.ns = "bubble"; 
+        m.id = 1; 
+        m.type = visualization_msgs::msg::Marker::SPHERE; // Tipo 6 es mejor que 3 (SPHERE)
+        m.action = 0;
+        m.scale.x = radius * 2.0; 
+        m.scale.y = radius * 2.0; 
+        m.scale.z = 0.05; // Más alto para que se vea mejor
+
+        if (avoidance_state_ == AvoidanceState::NORMAL) { 
+            m.color.r = 0.0;
+            m.color.g = 1.0; 
+            m.color.b = 1.0; 
+            m.color.a = 0.3; 
+        }
+
+
+        else if (avoidance_state_ == AvoidanceState::OBSTACLE_DETECTED) { 
+            m.color.r = 1.0; 
+            m.color.g = 0.65; 
+            m.color.b = 0.0;
+            m.color.a = 0.5; 
+        }
+        else { 
+            m.color.r = 1.0; 
+            m.color.g = 0.0;
+            m.color.b = 0.0;
+            m.color.a = 0.7; 
+        }
+
+        m.lifetime = rclcpp::Duration::from_seconds(0);
+        bubble_viz_pub_->publish(m);
+        }
 
     void publishLookaheadMarker(const geometry_msgs::msg::Point& point) {
         auto marker = visualization_msgs::msg::Marker();
