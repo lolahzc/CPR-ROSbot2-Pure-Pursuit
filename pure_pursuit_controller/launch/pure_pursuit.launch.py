@@ -21,7 +21,9 @@ def generate_launch_description():
 
                 'lookahead_min': 0.3,
                 'lookahead_max': 1.0,
-                'lookahead_gamma': 25.0
+                'lookahead_gamma': 25.0,
+
+                'selected_route': selected_route
             }]
         ),
 
