@@ -34,7 +34,6 @@ El controlador principal ha sido extendido para incluir la lógica de evasión d
 
 ---
 
-<<<<<<< HEAD
 ## Instrucciones instalación
 He hecho la instalación oficial de los paquetes y lo he subido todo en local sin ningún paquete embebido para mayor comodidad al trabajar juntos en paralelo.
 
@@ -73,13 +72,9 @@ Os recomiendo añadiros esto en el .bashrc para no tener que hacerlo cada vez qu
 ```
 ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 ```
-=======
-### `route_publisher.cpp` (Gestión de Trayectorias)
->>>>>>> obstaculo
 
 El `route_publisher` define, interpole (mediante **Splines Cúbicos Naturales**) y publica las trayectorias.
 
-<<<<<<< HEAD
 ---
 
 ## Paquete creado
@@ -109,18 +104,6 @@ Se ha creado una configuración de Rvizz para visualizar el comportamiento del r
 Se ha creado un código de matlab ejecutable en Octave para analizar el comportamiento del robot, tanto en simulación como en la vida real. Su nombre es analyzer.m
 
 Se han empleado grabaciones de rosbag que se han analizado con foxglove para comprobar el comportamiento del robot en la vida real
-=======
-| Ruta (`selected_route`) | Nombre | Descripción |
-| :--- | :--- | :--- |
-| 1 | Original “Lola” | Ruta inicial de prueba. |
-| 2 | Línea recta | Avanza en línea recta. |
-| 3 | Zigzag | Movimiento en zigzag. |
-| 4 | Ocho | Trayectoria en forma de ocho. |
-| 5 | Espiral | Movimiento en espiral. |
-| 6 | Curvas amplias | Curvas amplias que ocupan todo el plano. |
-| 7 | Curvas cerradas | Curvas cerradas de distinto radio. |
-| **8** | **Curva obstáculo** | **Ruta creada para la prueba de evasión (rodeando la pared).** |
->>>>>>> obstaculo
 
 ---
 
@@ -132,7 +115,6 @@ Ejecutar la compilación (desde el directorio raíz del espacio de trabajo, ej. 
 
 ```bash
 colcon build --symlink-install --packages-up-to rosbot --cmake-args -DCMAKE_BUILD_TYPE=Release
-<<<<<<< HEAD
 ```
 
 Cargar el entorno y lanzar el nodo Pure Pursuit (despues de haber compilado):
@@ -222,12 +204,14 @@ Contraseña: husarion
 
 El siguiente paso es comprobar la versión del proyecto que está subida en el robot. Para ello, en la carpeta home/husarion está clonado este repositorio y sólo habría que copiar los archivos de esta carpeta a la home/husarion/proy_cpr/src. Esto se hace con:
 ```bash
-cp -r home/husarion/CPR-ROSbot2-Pure-Pursuit/pure_pursuit_controller home/husarion/proy_cpr/src
+cp -r ~/CPR-ROSbot2-Pure-Pursuit/pure_pursuit_controller ~/proy_cpr/src
 ```
 
 Después hay que compilar, pero para no hacerlo todo se puede hacer :
 ```bash
 cd home/husarion/proy_cpr
+```
+```bash
 colcon build --packages-select pure_pursuit_controller
 ```
 
@@ -248,5 +232,8 @@ Además, si se quiere crear un rosbag de lo que está pasando para analizarlo po
 ```bash
 ros2 bag record -a -o <nombre del archivo>
 ```
-=======
->>>>>>> obstaculo
+
+Para copiar los logs del robot al portátil para analizarlos hay que hacer, en nuestro portátil (cambiando la fecha del log para seleccionar el que se quiere):
+```bash
+ssh husarion@10.13.222.163:~/proy_cpr/ruta_defecto_2026-01-16_10-25-36.csv .
+```
