@@ -487,19 +487,49 @@ private:
     }
 
     void publishBubbleViz(double radius) {
-        auto m = visualization_msgs::msg::Marker();
-        m.header.frame_id = "base_link"; m.header.stamp = now();
-        m.ns = "bubble"; m.id = 1; m.type = 3; m.action = 0;
-        m.scale.x = radius * 2.0; m.scale.y = radius * 2.0; m.scale.z = 0.05;
-        if (avoidance_state_ == AvoidanceState::OBSTACLE_DETECTED) { 
-            m.color.r = 1.0; m.color.g = 0.5; m.color.a = 0.4;
-        } else if (avoidance_state_ == AvoidanceState::EMERGENCY) {
-             m.color.r = 1.0; m.color.a = 0.6;
-        } else {
-            m.color.g = 1.0; m.color.a = 0.2;
-        }
-        bubble_viz_pub_->publish(m);
+    auto m = visualization_msgs::msg::Marker();
+    m.header.frame_id = "map"; // Cambiar a "map"
+    m.header.stamp = now();
+    
+    // ¡ESTO ES LO QUE FALTABA!
+    m.pose.position.x = robot_x_;
+    m.pose.position.y = robot_y_;
+    m.pose.position.z = 0.0; // Elevarlo un poco para que se vea
+    m.pose.orientation.w = 1.0;
+    
+    m.ns = "bubble"; 
+    m.id = 1; 
+    m.type = visualization_msgs::msg::Marker::SPHERE; // Tipo 6 es mejor que 3 (SPHERE)
+    m.action = 0;
+    
+    m.scale.x = radius * 2.0; 
+    m.scale.y = radius * 2.0; 
+    m.scale.z = 0.05; // Más alto para que se vea mejor
+    
+    // Color según estado
+    if (avoidance_state_ == AvoidanceState::NORMAL) { 
+        m.color.r = 0.0;
+        m.color.g = 1.0; 
+        m.color.b = 1.0; 
+        m.color.a = 0.3; 
     }
+    else if (avoidance_state_ == AvoidanceState::OBSTACLE_DETECTED) { 
+        m.color.r = 1.0; 
+        m.color.g = 0.65; 
+        m.color.b = 0.0;
+        m.color.a = 0.5; 
+    }
+    else { 
+        m.color.r = 1.0; 
+        m.color.g = 0.0;
+        m.color.b = 0.0;
+        m.color.a = 0.7; 
+    }
+    
+    m.lifetime = rclcpp::Duration::from_seconds(0);
+    
+    bubble_viz_pub_->publish(m);
+}
 
     void publishLookaheadMarker(const geometry_msgs::msg::Point& point) {
         auto marker = visualization_msgs::msg::Marker();
