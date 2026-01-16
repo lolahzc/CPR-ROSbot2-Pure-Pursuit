@@ -237,3 +237,7 @@ Para copiar los logs del robot al portátil para analizarlos hay que hacer, en n
 ```bash
 ssh husarion@10.13.222.163:~/proy_cpr/ruta_defecto_2026-01-16_10-25-36.csv .
 ```
+Para resetear la posición del robot:
+```bash
+ros2 topic pub --once /set_pose geometry_msgs/msg/PoseWithCovarianceStamped "{header: {frame_id: 'odom'}, pose: {pose: {position: {x: 0.0, y: 0.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}"
+```
