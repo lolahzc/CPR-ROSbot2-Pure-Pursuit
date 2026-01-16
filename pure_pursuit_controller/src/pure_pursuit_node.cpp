@@ -301,8 +301,8 @@ private:
         double cmd_curva = 1.0-std::abs(curv)/8.0;
 
 
-        cmd_curva = std::clamp(cmd_curva, 0.01, 1.0);
-        cmd_cte = std::clamp(cmd_cte, 0.01, 1.0);
+        cmd_curva = std::clamp(cmd_curva, 0.1, 1.0);
+        cmd_cte = std::clamp(cmd_cte, 0.1, 1.0);
 
         // Calcular el comando de velocidad
         current_vel_cmd_ = max_linear_vel_ * cmd_curva * cmd_cte;
