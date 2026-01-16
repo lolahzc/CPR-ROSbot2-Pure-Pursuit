@@ -235,7 +235,7 @@ ros2 bag record -a -o <nombre del archivo>
 
 Para copiar los logs del robot al portátil para analizarlos hay que hacer, en nuestro portátil (cambiando la fecha del log para seleccionar el que se quiere):
 ```bash
-ssh husarion@10.13.222.163:~/proy_cpr/ruta_defecto_2026-01-16_10-25-36.csv .
+scp husarion@10.13.222.163:~/proy_cpr/ruta_defecto_2026-01-16_10-25-36.csv .
 ```
 Para resetear la posición del robot:
 ```bash
