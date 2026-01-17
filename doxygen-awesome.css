@@ -368,7 +368,18 @@ a.anchor {
 
 @media screen and (max-width: 767px) {
     #titlearea {
-        padding-bottom: var(--spacing-small);
+        padding-bottom: 45px !important;
+    }
+    /* Reposicionar el buscador debajo del título */
+    #MSearchBox {
+        position: absolute !important;
+        top: auto !important;
+        bottom: 5px !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        margin-top: 0 !important;
+        box-sizing: border-box;
     }
 }
 
@@ -550,7 +561,7 @@ a.anchor {
 
 /*
  Search box
- */
+ 
 
 #MSearchBox {
     height: var(--searchbar-height);
@@ -563,9 +574,9 @@ a.anchor {
     box-shadow: none;
     display: block;
     margin-top: 0;
-    margin-right: 0;
+    margin-right: auto;
 }
-
+*/
 @media (min-width: 768px) {
     .sm-dox li {
         padding: 0;
