@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['obstacle_5fdetected_5f_0',['obstacle_detected_',['../class_pure_pursuit_node.html#a9aa77097ad49d65f4b71327ecb877ac4',1,'PurePursuitNode']]],
-  ['obstacle_5fdistance_5fthreshold_5f_1',['obstacle_distance_threshold_',['../class_pure_pursuit_node.html#a679b0c38dd51727b1a201bf13625aea1',1,'PurePursuitNode']]],
+  ['obstáculos_0',['Sistema de Evasión de Obstáculos',['../index.html#autotoc_md49',1,'']]],
+  ['obstacle_5fdetected_1',['OBSTACLE_DETECTED',['../class_pure_pursuit_node.html#abf850824711763560fdb8e2aa3d96efcae98f9b8adc7dc0064c497fefa3dbfbcb',1,'PurePursuitNode']]],
   ['odom_5fpub_5f_2',['odom_pub_',['../class_pure_pursuit_node.html#ad440b6fd57c448cbdd29c041be3761d9',1,'PurePursuitNode']]],
   ['odom_5fsub_5f_3',['odom_sub_',['../class_pure_pursuit_node.html#a289ddd847264fe6a7f40b9ee9a93cb50',1,'PurePursuitNode']]],
   ['odomcallback_4',['odomCallback',['../class_pure_pursuit_node.html#aee0c64992783ccda10e0a663a60fd1c1',1,'PurePursuitNode']]],

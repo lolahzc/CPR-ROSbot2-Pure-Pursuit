@@ -108,13 +108,12 @@ $(function(){initNavTree('class_pure_pursuit_node.html',''); initResizable(true)
 <a href="#pub-methods">Métodos públicos</a> &#124;
 <a href="#pri-types">Tipos privados</a> &#124;
 <a href="#pri-methods">Métodos privados</a> &#124;
-<a href="#pri-attribs">Atributos privados</a> &#124;
 <a href="class_pure_pursuit_node-members.html">Lista de todos los miembros</a>  </div>
   <div class="headertitle"><div class="title">Referencia de la clase PurePursuitNode</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Controlador Pure Pursuit con evasión.  
+<p>Nodo ROS 2 para control de navegación mediante Pure Pursuit con evasión de obstáculos.  
  <a href="#details">Más...</a></p>
 <div class="dynheader">
 Diagrama de herencia de PurePursuitNode</div>
@@ -126,106 +125,186 @@ Diagrama de herencia de PurePursuitNode</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Métodos públicos</h2></td></tr>
 <tr class="memitem:a632632d700de02398bcf186016149b51" id="r_a632632d700de02398bcf186016149b51"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a632632d700de02398bcf186016149b51">PurePursuitNode</a> ()</td></tr>
-<tr class="memdesc:a632632d700de02398bcf186016149b51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor: Inicializa parámetros, suscriptores y publicadores.  <br /></td></tr>
+<tr class="memdesc:a632632d700de02398bcf186016149b51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor del nodo Pure Pursuit.  <br /></td></tr>
 <tr class="separator:a632632d700de02398bcf186016149b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-types" name="pri-types"></a>
 Tipos privados</h2></td></tr>
 <tr class="memitem:abf850824711763560fdb8e2aa3d96efc" id="r_abf850824711763560fdb8e2aa3d96efc"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abf850824711763560fdb8e2aa3d96efc">AvoidanceState</a> { <a class="el" href="#abf850824711763560fdb8e2aa3d96efca1e23852820b9154316c7c06e2b7ba051">NORMAL</a>
-, <a class="el" href="#abf850824711763560fdb8e2aa3d96efca09d4d696b4e935115b9313e3c412509a">STOPPED</a>
-, <a class="el" href="#abf850824711763560fdb8e2aa3d96efcaf044319697b9f7866058b5c4fd82202c">SEARCHING_LEFT</a>
-, <a class="el" href="#abf850824711763560fdb8e2aa3d96efcac9a6c7f9e199d400c6e4114dd47efbe3">SEARCHING_RIGHT</a>
+, <a class="el" href="#abf850824711763560fdb8e2aa3d96efcae98f9b8adc7dc0064c497fefa3dbfbcb">OBSTACLE_DETECTED</a>
+, <a class="el" href="#abf850824711763560fdb8e2aa3d96efca1d9e8d5522fd3de1bbc21723300efd30">EMERGENCY</a>
  }</td></tr>
+<tr class="memdesc:abf850824711763560fdb8e2aa3d96efc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estados del sistema de evasión de obstáculos.  <a href="#abf850824711763560fdb8e2aa3d96efc">Más...</a><br /></td></tr>
 <tr class="separator:abf850824711763560fdb8e2aa3d96efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Métodos privados</h2></td></tr>
 <tr class="memitem:a9e612b37c9cdcfdcee8ee88bb9d44844" id="r_a9e612b37c9cdcfdcee8ee88bb9d44844"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9e612b37c9cdcfdcee8ee88bb9d44844">goalCallback</a> (const geometry_msgs::msg::PoseStamped::SharedPtr msg)</td></tr>
-<tr class="memdesc:a9e612b37c9cdcfdcee8ee88bb9d44844"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actualiza el objetivo final global.  <br /></td></tr>
+<tr class="memdesc:a9e612b37c9cdcfdcee8ee88bb9d44844"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback para recibir el objetivo de navegación.  <br /></td></tr>
 <tr class="separator:a9e612b37c9cdcfdcee8ee88bb9d44844"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee0c64992783ccda10e0a663a60fd1c1" id="r_aee0c64992783ccda10e0a663a60fd1c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee0c64992783ccda10e0a663a60fd1c1">odomCallback</a> (const nav_msgs::msg::Odometry::SharedPtr msg)</td></tr>
-<tr class="memdesc:aee0c64992783ccda10e0a663a60fd1c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actualiza la odometría del robot.  <br /></td></tr>
+<tr class="memdesc:aee0c64992783ccda10e0a663a60fd1c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback para recibir la odometría filtrada del robot.  <br /></td></tr>
 <tr class="separator:aee0c64992783ccda10e0a663a60fd1c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abea4d2512c764e21c1b10270469c6621" id="r_abea4d2512c764e21c1b10270469c6621"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abea4d2512c764e21c1b10270469c6621">pathCallback</a> (const geometry_msgs::msg::PoseArray::SharedPtr msg)</td></tr>
-<tr class="memdesc:abea4d2512c764e21c1b10270469c6621"><td class="mdescLeft">&#160;</td><td class="mdescRight">Recibe y almacena la ruta suavizada.  <br /></td></tr>
-<tr class="separator:abea4d2512c764e21c1b10270469c6621"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43a7223674077d552696e9d7ec3e161c" id="r_a43a7223674077d552696e9d7ec3e161c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a43a7223674077d552696e9d7ec3e161c">scanCallback</a> (const sensor_msgs::msg::LaserScan::SharedPtr msg)</td></tr>
+<tr class="memdesc:a43a7223674077d552696e9d7ec3e161c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback para recibir datos del sensor láser.  <br /></td></tr>
 <tr class="separator:a43a7223674077d552696e9d7ec3e161c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9393d218fbf8dc3b81cd5a3d13d15359" id="r_a9393d218fbf8dc3b81cd5a3d13d15359"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9393d218fbf8dc3b81cd5a3d13d15359">checkFreeSpace</a> ()</td></tr>
-<tr class="separator:a9393d218fbf8dc3b81cd5a3d13d15359"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2703b6292e3c241ec0e44a7f162a62a" id="r_ab2703b6292e3c241ec0e44a7f162a62a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2703b6292e3c241ec0e44a7f162a62a">findGapSide</a> ()</td></tr>
-<tr class="separator:ab2703b6292e3c241ec0e44a7f162a62a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd862afa77b3ffd62d4e9687243b6efe" id="r_afd862afa77b3ffd62d4e9687243b6efe"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afd862afa77b3ffd62d4e9687243b6efe">findClosestIndexOnPath</a> (const std::vector&lt; geometry_msgs::msg::Point &gt; &amp;path)</td></tr>
-<tr class="memdesc:afd862afa77b3ffd62d4e9687243b6efe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Busca el índice del punto más cercano en TODA la ruta.  <br /></td></tr>
-<tr class="separator:afd862afa77b3ffd62d4e9687243b6efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea8b112d5469f1be331aba1985d06cdd" id="r_aea8b112d5469f1be331aba1985d06cdd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aea8b112d5469f1be331aba1985d06cdd">findSequentialLookaheadPoint</a> (geometry_msgs::msg::Point &amp;lookahead_point)</td></tr>
-<tr class="memdesc:aea8b112d5469f1be331aba1985d06cdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Busca el punto de Lookahead de forma secuencial.  <br /></td></tr>
-<tr class="separator:aea8b112d5469f1be331aba1985d06cdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abea4d2512c764e21c1b10270469c6621" id="r_abea4d2512c764e21c1b10270469c6621"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abea4d2512c764e21c1b10270469c6621">pathCallback</a> (const geometry_msgs::msg::PoseArray::SharedPtr msg)</td></tr>
+<tr class="memdesc:abea4d2512c764e21c1b10270469c6621"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback para recibir la trayectoria a seguir.  <br /></td></tr>
+<tr class="separator:abea4d2512c764e21c1b10270469c6621"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae964b00db139a07d2c05041ebf47c522" id="r_ae964b00db139a07d2c05041ebf47c522"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae964b00db139a07d2c05041ebf47c522">findClosestIndex</a> ()</td></tr>
+<tr class="memdesc:ae964b00db139a07d2c05041ebf47c522"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encuentra el índice del punto más cercano en la trayectoria.  <br /></td></tr>
+<tr class="separator:ae964b00db139a07d2c05041ebf47c522"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9cce021c1b4c0273a74e72738e40441" id="r_ab9cce021c1b4c0273a74e72738e40441"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab9cce021c1b4c0273a74e72738e40441">updateCurrentPathIndex</a> ()</td></tr>
+<tr class="memdesc:ab9cce021c1b4c0273a74e72738e40441"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actualiza el índice actual en la trayectoria durante navegación.  <br /></td></tr>
+<tr class="separator:ab9cce021c1b4c0273a74e72738e40441"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e20f642302067b9010e15f1bfe9ff86" id="r_a8e20f642302067b9010e15f1bfe9ff86"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8e20f642302067b9010e15f1bfe9ff86">getCrossTrackError</a> ()</td></tr>
+<tr class="memdesc:a8e20f642302067b9010e15f1bfe9ff86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calcula el error de seguimiento lateral (Cross-Track Error)  <br /></td></tr>
+<tr class="separator:a8e20f642302067b9010e15f1bfe9ff86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbaa5113247430b3a9c9587f014cd024" id="r_afbaa5113247430b3a9c9587f014cd024"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afbaa5113247430b3a9c9587f014cd024">calculateLookaheadDistance</a> (double cross_track_error, double vx)</td></tr>
+<tr class="memdesc:afbaa5113247430b3a9c9587f014cd024"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calcula la distancia lookahead adaptativa.  <br /></td></tr>
+<tr class="separator:afbaa5113247430b3a9c9587f014cd024"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acff31b46396dfae6751831474490f307" id="r_acff31b46396dfae6751831474490f307"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acff31b46396dfae6751831474490f307">updateAvoidanceState</a> ()</td></tr>
+<tr class="memdesc:acff31b46396dfae6751831474490f307"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actualiza el estado del sistema de evasión de obstáculos.  <br /></td></tr>
+<tr class="separator:acff31b46396dfae6751831474490f307"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c5cba60db2988784947dcefd662c769" id="r_a4c5cba60db2988784947dcefd662c769"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4c5cba60db2988784947dcefd662c769">generateDetourPath</a> ()</td></tr>
+<tr class="memdesc:a4c5cba60db2988784947dcefd662c769"><td class="mdescLeft">&#160;</td><td class="mdescRight">Genera una ruta de desvío para evadir obstáculos.  <br /></td></tr>
+<tr class="separator:a4c5cba60db2988784947dcefd662c769"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5dc33aa724510df1f5fbabf7e88d4b2" id="r_ab5dc33aa724510df1f5fbabf7e88d4b2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5dc33aa724510df1f5fbabf7e88d4b2">publishDetourPath</a> ()</td></tr>
+<tr class="memdesc:ab5dc33aa724510df1f5fbabf7e88d4b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica visualización de la trayectoria modificada en RViz.  <br /></td></tr>
+<tr class="separator:ab5dc33aa724510df1f5fbabf7e88d4b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42a2a1424015038be7380a4ac9adc719" id="r_a42a2a1424015038be7380a4ac9adc719"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a42a2a1424015038be7380a4ac9adc719">controlLoop</a> ()</td></tr>
+<tr class="memdesc:a42a2a1424015038be7380a4ac9adc719"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bucle principal de control (ejecutado a 20Hz - cada 50ms)  <br /></td></tr>
 <tr class="separator:a42a2a1424015038be7380a4ac9adc719"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa77d1d2214fbd29f32b00adbd0963f9e" id="r_aa77d1d2214fbd29f32b00adbd0963f9e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa77d1d2214fbd29f32b00adbd0963f9e">calculateCurvature</a> (const geometry_msgs::msg::Point &amp;target)</td></tr>
-<tr class="separator:aa77d1d2214fbd29f32b00adbd0963f9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4aafc2f44d058a19ab62a6ac73555b6" id="r_ab4aafc2f44d058a19ab62a6ac73555b6"><td class="memItemLeft" align="right" valign="top">geometry_msgs::msg::Twist&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab4aafc2f44d058a19ab62a6ac73555b6">calculateControlCommands</a> (double curvature, double dist_to_goal)</td></tr>
-<tr class="separator:ab4aafc2f44d058a19ab62a6ac73555b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d124a1a7daeb57fd5c664040c868683" id="r_a9d124a1a7daeb57fd5c664040c868683"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d124a1a7daeb57fd5c664040c868683">stopRobot</a> ()</td></tr>
+<tr class="memdesc:a9d124a1a7daeb57fd5c664040c868683"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detiene el robot completamente.  <br /></td></tr>
 <tr class="separator:a9d124a1a7daeb57fd5c664040c868683"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c82ab2715bcffffe8dd16be42b59b23" id="r_a2c82ab2715bcffffe8dd16be42b59b23"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2c82ab2715bcffffe8dd16be42b59b23">logData</a> (const geometry_msgs::msg::Twist &amp;cmd, double dist)</td></tr>
-<tr class="separator:a2c82ab2715bcffffe8dd16be42b59b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06ab55025bfde553e5044761e5124c6c" id="r_a06ab55025bfde553e5044761e5124c6c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a06ab55025bfde553e5044761e5124c6c">publishLookaheadMarker</a> (const geometry_msgs::msg::Point &amp;pt)</td></tr>
-<tr class="separator:a06ab55025bfde553e5044761e5124c6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4085871dbccbc5447adc2b2ae95119c" id="r_af4085871dbccbc5447adc2b2ae95119c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af4085871dbccbc5447adc2b2ae95119c">publishOdomAndTF</a> ()</td></tr>
-<tr class="separator:af4085871dbccbc5447adc2b2ae95119c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e08b00b631dabe36405a232a6123ea6" id="r_a5e08b00b631dabe36405a232a6123ea6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5e08b00b631dabe36405a232a6123ea6">findLookaheadPoint</a> (double dynamic_lookahead_dist, geometry_msgs::msg::Point &amp;lookahead_point)</td></tr>
+<tr class="memdesc:a5e08b00b631dabe36405a232a6123ea6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Busca el punto lookahead en la trayectoria.  <br /></td></tr>
+<tr class="separator:a5e08b00b631dabe36405a232a6123ea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ac24eb681575389aee9a3be20a93401" id="r_a9ac24eb681575389aee9a3be20a93401"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9ac24eb681575389aee9a3be20a93401">calculateCurvature</a> (const geometry_msgs::msg::Point &amp;lookahead_point)</td></tr>
+<tr class="memdesc:a9ac24eb681575389aee9a3be20a93401"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calcula la curvatura instantánea hacia el punto lookahead.  <br /></td></tr>
+<tr class="separator:a9ac24eb681575389aee9a3be20a93401"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86396b82599e631edeadbe37b335cab0" id="r_a86396b82599e631edeadbe37b335cab0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a86396b82599e631edeadbe37b335cab0">publishBubbleViz</a> (double radius)</td></tr>
+<tr class="memdesc:a86396b82599e631edeadbe37b335cab0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica marcador visual de la burbuja de seguridad en RViz.  <br /></td></tr>
+<tr class="separator:a86396b82599e631edeadbe37b335cab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd5b20e7bf87bb3f8e86af080008fe05" id="r_afd5b20e7bf87bb3f8e86af080008fe05"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afd5b20e7bf87bb3f8e86af080008fe05">publishLookaheadMarker</a> (const geometry_msgs::msg::Point &amp;point)</td></tr>
+<tr class="memdesc:afd5b20e7bf87bb3f8e86af080008fe05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica marcador visual del punto lookahead en RViz.  <br /></td></tr>
+<tr class="separator:afd5b20e7bf87bb3f8e86af080008fe05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac983fdab68d008d317db5666cc83ea37" id="r_ac983fdab68d008d317db5666cc83ea37"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac983fdab68d008d317db5666cc83ea37">publishRobotMarker</a> ()</td></tr>
+<tr class="memdesc:ac983fdab68d008d317db5666cc83ea37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica marcador visual de la posición del robot en RViz.  <br /></td></tr>
+<tr class="separator:ac983fdab68d008d317db5666cc83ea37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a432aaa4556b0b2c099e64dedfa295424" id="r_a432aaa4556b0b2c099e64dedfa295424"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a432aaa4556b0b2c099e64dedfa295424">normalizeAngle</a> (double angle)</td></tr>
+<tr class="memdesc:a432aaa4556b0b2c099e64dedfa295424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normaliza un ángulo al rango [-π, π].  <br /></td></tr>
 <tr class="separator:a432aaa4556b0b2c099e64dedfa295424"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Atributos privados</h2></td></tr>
-<tr class="memitem:a606818395b2d32d0e9d788323f061466" id="r_a606818395b2d32d0e9d788323f061466"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a606818395b2d32d0e9d788323f061466">robot_x_</a> = 0</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Estado del Robot</div></td></tr>
+<tr class="memitem:a606818395b2d32d0e9d788323f061466" id="r_a606818395b2d32d0e9d788323f061466"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a606818395b2d32d0e9d788323f061466">robot_x_</a></td></tr>
+<tr class="memdesc:a606818395b2d32d0e9d788323f061466"><td class="mdescLeft">&#160;</td><td class="mdescRight">Posición X en marco global (m)  <br /></td></tr>
 <tr class="separator:a606818395b2d32d0e9d788323f061466"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c1ccade20cdfbbf8a808ceff24448d7" id="r_a4c1ccade20cdfbbf8a808ceff24448d7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4c1ccade20cdfbbf8a808ceff24448d7">robot_y_</a> = 0</td></tr>
+<tr class="memitem:a4c1ccade20cdfbbf8a808ceff24448d7" id="r_a4c1ccade20cdfbbf8a808ceff24448d7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4c1ccade20cdfbbf8a808ceff24448d7">robot_y_</a></td></tr>
+<tr class="memdesc:a4c1ccade20cdfbbf8a808ceff24448d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Posición Y en marco global (m)  <br /></td></tr>
 <tr class="separator:a4c1ccade20cdfbbf8a808ceff24448d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46c111f505aecf259a854a57e4426cd5" id="r_a46c111f505aecf259a854a57e4426cd5"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a46c111f505aecf259a854a57e4426cd5">robot_yaw_</a> = 0</td></tr>
+<tr class="memitem:a46c111f505aecf259a854a57e4426cd5" id="r_a46c111f505aecf259a854a57e4426cd5"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a46c111f505aecf259a854a57e4426cd5">robot_yaw_</a></td></tr>
+<tr class="memdesc:a46c111f505aecf259a854a57e4426cd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orientación en marco global (rad)  <br /></td></tr>
 <tr class="separator:a46c111f505aecf259a854a57e4426cd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed472eafd9ca340b5e3f4c952bde24d7" id="r_aed472eafd9ca340b5e3f4c952bde24d7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aed472eafd9ca340b5e3f4c952bde24d7">robot_linear_vel_</a></td></tr>
+<tr class="memdesc:aed472eafd9ca340b5e3f4c952bde24d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Velocidad lineal actual (m/s)  <br /></td></tr>
+<tr class="separator:aed472eafd9ca340b5e3f4c952bde24d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Objetivos y Trayectoria</div></td></tr>
 <tr class="memitem:adc700fd29b016527aa85af451ba54bb7" id="r_adc700fd29b016527aa85af451ba54bb7"><td class="memItemLeft" align="right" valign="top">geometry_msgs::msg::Pose&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc700fd29b016527aa85af451ba54bb7">current_goal_</a></td></tr>
+<tr class="memdesc:adc700fd29b016527aa85af451ba54bb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Objetivo final de navegación.  <br /></td></tr>
 <tr class="separator:adc700fd29b016527aa85af451ba54bb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6298f8e3dd0f36e961cd96c8e1507ab" id="r_af6298f8e3dd0f36e961cd96c8e1507ab"><td class="memItemLeft" align="right" valign="top">std::vector&lt; geometry_msgs::msg::Point &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af6298f8e3dd0f36e961cd96c8e1507ab">path_points_</a></td></tr>
+<tr class="memdesc:af6298f8e3dd0f36e961cd96c8e1507ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waypoints de la trayectoria.  <br /></td></tr>
 <tr class="separator:af6298f8e3dd0f36e961cd96c8e1507ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85bb4205bf76a04a8581edf0262c475c" id="r_a85bb4205bf76a04a8581edf0262c475c"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85bb4205bf76a04a8581edf0262c475c">current_path_index_</a> = 0</td></tr>
-<tr class="separator:a85bb4205bf76a04a8581edf0262c475c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acddd6de5b26ef60bee4abed27fcd39dd" id="r_acddd6de5b26ef60bee4abed27fcd39dd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acddd6de5b26ef60bee4abed27fcd39dd">has_goal_</a> = false</td></tr>
+<tr class="memitem:acddd6de5b26ef60bee4abed27fcd39dd" id="r_acddd6de5b26ef60bee4abed27fcd39dd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acddd6de5b26ef60bee4abed27fcd39dd">has_goal_</a></td></tr>
+<tr class="memdesc:acddd6de5b26ef60bee4abed27fcd39dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flag: objetivo recibido.  <br /></td></tr>
 <tr class="separator:acddd6de5b26ef60bee4abed27fcd39dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f1cf45187aeef6283eb6f2d674c93b1" id="r_a9f1cf45187aeef6283eb6f2d674c93b1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9f1cf45187aeef6283eb6f2d674c93b1">has_path_</a> = false</td></tr>
+<tr class="memitem:a9f1cf45187aeef6283eb6f2d674c93b1" id="r_a9f1cf45187aeef6283eb6f2d674c93b1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9f1cf45187aeef6283eb6f2d674c93b1">has_path_</a></td></tr>
+<tr class="memdesc:a9f1cf45187aeef6283eb6f2d674c93b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flag: trayectoria recibida.  <br /></td></tr>
 <tr class="separator:a9f1cf45187aeef6283eb6f2d674c93b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad428bdef1be303c7d638cbf904514858" id="r_ad428bdef1be303c7d638cbf904514858"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad428bdef1be303c7d638cbf904514858">goal_reached_</a> = false</td></tr>
+<tr class="memitem:ad428bdef1be303c7d638cbf904514858" id="r_ad428bdef1be303c7d638cbf904514858"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad428bdef1be303c7d638cbf904514858">goal_reached_</a></td></tr>
+<tr class="memdesc:ad428bdef1be303c7d638cbf904514858"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flag: objetivo alcanzado.  <br /></td></tr>
 <tr class="separator:ad428bdef1be303c7d638cbf904514858"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9aa77097ad49d65f4b71327ecb877ac4" id="r_a9aa77097ad49d65f4b71327ecb877ac4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9aa77097ad49d65f4b71327ecb877ac4">obstacle_detected_</a> = false</td></tr>
-<tr class="separator:a9aa77097ad49d65f4b71327ecb877ac4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab90a4fafd9f3e6f1517092aeb2f8e58b" id="r_ab90a4fafd9f3e6f1517092aeb2f8e58b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#abf850824711763560fdb8e2aa3d96efc">AvoidanceState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab90a4fafd9f3e6f1517092aeb2f8e58b">avoidance_state_</a> = <a class="el" href="#abf850824711763560fdb8e2aa3d96efca1e23852820b9154316c7c06e2b7ba051">AvoidanceState::NORMAL</a></td></tr>
-<tr class="separator:ab90a4fafd9f3e6f1517092aeb2f8e58b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85bb4205bf76a04a8581edf0262c475c" id="r_a85bb4205bf76a04a8581edf0262c475c"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85bb4205bf76a04a8581edf0262c475c">current_path_index_</a></td></tr>
+<tr class="memdesc:a85bb4205bf76a04a8581edf0262c475c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice actual en la trayectoria.  <br /></td></tr>
+<tr class="separator:a85bb4205bf76a04a8581edf0262c475c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Sistema de Logs y Sensores</div></td></tr>
+<tr class="memitem:a6fed0551075c64e145a7436a3142d945" id="r_a6fed0551075c64e145a7436a3142d945"><td class="memItemLeft" align="right" valign="top">std::ofstream&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6fed0551075c64e145a7436a3142d945">data_log_file_</a></td></tr>
+<tr class="memdesc:a6fed0551075c64e145a7436a3142d945"><td class="mdescLeft">&#160;</td><td class="mdescRight">Archivo CSV de logging.  <br /></td></tr>
+<tr class="separator:a6fed0551075c64e145a7436a3142d945"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a294a67bdef75327442d474d0a9cf2e72" id="r_a294a67bdef75327442d474d0a9cf2e72"><td class="memItemLeft" align="right" valign="top">sensor_msgs::msg::LaserScan::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a294a67bdef75327442d474d0a9cf2e72">last_scan_</a></td></tr>
+<tr class="memdesc:a294a67bdef75327442d474d0a9cf2e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Último escaneo láser recibido.  <br /></td></tr>
+<tr class="separator:a294a67bdef75327442d474d0a9cf2e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Parámetros de Navegación</div></td></tr>
 <tr class="memitem:a90e645a5ce55d71bd1ef15be00a77873" id="r_a90e645a5ce55d71bd1ef15be00a77873"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90e645a5ce55d71bd1ef15be00a77873">lookahead_distance_</a></td></tr>
+<tr class="memdesc:a90e645a5ce55d71bd1ef15be00a77873"><td class="mdescLeft">&#160;</td><td class="mdescRight">LHD base (no usado con adaptativo)  <br /></td></tr>
 <tr class="separator:a90e645a5ce55d71bd1ef15be00a77873"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a913dc9c3a81f9eb44d1f46328b8558b3" id="r_a913dc9c3a81f9eb44d1f46328b8558b3"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a913dc9c3a81f9eb44d1f46328b8558b3">max_linear_vel_</a></td></tr>
+<tr class="memdesc:a913dc9c3a81f9eb44d1f46328b8558b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Velocidad lineal máxima (m/s)  <br /></td></tr>
 <tr class="separator:a913dc9c3a81f9eb44d1f46328b8558b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54623bf26d3330482cc6ee70664df8ee" id="r_a54623bf26d3330482cc6ee70664df8ee"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a54623bf26d3330482cc6ee70664df8ee">max_angular_vel_</a></td></tr>
+<tr class="memdesc:a54623bf26d3330482cc6ee70664df8ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Velocidad angular máxima (rad/s)  <br /></td></tr>
 <tr class="separator:a54623bf26d3330482cc6ee70664df8ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86ebece9b28f551aabdf4ebd26844acf" id="r_a86ebece9b28f551aabdf4ebd26844acf"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a86ebece9b28f551aabdf4ebd26844acf">goal_tolerance_</a></td></tr>
+<tr class="memdesc:a86ebece9b28f551aabdf4ebd26844acf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tolerancia de llegada (m)  <br /></td></tr>
 <tr class="separator:a86ebece9b28f551aabdf4ebd26844acf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a679b0c38dd51727b1a201bf13625aea1" id="r_a679b0c38dd51727b1a201bf13625aea1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a679b0c38dd51727b1a201bf13625aea1">obstacle_distance_threshold_</a></td></tr>
-<tr class="separator:a679b0c38dd51727b1a201bf13625aea1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b7f2af06869c81d79827e76f235494e" id="r_a1b7f2af06869c81d79827e76f235494e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1b7f2af06869c81d79827e76f235494e">scan_fov_rad_</a></td></tr>
-<tr class="separator:a1b7f2af06869c81d79827e76f235494e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4edbe12e7fc227d2a3952b6b0cf92631" id="r_a4edbe12e7fc227d2a3952b6b0cf92631"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4edbe12e7fc227d2a3952b6b0cf92631">min_free_distance_</a></td></tr>
-<tr class="separator:a4edbe12e7fc227d2a3952b6b0cf92631"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a03ae087c6eff9af97eeaaadb3cf665" id="r_a6a03ae087c6eff9af97eeaaadb3cf665"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6a03ae087c6eff9af97eeaaadb3cf665">search_angular_vel_</a></td></tr>
-<tr class="separator:a6a03ae087c6eff9af97eeaaadb3cf665"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abae562d7eb93b45c29de9ef09565897b" id="r_abae562d7eb93b45c29de9ef09565897b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abae562d7eb93b45c29de9ef09565897b">delta_min_</a></td></tr>
+<tr class="memdesc:abae562d7eb93b45c29de9ef09565897b"><td class="mdescLeft">&#160;</td><td class="mdescRight">LHD mínimo para adaptativo (m)  <br /></td></tr>
+<tr class="separator:abae562d7eb93b45c29de9ef09565897b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8800c239fda5ae33481d8c72cb3996c" id="r_ae8800c239fda5ae33481d8c72cb3996c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae8800c239fda5ae33481d8c72cb3996c">delta_max_</a></td></tr>
+<tr class="memdesc:ae8800c239fda5ae33481d8c72cb3996c"><td class="mdescLeft">&#160;</td><td class="mdescRight">LHD máximo para adaptativo (m)  <br /></td></tr>
+<tr class="separator:ae8800c239fda5ae33481d8c72cb3996c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a579b5ca03cbb8f841f98e0f04106c616" id="r_a579b5ca03cbb8f841f98e0f04106c616"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a579b5ca03cbb8f841f98e0f04106c616">gamma_</a></td></tr>
+<tr class="memdesc:a579b5ca03cbb8f841f98e0f04106c616"><td class="mdescLeft">&#160;</td><td class="mdescRight">Factor de decaimiento exponencial.  <br /></td></tr>
+<tr class="separator:a579b5ca03cbb8f841f98e0f04106c616"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Parámetros de Evasión</div></td></tr>
+<tr class="memitem:a86cbc6f3bc479046ae678a698e6b4609" id="r_a86cbc6f3bc479046ae678a698e6b4609"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a86cbc6f3bc479046ae678a698e6b4609">bubble_base_radius_</a></td></tr>
+<tr class="memdesc:a86cbc6f3bc479046ae678a698e6b4609"><td class="mdescLeft">&#160;</td><td class="mdescRight">Radio de burbuja de seguridad (m)  <br /></td></tr>
+<tr class="separator:a86cbc6f3bc479046ae678a698e6b4609"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81230884bb081032c8b7ef4e7ccce2f1" id="r_a81230884bb081032c8b7ef4e7ccce2f1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a81230884bb081032c8b7ef4e7ccce2f1">critical_distance_</a></td></tr>
+<tr class="memdesc:a81230884bb081032c8b7ef4e7ccce2f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distancia de emergencia (m)  <br /></td></tr>
+<tr class="separator:a81230884bb081032c8b7ef4e7ccce2f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5769e2edb221ac3205199160a8165d4" id="r_ad5769e2edb221ac3205199160a8165d4"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad5769e2edb221ac3205199160a8165d4">detour_offset_</a></td></tr>
+<tr class="memdesc:ad5769e2edb221ac3205199160a8165d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Desplazamiento lateral del desvío (m)  <br /></td></tr>
+<tr class="separator:ad5769e2edb221ac3205199160a8165d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc066944de88710c275235951a15b0b8" id="r_afc066944de88710c275235951a15b0b8"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afc066944de88710c275235951a15b0b8">rejoin_distance_</a></td></tr>
+<tr class="memdesc:afc066944de88710c275235951a15b0b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distancia de reincorporación (m)  <br /></td></tr>
+<tr class="separator:afc066944de88710c275235951a15b0b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a342ab071cd0f1366c35f13034683ee01" id="r_a342ab071cd0f1366c35f13034683ee01"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a342ab071cd0f1366c35f13034683ee01">forward_offset_</a></td></tr>
+<tr class="memdesc:a342ab071cd0f1366c35f13034683ee01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Desplazamiento frontal del ápex (m)  <br /></td></tr>
+<tr class="separator:a342ab071cd0f1366c35f13034683ee01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Control y Estado</div></td></tr>
+<tr class="memitem:a26f57e99edfd2bce3c3e427a0f3b5f94" id="r_a26f57e99edfd2bce3c3e427a0f3b5f94"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26f57e99edfd2bce3c3e427a0f3b5f94">selected_route_</a></td></tr>
+<tr class="memdesc:a26f57e99edfd2bce3c3e427a0f3b5f94"><td class="mdescLeft">&#160;</td><td class="mdescRight">ID de ruta seleccionada (1-8)  <br /></td></tr>
+<tr class="separator:a26f57e99edfd2bce3c3e427a0f3b5f94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8be02ab90837eb6dcbcde0a3e5f19f2b" id="r_a8be02ab90837eb6dcbcde0a3e5f19f2b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8be02ab90837eb6dcbcde0a3e5f19f2b">current_vel_cmd_</a></td></tr>
+<tr class="memdesc:a8be02ab90837eb6dcbcde0a3e5f19f2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Última velocidad comandada (m/s)  <br /></td></tr>
+<tr class="separator:a8be02ab90837eb6dcbcde0a3e5f19f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fb69d3a931b51af94a4c9ec495132ef" id="r_a9fb69d3a931b51af94a4c9ec495132ef"><td class="memItemLeft" align="right" valign="top">rclcpp::Time&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9fb69d3a931b51af94a4c9ec495132ef">last_detour_time_</a></td></tr>
+<tr class="memdesc:a9fb69d3a931b51af94a4c9ec495132ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timestamp del último desvío.  <br /></td></tr>
+<tr class="separator:a9fb69d3a931b51af94a4c9ec495132ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab90a4fafd9f3e6f1517092aeb2f8e58b" id="r_ab90a4fafd9f3e6f1517092aeb2f8e58b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#abf850824711763560fdb8e2aa3d96efc">AvoidanceState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab90a4fafd9f3e6f1517092aeb2f8e58b">avoidance_state_</a></td></tr>
+<tr class="memdesc:ab90a4fafd9f3e6f1517092aeb2f8e58b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estado actual de evasión.  <br /></td></tr>
+<tr class="separator:ab90a4fafd9f3e6f1517092aeb2f8e58b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Publicadores ROS 2</div></td></tr>
 <tr class="memitem:ad440b6fd57c448cbdd29c041be3761d9" id="r_ad440b6fd57c448cbdd29c041be3761d9"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; nav_msgs::msg::Odometry &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad440b6fd57c448cbdd29c041be3761d9">odom_pub_</a></td></tr>
 <tr class="separator:ad440b6fd57c448cbdd29c041be3761d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04505efedc412d4286a5334a999de702" id="r_a04505efedc412d4286a5334a999de702"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; std_msgs::msg::Bool &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a04505efedc412d4286a5334a999de702">goal_reached_pub_</a></td></tr>
 <tr class="separator:a04505efedc412d4286a5334a999de702"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ee1c64e1484b8aba736c968a6184c34" id="r_a2ee1c64e1484b8aba736c968a6184c34"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; visualization_msgs::msg::Marker &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2ee1c64e1484b8aba736c968a6184c34">marker_pub_</a></td></tr>
 <tr class="separator:a2ee1c64e1484b8aba736c968a6184c34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a490c70213ba5fcbb14695844e2a61207" id="r_a490c70213ba5fcbb14695844e2a61207"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; visualization_msgs::msg::Marker &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a490c70213ba5fcbb14695844e2a61207">bubble_viz_pub_</a></td></tr>
+<tr class="separator:a490c70213ba5fcbb14695844e2a61207"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b47c973f4b4ef7f27a2d75228e86dc0" id="r_a4b47c973f4b4ef7f27a2d75228e86dc0"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; visualization_msgs::msg::Marker &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4b47c973f4b4ef7f27a2d75228e86dc0">robot_marker_pub_</a></td></tr>
+<tr class="separator:a4b47c973f4b4ef7f27a2d75228e86dc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab459997c072d9a0bc35258dd718a9278" id="r_ab459997c072d9a0bc35258dd718a9278"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; geometry_msgs::msg::Twist &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab459997c072d9a0bc35258dd718a9278">cmd_vel_pub_</a></td></tr>
 <tr class="separator:ab459997c072d9a0bc35258dd718a9278"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a126cf53791816015aba5dc33ff397352" id="r_a126cf53791816015aba5dc33ff397352"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; visualization_msgs::msg::MarkerArray &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a126cf53791816015aba5dc33ff397352">detour_path_pub_</a></td></tr>
+<tr class="separator:a126cf53791816015aba5dc33ff397352"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Suscriptores ROS 2</div></td></tr>
 <tr class="memitem:ad0475648247b2d76b5d4ec0db812461f" id="r_ad0475648247b2d76b5d4ec0db812461f"><td class="memItemLeft" align="right" valign="top">rclcpp::Subscription&lt; geometry_msgs::msg::PoseStamped &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad0475648247b2d76b5d4ec0db812461f">goal_sub_</a></td></tr>
 <tr class="separator:ad0475648247b2d76b5d4ec0db812461f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade017bfbffe7f38dde72ed9df49a2469" id="r_ade017bfbffe7f38dde72ed9df49a2469"><td class="memItemLeft" align="right" valign="top">rclcpp::Subscription&lt; geometry_msgs::msg::PoseArray &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade017bfbffe7f38dde72ed9df49a2469">path_sub_</a></td></tr>
@@ -234,23 +313,22 @@ Atributos privados</h2></td></tr>
 <tr class="separator:a289ddd847264fe6a7f40b9ee9a93cb50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79261815a25a36932a66a914f780126a" id="r_a79261815a25a36932a66a914f780126a"><td class="memItemLeft" align="right" valign="top">rclcpp::Subscription&lt; sensor_msgs::msg::LaserScan &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a79261815a25a36932a66a914f780126a">scan_sub_</a></td></tr>
 <tr class="separator:a79261815a25a36932a66a914f780126a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Utilidades</div></td></tr>
 <tr class="memitem:ae9a3c54ea04e6a8a64ddb2c2d234bd21" id="r_ae9a3c54ea04e6a8a64ddb2c2d234bd21"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; tf2_ros::TransformBroadcaster &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae9a3c54ea04e6a8a64ddb2c2d234bd21">tf_broadcaster_</a></td></tr>
+<tr class="memdesc:ae9a3c54ea04e6a8a64ddb2c2d234bd21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Broadcaster TF2.  <br /></td></tr>
 <tr class="separator:ae9a3c54ea04e6a8a64ddb2c2d234bd21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06a3c0eedd518f660b9e561fe7b817d1" id="r_a06a3c0eedd518f660b9e561fe7b817d1"><td class="memItemLeft" align="right" valign="top">rclcpp::TimerBase::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a06a3c0eedd518f660b9e561fe7b817d1">control_timer_</a></td></tr>
+<tr class="memdesc:a06a3c0eedd518f660b9e561fe7b817d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timer del bucle control.  <br /></td></tr>
 <tr class="separator:a06a3c0eedd518f660b9e561fe7b817d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd4de82917f5912b3e3d4a2fc51096ad" id="r_acd4de82917f5912b3e3d4a2fc51096ad"><td class="memItemLeft" align="right" valign="top">rclcpp::TimerBase::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acd4de82917f5912b3e3d4a2fc51096ad">tf_timer_</a></td></tr>
-<tr class="separator:acd4de82917f5912b3e3d4a2fc51096ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6fed0551075c64e145a7436a3142d945" id="r_a6fed0551075c64e145a7436a3142d945"><td class="memItemLeft" align="right" valign="top">std::ofstream&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6fed0551075c64e145a7436a3142d945">data_log_file_</a></td></tr>
-<tr class="separator:a6fed0551075c64e145a7436a3142d945"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a294a67bdef75327442d474d0a9cf2e72" id="r_a294a67bdef75327442d474d0a9cf2e72"><td class="memItemLeft" align="right" valign="top">sensor_msgs::msg::LaserScan::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a294a67bdef75327442d474d0a9cf2e72">last_scan_</a></td></tr>
-<tr class="separator:a294a67bdef75327442d474d0a9cf2e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Descripción detallada</h2>
-<div class="textblock"><p>Controlador Pure Pursuit con evasión. </p>
-<dl class="section author"><dt>Autor</dt><dd>Pedro Cabello Pulido | Gabriela Cano Azuaga | Lola Hernández Canizares | Almudena Jin | Lucía Pérez Guerrero </dd></dl>
-<dl class="section version"><dt>Versión</dt><dd>0.1 </dd></dl>
-<dl class="section date"><dt>Fecha</dt><dd>2026-01-08</dd></dl>
-<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2026 </dd></dl>
+<div class="textblock"><p>Nodo ROS 2 para control de navegación mediante Pure Pursuit con evasión de obstáculos. </p>
+<p>Esta clase implementa un sistema completo de navegación autónoma que combina:</p><ul>
+<li>Algoritmo Pure Pursuit para seguimiento de trayectorias</li>
+<li>Sistema de evasión de obstáculos basado en sensor láser</li>
+<li>Generación dinámica de rutas de desvío mediante curvas de Bézier</li>
+<li>Ajuste adaptativo de velocidad y lookahead distance </li>
+</ul>
 </div><h2 class="groupheader">Documentación de las enumeraciones miembro de la clase</h2>
 <a id="abf850824711763560fdb8e2aa3d96efc" name="abf850824711763560fdb8e2aa3d96efc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abf850824711763560fdb8e2aa3d96efc">&#9670;&#160;</a></span>AvoidanceState</h2>
@@ -271,11 +349,15 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Estados del sistema de evasión de obstáculos. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Valores de enumeraciones</th></tr><tr><td class="fieldname"><a id="abf850824711763560fdb8e2aa3d96efca1e23852820b9154316c7c06e2b7ba051" name="abf850824711763560fdb8e2aa3d96efca1e23852820b9154316c7c06e2b7ba051"></a>NORMAL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abf850824711763560fdb8e2aa3d96efca09d4d696b4e935115b9313e3c412509a" name="abf850824711763560fdb8e2aa3d96efca09d4d696b4e935115b9313e3c412509a"></a>STOPPED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abf850824711763560fdb8e2aa3d96efcaf044319697b9f7866058b5c4fd82202c" name="abf850824711763560fdb8e2aa3d96efcaf044319697b9f7866058b5c4fd82202c"></a>SEARCHING_LEFT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abf850824711763560fdb8e2aa3d96efcac9a6c7f9e199d400c6e4114dd47efbe3" name="abf850824711763560fdb8e2aa3d96efcac9a6c7f9e199d400c6e4114dd47efbe3"></a>SEARCHING_RIGHT&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Valores de enumeraciones</th></tr><tr><td class="fieldname"><a id="abf850824711763560fdb8e2aa3d96efca1e23852820b9154316c7c06e2b7ba051" name="abf850824711763560fdb8e2aa3d96efca1e23852820b9154316c7c06e2b7ba051"></a>NORMAL&#160;</td><td class="fielddoc"><p>Sin obstáculos, navegación normal (&gt;0.5m) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="abf850824711763560fdb8e2aa3d96efcae98f9b8adc7dc0064c497fefa3dbfbcb" name="abf850824711763560fdb8e2aa3d96efcae98f9b8adc7dc0064c497fefa3dbfbcb"></a>OBSTACLE_DETECTED&#160;</td><td class="fielddoc"><p>Obstáculo en burbuja, genera desvío (0.25-0.5m) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="abf850824711763560fdb8e2aa3d96efca1d9e8d5522fd3de1bbc21723300efd30" name="abf850824711763560fdb8e2aa3d96efca1d9e8d5522fd3de1bbc21723300efd30"></a>EMERGENCY&#160;</td><td class="fielddoc"><p>Colisión inminente, parada inmediata (&lt;0.25m) </p>
+</td></tr>
 </table>
 
 </div>
@@ -304,42 +386,14 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Constructor: Inicializa parámetros, suscriptores y publicadores. </p>
+<p>Constructor del nodo Pure Pursuit. </p>
+<p>Inicializa todos los parámetros, publicadores, suscriptores y temporizadores. También configura el sistema de logging automático con timestamp. </p>
 
 </div>
 </div>
 <h2 class="groupheader">Documentación de funciones miembro</h2>
-<a id="ab4aafc2f44d058a19ab62a6ac73555b6" name="ab4aafc2f44d058a19ab62a6ac73555b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab4aafc2f44d058a19ab62a6ac73555b6">&#9670;&#160;</a></span>calculateControlCommands()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">geometry_msgs::msg::Twist PurePursuitNode::calculateControlCommands </td>
-          <td>(</td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>curvature</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>dist_to_goal</em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa77d1d2214fbd29f32b00adbd0963f9e" name="aa77d1d2214fbd29f32b00adbd0963f9e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa77d1d2214fbd29f32b00adbd0963f9e">&#9670;&#160;</a></span>calculateCurvature()</h2>
+<a id="a9ac24eb681575389aee9a3be20a93401" name="a9ac24eb681575389aee9a3be20a93401"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ac24eb681575389aee9a3be20a93401">&#9670;&#160;</a></span>calculateCurvature()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -350,7 +404,7 @@ Atributos privados</h2></td></tr>
         <tr>
           <td class="memname">double PurePursuitNode::calculateCurvature </td>
           <td>(</td>
-          <td class="paramtype">const geometry_msgs::msg::Point &amp;</td>          <td class="paramname"><span class="paramname"><em>target</em></span></td><td>)</td>
+          <td class="paramtype">const geometry_msgs::msg::Point &amp;</td>          <td class="paramname"><span class="paramname"><em>lookahead_point</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -361,10 +415,20 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Calcula la curvatura instantánea hacia el punto lookahead. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lookahead_point</td><td>Punto objetivo en coordenadas globales </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>Curvatura (1/m) - positiva=izquierda, negativa=derecha</dd></dl>
+<p>Fórmula en sistema de coordenadas del robot: κ = 2 × y_rel / L² donde L es la distancia al punto lookahead </p>
+
 </div>
 </div>
-<a id="a9393d218fbf8dc3b81cd5a3d13d15359" name="a9393d218fbf8dc3b81cd5a3d13d15359"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9393d218fbf8dc3b81cd5a3d13d15359">&#9670;&#160;</a></span>checkFreeSpace()</h2>
+<a id="afbaa5113247430b3a9c9587f014cd024" name="afbaa5113247430b3a9c9587f014cd024"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbaa5113247430b3a9c9587f014cd024">&#9670;&#160;</a></span>calculateLookaheadDistance()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -373,10 +437,14 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool PurePursuitNode::checkFreeSpace </td>
+          <td class="memname">double PurePursuitNode::calculateLookaheadDistance </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>cross_track_error</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>vx</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -385,6 +453,20 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Calcula la distancia lookahead adaptativa. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cross_track_error</td><td>Error lateral actual (m) </td></tr>
+    <tr><td class="paramname">vx</td><td>Velocidad lineal del robot (m/s) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>Lookahead distance calculado (m)</dd></dl>
+<p>Fórmula: LHD = v_factor × (δ_max - δ_min) × e^(-γ×|CTE|) + δ_min</p><ul>
+<li>Mayor velocidad → Mayor LHD (más anticipación)</li>
+<li>Mayor error → Menor LHD (más corrección agresiva) </li>
+</ul>
 
 </div>
 </div>
@@ -411,10 +493,23 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Bucle principal de control (ejecutado a 20Hz - cada 50ms) </p>
+<p>Secuencia de ejecución:</p><ol type="1">
+<li>Actualizar índice en trayectoria</li>
+<li>Evaluar estado de evasión (láser 60°)</li>
+<li>Si EMERGENCY → parar</li>
+<li>Si OBSTACLE → generar desvío</li>
+<li>Calcular LHD adaptativo</li>
+<li>Encontrar punto lookahead</li>
+<li>Calcular curvatura y velocidades</li>
+<li>Publicar comandos y visualizaciones</li>
+<li>Guardar datos en CSV </li>
+</ol>
+
 </div>
 </div>
-<a id="afd862afa77b3ffd62d4e9687243b6efe" name="afd862afa77b3ffd62d4e9687243b6efe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afd862afa77b3ffd62d4e9687243b6efe">&#9670;&#160;</a></span>findClosestIndexOnPath()</h2>
+<a id="ae964b00db139a07d2c05041ebf47c522" name="ae964b00db139a07d2c05041ebf47c522"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae964b00db139a07d2c05041ebf47c522">&#9670;&#160;</a></span>findClosestIndex()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -423,37 +518,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t PurePursuitNode::findClosestIndexOnPath </td>
-          <td>(</td>
-          <td class="paramtype">const std::vector&lt; geometry_msgs::msg::Point &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>path</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Busca el índice del punto más cercano en TODA la ruta. </p>
-<ul>
-<li>Se usa solo al inicializar una nueva ruta. </li>
-</ul>
-
-</div>
-</div>
-<a id="ab2703b6292e3c241ec0e44a7f162a62a" name="ab2703b6292e3c241ec0e44a7f162a62a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab2703b6292e3c241ec0e44a7f162a62a">&#9670;&#160;</a></span>findGapSide()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int PurePursuitNode::findGapSide </td>
+          <td class="memname">void PurePursuitNode::findClosestIndex </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -466,10 +531,13 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Encuentra el índice del punto más cercano en la trayectoria. </p>
+<p>Busca en toda la trayectoria el waypoint más próximo a la posición actual del robot para inicializar correctamente el índice de seguimiento </p>
+
 </div>
 </div>
-<a id="aea8b112d5469f1be331aba1985d06cdd" name="aea8b112d5469f1be331aba1985d06cdd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aea8b112d5469f1be331aba1985d06cdd">&#9670;&#160;</a></span>findSequentialLookaheadPoint()</h2>
+<a id="a5e08b00b631dabe36405a232a6123ea6" name="a5e08b00b631dabe36405a232a6123ea6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e08b00b631dabe36405a232a6123ea6">&#9670;&#160;</a></span>findLookaheadPoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -478,9 +546,49 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool PurePursuitNode::findSequentialLookaheadPoint </td>
+          <td class="memname">bool PurePursuitNode::findLookaheadPoint </td>
           <td>(</td>
-          <td class="paramtype">geometry_msgs::msg::Point &amp;</td>          <td class="paramname"><span class="paramname"><em>lookahead_point</em></span></td><td>)</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>dynamic_lookahead_dist</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">geometry_msgs::msg::Point &amp;</td>          <td class="paramname"><span class="paramname"><em>lookahead_point</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Busca el punto lookahead en la trayectoria. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dynamic_lookahead_dist</td><td>Distancia lookahead calculada dinámicamente </td></tr>
+    <tr><td class="paramname">lookahead_point</td><td>Punto encontrado (salida) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>true si encontró punto, false si llegó al final</dd></dl>
+<p>Busca hacia adelante el primer waypoint que esté a una distancia mayor o igual al lookahead distance calculado </p>
+
+</div>
+</div>
+<a id="a4c5cba60db2988784947dcefd662c769" name="a4c5cba60db2988784947dcefd662c769"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c5cba60db2988784947dcefd662c769">&#9670;&#160;</a></span>generateDetourPath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PurePursuitNode::generateDetourPath </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -491,11 +599,50 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Busca el punto de Lookahead de forma secuencial. </p>
-<ul>
-<li>Empieza a buscar desde current_path_index_ hacia adelante.</li>
-<li>Actualiza current_path_index_ al punto más cercano actual para evitar retroceder. </li>
+<p>Genera una ruta de desvío para evadir obstáculos. </p>
+<p>Algoritmo:</p><ol type="1">
+<li>Escanea 190° (±95°) para analizar entorno completo</li>
+<li>Calcula pesos por hemisferio: peso = 1/distancia</li>
+<li>Decide dirección: hacia lado con menor peso total</li>
+<li>Calcula 3 puntos clave:<ul>
+<li>P_inicio: posición actual</li>
+<li>P_ápex: 0.5m adelante + 1.0m lateral</li>
+<li>P_reincorporación: sobre ruta a 2.0m adelante</li>
 </ul>
+</li>
+<li>Genera curva de Bézier cuadrática con 15 puntos</li>
+<li>Reemplaza segmento de ruta original por desvío</li>
+</ol>
+<dl class="section note"><dt>Nota</dt><dd>Solo se ejecuta si han pasado &gt;2s desde último desvío </dd></dl>
+
+</div>
+</div>
+<a id="a8e20f642302067b9010e15f1bfe9ff86" name="a8e20f642302067b9010e15f1bfe9ff86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e20f642302067b9010e15f1bfe9ff86">&#9670;&#160;</a></span>getCrossTrackError()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::getCrossTrackError </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calcula el error de seguimiento lateral (Cross-Track Error) </p>
+<dl class="section return"><dt>Devuelve</dt><dd>Distancia mínima perpendicular a la trayectoria (metros)</dd></dl>
+<p>Busca entre los próximos 20 waypoints la distancia mínima al robot </p>
 
 </div>
 </div>
@@ -522,36 +669,13 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Actualiza el objetivo final global. </p>
-
-</div>
-</div>
-<a id="a2c82ab2715bcffffe8dd16be42b59b23" name="a2c82ab2715bcffffe8dd16be42b59b23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c82ab2715bcffffe8dd16be42b59b23">&#9670;&#160;</a></span>logData()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void PurePursuitNode::logData </td>
-          <td>(</td>
-          <td class="paramtype">const geometry_msgs::msg::Twist &amp;</td>          <td class="paramname"><span class="paramname"><em>cmd</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>dist</em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
+<p>Callback para recibir el objetivo de navegación. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msg</td><td>Pose del objetivo en el marco de referencia global </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -578,6 +702,15 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Normaliza un ángulo al rango [-π, π]. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">angle</td><td>Ángulo en radianes (cualquier valor) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>Ángulo normalizado en [-π, π] </dd></dl>
+
 </div>
 </div>
 <a id="aee0c64992783ccda10e0a663a60fd1c1" name="aee0c64992783ccda10e0a663a60fd1c1"></a>
@@ -603,7 +736,14 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Actualiza la odometría del robot. </p>
+<p>Callback para recibir la odometría filtrada del robot. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msg</td><td>Mensaje de odometría con pose y velocidad</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Actualiza la posición (x,y), orientación (yaw) y velocidad lineal del robot </p>
 
 </div>
 </div>
@@ -630,16 +770,19 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Recibe y almacena la ruta suavizada. </p>
-<ul>
-<li>IMPORTANTE: Aquí se resuelve el problema del "primer lookahead".</li>
-<li>En lugar de empezar en 0, busca el punto más cercano a la posición real del robot. </li>
-</ul>
+<p>Callback para recibir la trayectoria a seguir. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msg</td><td>Array de poses que conforman el camino</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Solo actualiza la trayectoria si han pasado &gt;3 segundos desde el último desvío para evitar conflictos entre rutas planificadas y desvíos reactivos </p>
 
 </div>
 </div>
-<a id="a06ab55025bfde553e5044761e5124c6c" name="a06ab55025bfde553e5044761e5124c6c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06ab55025bfde553e5044761e5124c6c">&#9670;&#160;</a></span>publishLookaheadMarker()</h2>
+<a id="a86396b82599e631edeadbe37b335cab0" name="a86396b82599e631edeadbe37b335cab0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86396b82599e631edeadbe37b335cab0">&#9670;&#160;</a></span>publishBubbleViz()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -648,9 +791,9 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void PurePursuitNode::publishLookaheadMarker </td>
+          <td class="memname">void PurePursuitNode::publishBubbleViz </td>
           <td>(</td>
-          <td class="paramtype">const geometry_msgs::msg::Point &amp;</td>          <td class="paramname"><span class="paramname"><em>pt</em></span></td><td>)</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>radius</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -661,10 +804,23 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Publica marcador visual de la burbuja de seguridad en RViz. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">radius</td><td>Radio de la burbuja (metros)</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Colores según estado:</p><ul>
+<li>NORMAL: Cian translúcido (α=0.3)</li>
+<li>OBSTACLE_DETECTED: Naranja semi-opaco (α=0.5)</li>
+<li>EMERGENCY: Rojo opaco (α=0.7) </li>
+</ul>
+
 </div>
 </div>
-<a id="af4085871dbccbc5447adc2b2ae95119c" name="af4085871dbccbc5447adc2b2ae95119c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4085871dbccbc5447adc2b2ae95119c">&#9670;&#160;</a></span>publishOdomAndTF()</h2>
+<a id="ab5dc33aa724510df1f5fbabf7e88d4b2" name="ab5dc33aa724510df1f5fbabf7e88d4b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5dc33aa724510df1f5fbabf7e88d4b2">&#9670;&#160;</a></span>publishDetourPath()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -673,7 +829,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void PurePursuitNode::publishOdomAndTF </td>
+          <td class="memname">void PurePursuitNode::publishDetourPath </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -685,6 +841,74 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Publica visualización de la trayectoria modificada en RViz. </p>
+<p>Genera dos marcadores:</p><ul>
+<li>LINE_STRIP: línea continua cian mostrando la ruta completa</li>
+<li>SPHERE_LIST: esferas magenta en cada waypoint </li>
+</ul>
+
+</div>
+</div>
+<a id="afd5b20e7bf87bb3f8e86af080008fe05" name="afd5b20e7bf87bb3f8e86af080008fe05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd5b20e7bf87bb3f8e86af080008fe05">&#9670;&#160;</a></span>publishLookaheadMarker()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PurePursuitNode::publishLookaheadMarker </td>
+          <td>(</td>
+          <td class="paramtype">const geometry_msgs::msg::Point &amp;</td>          <td class="paramname"><span class="paramname"><em>point</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Publica marcador visual del punto lookahead en RViz. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">point</td><td>Punto lookahead en coordenadas globales</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Marcador: esfera magenta de 0.2m de diámetro </p>
+
+</div>
+</div>
+<a id="ac983fdab68d008d317db5666cc83ea37" name="ac983fdab68d008d317db5666cc83ea37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac983fdab68d008d317db5666cc83ea37">&#9670;&#160;</a></span>publishRobotMarker()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PurePursuitNode::publishRobotMarker </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Publica marcador visual de la posición del robot en RViz. </p>
+<p>Marcador: esfera azul de 0.3m de diámetro en la posición actual </p>
 
 </div>
 </div>
@@ -711,6 +935,14 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Callback para recibir datos del sensor láser. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msg</td><td>Escaneo láser con distancias y ángulos </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a9d124a1a7daeb57fd5c664040c868683" name="a9d124a1a7daeb57fd5c664040c868683"></a>
@@ -736,6 +968,69 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Detiene el robot completamente. </p>
+<p>Publica velocidad lineal y angular = 0 </p>
+
+</div>
+</div>
+<a id="acff31b46396dfae6751831474490f307" name="acff31b46396dfae6751831474490f307"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acff31b46396dfae6751831474490f307">&#9670;&#160;</a></span>updateAvoidanceState()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PurePursuitNode::updateAvoidanceState </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Actualiza el estado del sistema de evasión de obstáculos. </p>
+<p>Escanea el láser en un FOV de 60° frontal (±30°) y determina:</p><ul>
+<li>EMERGENCY: si hay obstáculo &lt; 0.25m</li>
+<li>OBSTACLE_DETECTED: si hay obstáculo &lt; 0.5m</li>
+<li>NORMAL: si todos los obstáculos &gt; 0.5m </li>
+</ul>
+
+</div>
+</div>
+<a id="ab9cce021c1b4c0273a74e72738e40441" name="ab9cce021c1b4c0273a74e72738e40441"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9cce021c1b4c0273a74e72738e40441">&#9670;&#160;</a></span>updateCurrentPathIndex()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PurePursuitNode::updateCurrentPathIndex </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Actualiza el índice actual en la trayectoria durante navegación. </p>
+<p>Busca hacia adelante (hasta 50 puntos) para encontrar el waypoint más cercano, asegurando progreso continuo sin retrocesos </p>
+
 </div>
 </div>
 <h2 class="groupheader">Documentación de datos miembro</h2>
@@ -749,7 +1044,55 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#abf850824711763560fdb8e2aa3d96efc">AvoidanceState</a> PurePursuitNode::avoidance_state_ = <a class="el" href="#abf850824711763560fdb8e2aa3d96efca1e23852820b9154316c7c06e2b7ba051">AvoidanceState::NORMAL</a></td>
+          <td class="memname"><a class="el" href="#abf850824711763560fdb8e2aa3d96efc">AvoidanceState</a> PurePursuitNode::avoidance_state_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Estado actual de evasión. </p>
+
+</div>
+</div>
+<a id="a86cbc6f3bc479046ae678a698e6b4609" name="a86cbc6f3bc479046ae678a698e6b4609"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86cbc6f3bc479046ae678a698e6b4609">&#9670;&#160;</a></span>bubble_base_radius_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::bubble_base_radius_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Radio de burbuja de seguridad (m) </p>
+
+</div>
+</div>
+<a id="a490c70213ba5fcbb14695844e2a61207" name="a490c70213ba5fcbb14695844e2a61207"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a490c70213ba5fcbb14695844e2a61207">&#9670;&#160;</a></span>bubble_viz_pub_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Publisher&lt;visualization_msgs::msg::Marker&gt;::SharedPtr PurePursuitNode::bubble_viz_pub_</td>
         </tr>
       </table>
   </td>
@@ -803,6 +1146,32 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Timer del bucle control. </p>
+
+</div>
+</div>
+<a id="a81230884bb081032c8b7ef4e7ccce2f1" name="a81230884bb081032c8b7ef4e7ccce2f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81230884bb081032c8b7ef4e7ccce2f1">&#9670;&#160;</a></span>critical_distance_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::critical_distance_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Distancia de emergencia (m) </p>
+
 </div>
 </div>
 <a id="adc700fd29b016527aa85af451ba54bb7" name="adc700fd29b016527aa85af451ba54bb7"></a>
@@ -825,6 +1194,8 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Objetivo final de navegación. </p>
+
 </div>
 </div>
 <a id="a85bb4205bf76a04a8581edf0262c475c" name="a85bb4205bf76a04a8581edf0262c475c"></a>
@@ -837,7 +1208,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t PurePursuitNode::current_path_index_ = 0</td>
+          <td class="memname">size_t PurePursuitNode::current_path_index_</td>
         </tr>
       </table>
   </td>
@@ -846,6 +1217,32 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Índice actual en la trayectoria. </p>
+
+</div>
+</div>
+<a id="a8be02ab90837eb6dcbcde0a3e5f19f2b" name="a8be02ab90837eb6dcbcde0a3e5f19f2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8be02ab90837eb6dcbcde0a3e5f19f2b">&#9670;&#160;</a></span>current_vel_cmd_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::current_vel_cmd_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Última velocidad comandada (m/s) </p>
 
 </div>
 </div>
@@ -869,6 +1266,150 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Archivo CSV de logging. </p>
+
+</div>
+</div>
+<a id="ae8800c239fda5ae33481d8c72cb3996c" name="ae8800c239fda5ae33481d8c72cb3996c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8800c239fda5ae33481d8c72cb3996c">&#9670;&#160;</a></span>delta_max_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::delta_max_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>LHD máximo para adaptativo (m) </p>
+
+</div>
+</div>
+<a id="abae562d7eb93b45c29de9ef09565897b" name="abae562d7eb93b45c29de9ef09565897b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abae562d7eb93b45c29de9ef09565897b">&#9670;&#160;</a></span>delta_min_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::delta_min_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>LHD mínimo para adaptativo (m) </p>
+
+</div>
+</div>
+<a id="ad5769e2edb221ac3205199160a8165d4" name="ad5769e2edb221ac3205199160a8165d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5769e2edb221ac3205199160a8165d4">&#9670;&#160;</a></span>detour_offset_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::detour_offset_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Desplazamiento lateral del desvío (m) </p>
+
+</div>
+</div>
+<a id="a126cf53791816015aba5dc33ff397352" name="a126cf53791816015aba5dc33ff397352"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a126cf53791816015aba5dc33ff397352">&#9670;&#160;</a></span>detour_path_pub_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Publisher&lt;visualization_msgs::msg::MarkerArray&gt;::SharedPtr PurePursuitNode::detour_path_pub_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a342ab071cd0f1366c35f13034683ee01" name="a342ab071cd0f1366c35f13034683ee01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a342ab071cd0f1366c35f13034683ee01">&#9670;&#160;</a></span>forward_offset_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::forward_offset_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Desplazamiento frontal del ápex (m) </p>
+
+</div>
+</div>
+<a id="a579b5ca03cbb8f841f98e0f04106c616" name="a579b5ca03cbb8f841f98e0f04106c616"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a579b5ca03cbb8f841f98e0f04106c616">&#9670;&#160;</a></span>gamma_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::gamma_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Factor de decaimiento exponencial. </p>
+
 </div>
 </div>
 <a id="ad428bdef1be303c7d638cbf904514858" name="ad428bdef1be303c7d638cbf904514858"></a>
@@ -881,7 +1422,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool PurePursuitNode::goal_reached_ = false</td>
+          <td class="memname">bool PurePursuitNode::goal_reached_</td>
         </tr>
       </table>
   </td>
@@ -890,6 +1431,8 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Flag: objetivo alcanzado. </p>
 
 </div>
 </div>
@@ -957,6 +1500,8 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Tolerancia de llegada (m) </p>
+
 </div>
 </div>
 <a id="acddd6de5b26ef60bee4abed27fcd39dd" name="acddd6de5b26ef60bee4abed27fcd39dd"></a>
@@ -969,7 +1514,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool PurePursuitNode::has_goal_ = false</td>
+          <td class="memname">bool PurePursuitNode::has_goal_</td>
         </tr>
       </table>
   </td>
@@ -978,6 +1523,8 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Flag: objetivo recibido. </p>
 
 </div>
 </div>
@@ -991,7 +1538,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool PurePursuitNode::has_path_ = false</td>
+          <td class="memname">bool PurePursuitNode::has_path_</td>
         </tr>
       </table>
   </td>
@@ -1000,6 +1547,32 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Flag: trayectoria recibida. </p>
+
+</div>
+</div>
+<a id="a9fb69d3a931b51af94a4c9ec495132ef" name="a9fb69d3a931b51af94a4c9ec495132ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9fb69d3a931b51af94a4c9ec495132ef">&#9670;&#160;</a></span>last_detour_time_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Time PurePursuitNode::last_detour_time_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Timestamp del último desvío. </p>
 
 </div>
 </div>
@@ -1023,6 +1596,8 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Último escaneo láser recibido. </p>
+
 </div>
 </div>
 <a id="a90e645a5ce55d71bd1ef15be00a77873" name="a90e645a5ce55d71bd1ef15be00a77873"></a>
@@ -1044,6 +1619,8 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>LHD base (no usado con adaptativo) </p>
 
 </div>
 </div>
@@ -1089,6 +1666,8 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Velocidad angular máxima (rad/s) </p>
+
 </div>
 </div>
 <a id="a913dc9c3a81f9eb44d1f46328b8558b3" name="a913dc9c3a81f9eb44d1f46328b8558b3"></a>
@@ -1111,71 +1690,7 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="a4edbe12e7fc227d2a3952b6b0cf92631" name="a4edbe12e7fc227d2a3952b6b0cf92631"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4edbe12e7fc227d2a3952b6b0cf92631">&#9670;&#160;</a></span>min_free_distance_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">double PurePursuitNode::min_free_distance_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9aa77097ad49d65f4b71327ecb877ac4" name="a9aa77097ad49d65f4b71327ecb877ac4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9aa77097ad49d65f4b71327ecb877ac4">&#9670;&#160;</a></span>obstacle_detected_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool PurePursuitNode::obstacle_detected_ = false</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a679b0c38dd51727b1a201bf13625aea1" name="a679b0c38dd51727b1a201bf13625aea1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a679b0c38dd51727b1a201bf13625aea1">&#9670;&#160;</a></span>obstacle_distance_threshold_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">double PurePursuitNode::obstacle_distance_threshold_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
+<p>Velocidad lineal máxima (m/s) </p>
 
 </div>
 </div>
@@ -1243,6 +1758,8 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Waypoints de la trayectoria. </p>
+
 </div>
 </div>
 <a id="ade017bfbffe7f38dde72ed9df49a2469" name="ade017bfbffe7f38dde72ed9df49a2469"></a>
@@ -1267,6 +1784,76 @@ Atributos privados</h2></td></tr>
 
 </div>
 </div>
+<a id="afc066944de88710c275235951a15b0b8" name="afc066944de88710c275235951a15b0b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc066944de88710c275235951a15b0b8">&#9670;&#160;</a></span>rejoin_distance_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::rejoin_distance_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Distancia de reincorporación (m) </p>
+
+</div>
+</div>
+<a id="aed472eafd9ca340b5e3f4c952bde24d7" name="aed472eafd9ca340b5e3f4c952bde24d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed472eafd9ca340b5e3f4c952bde24d7">&#9670;&#160;</a></span>robot_linear_vel_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double PurePursuitNode::robot_linear_vel_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Velocidad lineal actual (m/s) </p>
+
+</div>
+</div>
+<a id="a4b47c973f4b4ef7f27a2d75228e86dc0" name="a4b47c973f4b4ef7f27a2d75228e86dc0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b47c973f4b4ef7f27a2d75228e86dc0">&#9670;&#160;</a></span>robot_marker_pub_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Publisher&lt;visualization_msgs::msg::Marker&gt;::SharedPtr PurePursuitNode::robot_marker_pub_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a606818395b2d32d0e9d788323f061466" name="a606818395b2d32d0e9d788323f061466"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a606818395b2d32d0e9d788323f061466">&#9670;&#160;</a></span>robot_x_</h2>
 
@@ -1277,7 +1864,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double PurePursuitNode::robot_x_ = 0</td>
+          <td class="memname">double PurePursuitNode::robot_x_</td>
         </tr>
       </table>
   </td>
@@ -1286,6 +1873,8 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Posición X en marco global (m) </p>
 
 </div>
 </div>
@@ -1299,7 +1888,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double PurePursuitNode::robot_y_ = 0</td>
+          <td class="memname">double PurePursuitNode::robot_y_</td>
         </tr>
       </table>
   </td>
@@ -1308,6 +1897,8 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Posición Y en marco global (m) </p>
 
 </div>
 </div>
@@ -1321,7 +1912,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double PurePursuitNode::robot_yaw_ = 0</td>
+          <td class="memname">double PurePursuitNode::robot_yaw_</td>
         </tr>
       </table>
   </td>
@@ -1331,27 +1922,7 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="a1b7f2af06869c81d79827e76f235494e" name="a1b7f2af06869c81d79827e76f235494e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1b7f2af06869c81d79827e76f235494e">&#9670;&#160;</a></span>scan_fov_rad_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">double PurePursuitNode::scan_fov_rad_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
+<p>Orientación en marco global (rad) </p>
 
 </div>
 </div>
@@ -1377,8 +1948,8 @@ Atributos privados</h2></td></tr>
 
 </div>
 </div>
-<a id="a6a03ae087c6eff9af97eeaaadb3cf665" name="a6a03ae087c6eff9af97eeaaadb3cf665"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6a03ae087c6eff9af97eeaaadb3cf665">&#9670;&#160;</a></span>search_angular_vel_</h2>
+<a id="a26f57e99edfd2bce3c3e427a0f3b5f94" name="a26f57e99edfd2bce3c3e427a0f3b5f94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26f57e99edfd2bce3c3e427a0f3b5f94">&#9670;&#160;</a></span>selected_route_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1387,7 +1958,7 @@ Atributos privados</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">double PurePursuitNode::search_angular_vel_</td>
+          <td class="memname">int PurePursuitNode::selected_route_</td>
         </tr>
       </table>
   </td>
@@ -1396,6 +1967,8 @@ Atributos privados</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>ID de ruta seleccionada (1-8) </p>
 
 </div>
 </div>
@@ -1419,27 +1992,7 @@ Atributos privados</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="acd4de82917f5912b3e3d4a2fc51096ad" name="acd4de82917f5912b3e3d4a2fc51096ad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acd4de82917f5912b3e3d4a2fc51096ad">&#9670;&#160;</a></span>tf_timer_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">rclcpp::TimerBase::SharedPtr PurePursuitNode::tf_timer_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
+<p>Broadcaster TF2. </p>
 
 </div>
 </div>

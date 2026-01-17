@@ -110,6 +110,9 @@ $(function(){initNavTree('route__publisher_8cpp.html',''); initResizable(true); 
   <div class="headertitle"><div class="title">Referencia del archivo route_publisher.cpp</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).  
+<a href="#details">Más...</a></p>
 <div class="textblock"><code>#include &lt;rclcpp/rclcpp.hpp&gt;</code><br />
 <code>#include &lt;geometry_msgs/msg/pose_stamped.hpp&gt;</code><br />
 <code>#include &lt;geometry_msgs/msg/pose_array.hpp&gt;</code><br />
@@ -127,16 +130,19 @@ $(function(){initNavTree('route__publisher_8cpp.html',''); initResizable(true); 
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Clases</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_route_publisher.html">RoutePublisher</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).  <a href="class_route_publisher.html#details">Más...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.  <a href="class_route_publisher.html#details">Más...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Funciones</h2></td></tr>
 <tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627" id="r_a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
-<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main principal.  <br /></td></tr>
+<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Función principal del programa.  <br /></td></tr>
 <tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Documentación de funciones</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Descripción detallada</h2>
+<div class="textblock"><p>Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines). </p>
+<dl class="section author"><dt>Autor</dt><dd>Pedro Cabello Pulido | Gabriela Cano Azuaga | Lola Hernández Canizares | Almudena Jin | Lucía Pérez Guerrero </dd></dl>
+</div><h2 class="groupheader">Documentación de funciones</h2>
 <a id="a3c04138a5bfe5d72780bb7e82a18e627" name="a3c04138a5bfe5d72780bb7e82a18e627"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3c04138a5bfe5d72780bb7e82a18e627">&#9670;&#160;</a></span>main()</h2>
 
@@ -156,15 +162,16 @@ Funciones</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Main principal. </p>
+<p>Función principal del programa. </p>
 <dl class="params"><dt>Parámetros</dt><dd>
   <table class="params">
-    <tr><td class="paramname">argc</td><td></td></tr>
-    <tr><td class="paramname">argv</td><td></td></tr>
+    <tr><td class="paramname">argc</td><td>Número de argumentos de línea de comandos </td></tr>
+    <tr><td class="paramname">argv</td><td>Array de argumentos de línea de comandos </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Devuelve</dt><dd>int </dd></dl>
+<dl class="section return"><dt>Devuelve</dt><dd>int Código de retorno (0 si es exitoso)</dd></dl>
+<p>Inicializa el contexto de ROS2, crea una instancia del nodo <a class="el" href="class_route_publisher.html" title="Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.">RoutePublisher</a>, mantiene el nodo en ejecución (spin) hasta que se reciba una señal de apagado, y finalmente realiza la limpieza del contexto de ROS2. </p>
 
 </div>
 </div>

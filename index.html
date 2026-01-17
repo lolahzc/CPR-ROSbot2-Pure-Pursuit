@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.13.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CPR Pure-Pursuit: Documentación del Proyecto: Navegación Autónoma con Pure Pursuit</title>
+<title>CPR Pure-Pursuit: Sistema de Navegación Autónoma con Pure Pursuit</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -104,84 +104,595 @@ $(function(){initNavTree('index.html',''); initResizable(true); });
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Documentación del Proyecto: Navegación Autónoma con Pure Pursuit </div></div>
+  <div class="headertitle"><div class="title">Sistema de Navegación Autónoma con Pure Pursuit </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="mainpage"></a></p>
-<h1><a class="anchor" id="autotoc_md0"></a>
-1. Introducción</h1>
-<p>Bienvenido a la documentación técnica del sistema de navegación para robot móvil diferencial. Este proyecto implementa una solución completa en <b>ROS 2</b> que permite a un robot seguir trayectorias complejas y suavizadas, con capacidad de reacción ante obstáculos imprevistos.</p>
-<p>El sistema se divide en una arquitectura modular de dos nodos principales: un <b>Generador de Rutas</b> y un <b>Controlador de Trayectoria</b>.</p>
+<div class="textblock"><p><a class="anchor" id="md_docs_2mainpage"></a></p>
+<blockquote class="doxtable">
+<p><b>Implementación completa de navegación autónoma para robots móviles diferenciales en ROS 2</b> <br  />
+ Planificación de trayectorias con interpolaciones, Control Pure Pursuit y Evasión de Obstáculos </p>
+</blockquote>
+<h1><a class="anchor" id="autotoc_md1"></a>
+CPR-ROSbot2-Pure-Pursuit</h1>
+<p><a href="https://github.com/lolahzc/CPR-ROSbot2-Pure-Pursuit"><img src="https://img.shields.io/badge/GitHub-Repository-black?logo=github" alt="Repositorio" class="inline"/></a> <a href="https://docs.google.com/document/d/1cfmEbwkrzTM8Bx64vPWgPFfgYbjm4549P3c9DjRNj50/edit"><img src="https://img.shields.io/badge/Docs-Google-green?logo=google" alt="Documentación" class="inline"/></a></p>
 <div class="image">
 <img src="robot_pure_pursuit.png" alt="" width="600px"/>
 <div class="caption">
 Esquema conceptual: Robot siguiendo la ruta con Pure Pursuit</div></div>
 <hr  />
-<h1><a class="anchor" id="autotoc_md2"></a>
-2. Arquitectura del Sistema</h1>
-<p>El flujo de información funciona de la siguiente manera:</p>
-<ol type="1">
-<li><b>Selección de Ruta:</b> El nodo <code><a class="el" href="class_route_publisher.html" title="Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).">RoutePublisher</a></code> selecciona una ruta (ej. zigzag, espiral, circuito) y genera una trayectoria suave.</li>
-<li><b>Comunicación:</b> La ruta se publica en el tópico <code>/waypoints_path</code>.</li>
-<li><b>Control:</b> El nodo <code><a class="el" href="class_pure_pursuit_node.html" title="Controlador Pure Pursuit con evasión.">PurePursuitNode</a></code> recibe la ruta, calcula la velocidad necesaria y evita obstáculos si aparecen.</li>
-</ol>
 <h2><a class="anchor" id="autotoc_md3"></a>
-Diagrama de Nodos</h2>
+Índice</h2>
 <ul>
-<li><b>[<a class="el" href="class_route_publisher.html" title="Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).">RoutePublisher</a>]</b> ---&gt; <code>/waypoints_path</code> ---&gt; <b>[<a class="el" href="class_pure_pursuit_node.html" title="Controlador Pure Pursuit con evasión.">PurePursuitNode</a>]</b> ---&gt; <code>/cmd_vel</code></li>
+<li>Introducción</li>
+<li>Arquitectura del Sistema</li>
+<li>Fundamentos Teóricos<ul>
+<li>Algoritmo Pure Pursuit</li>
+<li>Interpolación con Splines Cúbicos</li>
+</ul>
+</li>
+<li>Módulos del Sistema<ul>
+<li>Route Publisher (Planificador de Trayectorias)</li>
+<li>Pure Pursuit Node (Controlador de Seguimiento)</li>
+</ul>
+</li>
+<li>Parámetros Configurables</li>
+<li>Comunicación ROS 2</li>
+<li>Sistema de Evasión de Obstáculos</li>
+<li>Sistema de Logging</li>
+<li>Referencias</li>
+<li>Autores</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md5"></a>
-3. Descripción de los Módulos</h1>
-<h2><a class="anchor" id="autotoc_md6"></a>
-A. Nodo Publicador de Rutas (Planificador)</h2>
-<p>Este nodo es el encargado de la "inteligencia global" de la ruta. No mueve el robot, solo le dice por dónde ir.</p>
+<h2><a class="anchor" id="autotoc_md5"></a>
+Introducción</h2>
+<p>Este proyecto implementa un <b>sistema completo de navegación autónoma</b> para robots móviles diferenciales utilizando <b>ROS 2</b>. El sistema combina:</p>
 <ul>
-<li><b>Clase Principal:</b> <a class="el" href="class_route_publisher.html">RoutePublisher</a></li>
-<li><b>Funcionalidades Clave:</b><ul>
-<li><b>Interpolación:</b> Utiliza <b>Splines Cúbicos Naturales</b> para convertir una lista de puntos dispersos en una curva suave y continua.</li>
-<li><b>Visualización:</b> Publica marcadores (<code>visualization_msgs::msg::MarkerArray</code>) para ver la ruta y el objetivo en RViz.</li>
-<li><b>Gestión de Misiones:</b> Controla si la ruta debe repetirse en bucle o finalizar.</li>
-</ul>
+<li><b>Planificación de trayectorias suaves</b> mediante interpolación con Splines Cúbicos Naturales <br  />
 </li>
+<li><b>Control de seguimiento robusto</b> con el algoritmo Pure Pursuit clásico <br  />
+</li>
+<li><b>Evasión reactiva de obstáculos</b> con sistema de estados basado en sensores láser <br  />
+</li>
+<li><b>Visualización completa</b> en RViz con marcadores y trayectorias <br  />
+</li>
+<li><b>Logging automático</b> para análisis y benchmarking</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md7"></a>
-B. Nodo Controlador (Pure Pursuit + Evasión)</h2>
-<p>Este es el nodo que interactúa con los motores y sensores del robot. Implementa el algoritmo de seguimiento y una máquina de estados para la seguridad.</p>
+<h3><a class="anchor" id="autotoc_md6"></a>
+Características Destacadas</h3>
 <ul>
-<li><b>Clase Principal:</b> <a class="el" href="class_pure_pursuit_node.html">PurePursuitNode</a></li>
-<li><b>Algoritmos:</b><ul>
-<li><b>Pure Pursuit:</b> Calcula la curvatura necesaria para alcanzar un punto "Lookahead" a una distancia dinámica LHD.</li>
-<li><b>Smart Start:</b> Al recibir una ruta, busca automáticamente el punto más cercano al robot para iniciar el seguimiento.</li>
-<li><b>Evasión de Obstáculos:</b> Utiliza LIDAR para detectar colisiones inminentes.</li>
+<li><b>8 rutas predefinidas</b>: recta, zigzag, ocho, espiral, curvas suaves/cerradas, con obstáculos</li>
+<li><b>Lookahead Distance adaptativo</b> que se ajusta según velocidad y error de seguimiento</li>
+<li><b>Velocidad variable</b> basada en la curvatura de la trayectoria</li>
+<li><b>3 estados de seguridad</b>: Normal, Obstáculo Detectado, Emergencia</li>
+<li><b>Datos exportables</b> en formato CSV con timestamp para análisis posterior</li>
+<li><b>Generación automática de desvíos</b> mediante curvas de Bézier cuadráticas</li>
 </ul>
-</li>
-<li><b>Máquina de Estados:</b><ol type="1">
-<li><code>NORMAL</code>: Seguimiento de ruta.</li>
-<li><code>STOPPED</code>: Obstáculo detectado.</li>
-<li><code>SEARCHING</code>: Giro sobre el propio eje para buscar espacio libre.</li>
+<hr  />
+<h2><a class="anchor" id="autotoc_md8"></a>
+Arquitectura del Sistema</h2>
+<p>El sistema está diseñado con una arquitectura modular de <b>dos nodos principales</b> que se comunican mediante topics de ROS 2:</p>
+<div class="image">
+<img src="mapa_conceptual.png" alt="" width="800px"/>
+<div class="caption">
+Mapa conceptual sobre el funcionamineto de los códigos</div></div>
+<h3><a class="anchor" id="autotoc_md9"></a>
+Flujo de Funcionamiento</h3>
+<ol type="1">
+<li><b>Selección de Ruta</b>: <code><a class="el" href="class_route_publisher.html" title="Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.">RoutePublisher</a></code> carga una ruta predefinida (parámetro <code>selected_route</code>)</li>
+<li><b>Generación de Spline</b>: Los waypoints discretos se interpolan en una trayectoria continua y suave</li>
+<li><b>Publicación</b>: La ruta completa se publica en <code>/waypoints_path</code> y el primer objetivo en <code>/goal_pose</code></li>
+<li><b>Control</b>: <code><a class="el" href="class_pure_pursuit_node.html" title="Nodo ROS 2 para control de navegación mediante Pure Pursuit con evasión de obstáculos.">PurePursuitNode</a></code> calcula velocidades para seguir la trayectoria</li>
+<li><b>Evasión</b>: Si detecta obstáculos, genera desvíos automáticos con curvas de Bézier</li>
+<li><b>Avance</b>: Al alcanzar un waypoint, se notifica mediante <code>/goal_reached</code> y se publica el siguiente</li>
 </ol>
-</li>
+<hr  />
+<h2><a class="anchor" id="autotoc_md11"></a>
+Fundamentos Teóricos</h2>
+<h3><a class="anchor" id="autotoc_md12"></a>
+Algoritmo Pure Pursuit</h3>
+<p>El <b>Pure Pursuit</b> es un algoritmo de seguimiento de trayectorias ampliamente utilizado en robótica móvil y vehículos autónomos.</p>
+<h4><a class="anchor" id="autotoc_md13"></a>
+Principio de Funcionamiento</h4>
+<p>El algoritmo busca un punto objetivo a una distancia fija <b>L</b> (lookahead distance) sobre la trayectoria y calcula la curvatura necesaria para alcanzarlo.</p>
+<div class="image">
+<img src="ej_pure_pursuit.png" alt="" width="600px"/>
+<div class="caption">
+Mapa conceptual sobre el funcionamineto de los códigos</div></div>
+<h4><a class="anchor" id="autotoc_md14"></a>
+Ecuaciones Fundamentales</h4>
+<ol type="1">
+<li><b>Transformación a coordenadas del robot</b>: <div class="fragment"><div class="line">x&#39; = (x_goal - x_r)·cos(θ) + (y_goal - y_r)·sin(θ)</div>
+<div class="line">y&#39; = -(x_goal - x_r)·sin(θ) + (y_goal - y_r)·cos(θ)</div>
+</div><!-- fragment --></li>
+<li><b>Cálculo de la curvatura</b>: <div class="fragment"><div class="line">κ = 2·y&#39; / L²</div>
+</div><!-- fragment --> Donde <code>L = √(x'² + y'²)</code> es la distancia euclidiana al punto lookahead.</li>
+<li><b>Velocidad angular</b> (para robot diferencial): <div class="fragment"><div class="line">ω = v · κ</div>
+</div><!-- fragment --> Donde <code>v</code> es la velocidad lineal.</li>
+</ol>
+<hr  />
+<h3><a class="anchor" id="autotoc_md16"></a>
+Interpolación con Splines Cúbicos</h3>
+<p>Para generar trayectorias suaves a partir de waypoints discretos, el sistema utiliza <b>Splines Cúbicos Naturales</b>.</p>
+<h4><a class="anchor" id="autotoc_md17"></a>
+Formulación Matemática</h4>
+<p>Para cada segmento entre waypoints <code>i</code> y <code>i+1</code>, el spline cúbico se define como:</p>
+<div class="fragment"><div class="line">S_i(t) = a_i + b_i·t + c_i·t² + d_i·t³     donde t ∈ [0,1]</div>
+</div><!-- fragment --><p>Los coeficientes se calculan resolviendo un sistema tridiagonal que garantiza:</p><ul>
+<li><b>Interpolación</b>: S_i(0) = P_i y S_i(1) = P_{i+1}</li>
+<li><b>Continuidad C¹</b>: S'<em>i(1) = S'</em>{i+1}(0)</li>
+<li><b>Continuidad C²</b>: S''<em>i(1) = S''</em>{i+1}(0)</li>
+<li><b>Condiciones naturales</b>: S''_0(0) = 0 y S''_n(1) = 0</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md18"></a>
+Implementación en el Sistema</h4>
+<p>El nodo <code><a class="el" href="class_route_publisher.html" title="Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.">RoutePublisher</a></code> implementa el <b>algoritmo de Thomas</b> para resolver eficientemente el sistema tridiagonal:</p>
+<div class="fragment"><div class="line">std::vector&lt;double&gt; computeNaturalCubicSpline(const std::vector&lt;double&gt;&amp; points)</div>
+<div class="line">{</div>
+<div class="line">    // Método de Thomas: eliminación hacia adelante + sustitución hacia atrás</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> El resultado es una trayectoria que:</p><ul>
+<li>Pasa exactamente por todos los waypoints originales</li>
+<li>No presenta cambios bruscos de dirección</li>
+<li>Es derivable en toda su longitud</li>
+<li>Optimiza la suavidad de la curva</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md9"></a>
-4. Referencias</h1>
+<h2><a class="anchor" id="autotoc_md20"></a>
+Módulos del Sistema</h2>
+<h3><a class="anchor" id="autotoc_md21"></a>
+A. Route Publisher (Planificador de Trayectorias)</h3>
+<p>Gestión y publicación de rutas de navegación</p>
+<p><b>Archivo</b>: <code><a class="el" href="route__publisher_8cpp.html" title="Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).">route_publisher.cpp</a></code> <br  />
+ <b>Clase principal</b>: <code><a class="el" href="class_route_publisher.html" title="Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.">RoutePublisher</a></code> <br  />
+</p>
+<h4><a class="anchor" id="autotoc_md22"></a>
+Funcionalidades Principales</h4>
+<p>1️ <b>Definición de Rutas Predefinidas</b></p><ul>
+<li>8 rutas con diferentes características geométricas</li>
+<li>Waypoints en coordenadas cartesianas (x, y, z)</li>
+<li>Selección mediante parámetro <code>selected_route</code></li>
+</ul>
+<p>2️ <b>Generación de Splines Cúbicos</b></p><ul>
+<li>Interpolación independiente para ejes X e Y</li>
+<li>Número configurable de puntos por segmento (<code>interpolation_points_per_segment</code>)</li>
+<li>Preservación exacta de waypoints originales</li>
+</ul>
+<p>3️ <b>Gestión de Objetivos Secuenciales</b></p><ul>
+<li>Publicación del waypoint actual en <code>/goal_pose</code></li>
+<li>Espera de confirmación en <code>/goal_reached</code></li>
+<li>Avance automático al siguiente objetivo</li>
+<li>Modo bucle opcional (<code>loop_route</code>)</li>
+</ul>
+<p>4️ <b>Visualización en RViz</b></p><ul>
+<li>Línea verde: Trayectoria interpolada (spline)</li>
+<li>Línea roja translúcida: Waypoints originales</li>
+<li>Esferas rojas: Posición de cada waypoint</li>
+<li>Esfera amarilla: Objetivo actual</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md23"></a>
+Rutas Disponibles</h4>
 <table class="markdownTable">
 <tr class="markdownTableHead">
-<th class="markdownTableHeadLeft">Tópico   </th><th class="markdownTableHeadLeft">Tipo de Mensaje   </th><th class="markdownTableHeadLeft">Dirección   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<th class="markdownTableHeadCenter">ID   </th><th class="markdownTableHeadLeft">Nombre   </th><th class="markdownTableHeadLeft">Descripción   </th><th class="markdownTableHeadLeft">Casos de Uso    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><code>/waypoints_path</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/msg/PoseArray</code>   </td><td class="markdownTableBodyLeft">Pub -&gt; Sub   </td><td class="markdownTableBodyLeft">Lista de puntos de la ruta suavizada.    </td></tr>
+<td class="markdownTableBodyCenter">1   </td><td class="markdownTableBodyLeft"><b>Genérica</b>   </td><td class="markdownTableBodyLeft">Trayectoria con curvas suaves   </td><td class="markdownTableBodyLeft">Pruebas generales    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><code>/goal_pose</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/msg/PoseStamped</code>   </td><td class="markdownTableBodyLeft">Pub -&gt; Sub   </td><td class="markdownTableBodyLeft">El objetivo final del segmento actual.    </td></tr>
+<td class="markdownTableBodyCenter">2   </td><td class="markdownTableBodyLeft"><b>Recta</b>   </td><td class="markdownTableBodyLeft">Línea recta de 5 metros   </td><td class="markdownTableBodyLeft">Validación de velocidad    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><code>/scan</code>   </td><td class="markdownTableBodyLeft"><code>sensor_msgs/msg/LaserScan</code>   </td><td class="markdownTableBodyLeft">Sensor -&gt; Sub   </td><td class="markdownTableBodyLeft">Datos del LIDAR para evasión.    </td></tr>
+<td class="markdownTableBodyCenter">3   </td><td class="markdownTableBodyLeft"><b>Zigzag</b>   </td><td class="markdownTableBodyLeft">Trayectoria en escalera   </td><td class="markdownTableBodyLeft">Pruebas de giros de 90°    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><code>/cmd_vel</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/msg/Twist</code>   </td><td class="markdownTableBodyLeft">Pub -&gt; Robot   </td><td class="markdownTableBodyLeft">Comandos de velocidad lineal y angular.    </td></tr>
+<td class="markdownTableBodyCenter">4   </td><td class="markdownTableBodyLeft"><b>Ocho</b>   </td><td class="markdownTableBodyLeft">Patrón en forma de 8   </td><td class="markdownTableBodyLeft">Curvas continuas    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><code>/goal_reached</code>   </td><td class="markdownTableBodyLeft"><code>std_msgs/msg/Bool</code>   </td><td class="markdownTableBodyLeft">Sub &lt;- Pub   </td><td class="markdownTableBodyLeft">Confirmación de llegada al destino.   </td></tr>
+<td class="markdownTableBodyCenter">5   </td><td class="markdownTableBodyLeft"><b>Espiral</b>   </td><td class="markdownTableBodyLeft">Espiral creciente   </td><td class="markdownTableBodyLeft">Curvas variables    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyCenter">6   </td><td class="markdownTableBodyLeft"><b>Curvas Amplias</b>   </td><td class="markdownTableBodyLeft">Curvas suaves irregulares   </td><td class="markdownTableBodyLeft">Navegación compleja    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyCenter">7   </td><td class="markdownTableBodyLeft"><b>Curvas Cerradas</b>   </td><td class="markdownTableBodyLeft">Curvas pronunciadas   </td><td class="markdownTableBodyLeft">Maniobras difíciles    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyCenter">8   </td><td class="markdownTableBodyLeft"><b>Con Obstáculo</b>   </td><td class="markdownTableBodyLeft">Incluye zona de obstáculo   </td><td class="markdownTableBodyLeft">Pruebas de evasión   </td></tr>
+</table>
+<h4><a class="anchor" id="autotoc_md24"></a>
+Parámetros Clave</h4>
+<div class="fragment"><div class="line">route_publisher_node:</div>
+<div class="line">ros__parameters:</div>
+<div class="line">selected_route: 1                      # Ruta a cargar (1-8)</div>
+<div class="line">loop_route: false                      # Repetir ruta en bucle</div>
+<div class="line">interpolation_points_per_segment: 10   # Densidad de interpolación</div>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md25"></a>
+Topics Publicados</h4>
+<ul>
+<li><code>/goal_pose</code> (PoseStamped): Objetivo actual del segmento</li>
+<li><code>/waypoints_path</code> (PoseArray): Trayectoria completa interpolada</li>
+<li><code>/waypoints_markers</code> (MarkerArray): Visualización de la ruta</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md26"></a>
+Topics Suscritos</h4>
+<ul>
+<li><code>/goal_reached</code> (Bool): Confirmación de llegada al waypoint</li>
+<li><code>/change_route</code> (Int32): Comando para cambiar de ruta dinámicamente</li>
+</ul>
+<hr  />
+<h3><a class="anchor" id="autotoc_md28"></a>
+B. Pure Pursuit Node (Controlador de Seguimiento)</h3>
+<p>Control de velocidades y evasión de obstáculos</p>
+<p><b>Archivo</b>: <code><a class="el" href="pure__pursuit__node_8cpp.html" title="Implementación de Pure Pursuit Controller con evasión dinámica de obstáculos.">pure_pursuit_node.cpp</a></code> <br  />
+ <b>Clase principal</b>: <code><a class="el" href="class_pure_pursuit_node.html" title="Nodo ROS 2 para control de navegación mediante Pure Pursuit con evasión de obstáculos.">PurePursuitNode</a></code> <br  />
+</p>
+<h4><a class="anchor" id="autotoc_md29"></a>
+Funcionalidades Principales</h4>
+<p>1️ <b>Algoritmo Pure Pursuit Clásico</b></p><ul>
+<li>Búsqueda del punto más cercano a la trayectoria</li>
+<li>Cálculo del lookahead point a distancia L</li>
+<li>Transformación a coordenadas del robot</li>
+<li>Cálculo de curvatura y velocidades</li>
+</ul>
+<p>2️ <b>Lookahead Distance Adaptativo</b> </p><div class="fragment"><div class="line">LHD = v_factor × (δ_max - δ_min) × e^(-γ×|CTE|) + δ_min</div>
+</div><!-- fragment --><ul>
+<li>Se ajusta según velocidad actual</li>
+<li>Decrece exponencialmente con el error lateral</li>
+<li>Parámetro γ controla la agresividad del ajuste</li>
+</ul>
+<p>3️ <b>Velocidad Variable por Curvatura</b> </p><div class="fragment"><div class="line">v = v_max × (1 - k_curv × min(|κ|, 1.0))</div>
+</div><!-- fragment --><ul>
+<li>Reduce velocidad en curvas cerradas</li>
+<li>Mantiene velocidad máxima en rectas</li>
+<li>Factor <code>k_curv</code> configurable</li>
+</ul>
+<p>4️ <b>Comienzo</b></p><ul>
+<li>Al recibir una ruta, busca el punto más cercano al robot</li>
+<li>Inicia seguimiento desde ese punto</li>
+<li>Evita retrocesos innecesarios</li>
+</ul>
+<p>5️ <b>Sistema de Evasión de Obstáculos</b></p><ul>
+<li>Máquina de estados con 3 niveles de seguridad</li>
+<li>Generación automática de desvíos con curvas de Bézier</li>
+<li>Burbuja de seguridad visualizable</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md30"></a>
+Máquina de Estados</h4>
+<div class="fragment"><div class="line">  ┌──────────┐</div>
+<div class="line">  │  NORMAL  │ ◄──── Sin obstáculos (&gt; 0.5m)</div>
+<div class="line">  └────┬─────┘</div>
+<div class="line">       │</div>
+<div class="line">       │ Obstáculo detectado (0.25m - 0.5m)</div>
+<div class="line">       ▼</div>
+<div class="line">┌──────────────────┐</div>
+<div class="line">│ OBSTACLE_DETECTED│ ◄──── Genera desvío con Bézier</div>
+<div class="line">└──────┬───────────┘</div>
+<div class="line">       │</div>
+<div class="line">       │ Obstáculo crítico (&lt; 0.25m)</div>
+<div class="line">       ▼</div>
+<div class="line">  ┌──────────┐</div>
+<div class="line">  │ EMERGENCY│ ◄──── Parada inmediata</div>
+<div class="line">  └──────────┘</div>
+</div><!-- fragment --><p><b>Estado NORMAL</b>:</p><ul>
+<li>Seguimiento estándar de trayectoria</li>
+<li>Velocidad a la máxima configurada</li>
+<li>Burbuja de seguridad en color azul</li>
+</ul>
+<p><b>Estado OBSTACLE_DETECTED</b>:</p><ul>
+<li>Escaneo láser con FOV 190° (±95°)</li>
+<li>Cálculo de pesos por hemisferio: <code>peso = 1/distancia</code></li>
+<li>Decisión de dirección: desviar hacia lado con menor densidad</li>
+<li>Generación de curva de Bézier ( calculo del triángulo) con 3 puntos de control</li>
+<li>Velocidad reducida al 60%</li>
+<li>Burbuja de seguridad en color naranja</li>
+</ul>
+<p><b>Estado EMERGENCY</b>:</p><ul>
+<li>Parada total del robot (<code>v = 0, ω = 0</code>)</li>
+<li>Activación de alarmas visuales</li>
+<li>Burbuja de seguridad en color rojo</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md31"></a>
+Generación de Desvíos (Curvas de Bézier)</h4>
+<p>Cuando se detecta un obstáculo, el sistema genera automáticamente una trayectoria alternativa:</p>
+<p><b>Puntos de Control</b>:</p><ol type="1">
+<li><b>P₀ (Inicio)</b>: Posición actual del robot</li>
+<li><b>P₁ (Ápex)</b>: Desplazado lateralmente + adelante <div class="fragment"><div class="line">P₁ = P₀ + (forward_offset × front_dir) + (detour_offset × side_dir)</div>
+</div><!-- fragment --></li>
+<li><b>P₂ (Reincorporación)</b>: Punto futuro sobre la ruta original <div class="fragment"><div class="line">P₂ = punto_ruta_a_distancia(rejoin_distance)</div>
+</div><!-- fragment --></li>
+</ol>
+<p><b>Curva de Bézier Cuadrática</b>: </p><div class="fragment"><div class="line">B(t) = (1-t)²·P₀ + 2(1-t)t·P₁ + t²·P₂     donde t ∈ [0,1]</div>
+</div><!-- fragment --><p>Se muestrean 15 puntos sobre la curva que reemplazan temporalmente el segmento problemático.</p>
+<h4><a class="anchor" id="autotoc_md32"></a>
+Parámetros Clave</h4>
+<div class="fragment"><div class="line">pure_pursuit_node:</div>
+<div class="line">  ros__parameters:</div>
+<div class="line">    <span class="comment"># Navegación</span></div>
+<div class="line">    lookahead_min: 1.0              <span class="comment"># LHD mínimo (m)</span></div>
+<div class="line">    lookahead_max: 3.0              <span class="comment"># LHD máximo (m)</span></div>
+<div class="line">    lookahead_gamma: 0.8            <span class="comment"># Factor decaimiento exponencial</span></div>
+<div class="line">    max_linear_vel: 0.5             <span class="comment"># Velocidad lineal máxima (m/s)</span></div>
+<div class="line">    max_angular_vel: 0.5            <span class="comment"># Velocidad angular máxima (rad/s)</span></div>
+<div class="line">    goal_tolerance: 0.2             <span class="comment"># Tolerancia de llegada (m)</span></div>
+<div class="line">    </div>
+<div class="line">    <span class="comment"># Evasión de Obstáculos</span></div>
+<div class="line">    bubble_base_radius: 0.5         <span class="comment"># Radio burbuja seguridad (m)</span></div>
+<div class="line">    critical_distance: 0.25         <span class="comment"># Distancia emergencia (m)</span></div>
+<div class="line">    detour_offset: 1.0              <span class="comment"># Desplazamiento lateral desvío (m)</span></div>
+<div class="line">    rejoin_distance: 2.0            <span class="comment"># Distancia reincorporación (m)</span></div>
+<div class="line">    forward_offset: 0.5             <span class="comment"># Desplazamiento frontal ápex (m)</span></div>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md33"></a>
+Topics Publicados</h4>
+<ul>
+<li><code>/cmd_vel</code> (Twist): Comandos de velocidad al robot</li>
+<li><code>/goal_reached</code> (Bool): Señal de objetivo alcanzado</li>
+<li><code>/lookahead_marker</code> (Marker): Punto lookahead (esfera magenta)</li>
+<li><code>/bubble_viz</code> (Marker): Burbuja de seguridad (disco coloreado)</li>
+<li><code>/robot_marker</code> (Marker): Posición del robot (esfera azul)</li>
+<li><code>/detour_path</code> (MarkerArray): Trayectoria de desvío (línea cian)</li>
+</ul>
+<h4><a class="anchor" id="autotoc_md34"></a>
+Topics Suscritos</h4>
+<ul>
+<li><code>/goal_pose</code> (PoseStamped): Objetivo de navegación</li>
+<li><code>/waypoints_path</code> (PoseArray): Trayectoria a seguir</li>
+<li><code>/odometry/filtered</code> (Odometry): Odometría filtrada del robot</li>
+<li><code>/scan</code> (LaserScan): Datos del sensor láser</li>
+</ul>
+<hr  />
+<h2><a class="anchor" id="autotoc_md36"></a>
+Parámetros Configurables</h2>
+<h3><a class="anchor" id="autotoc_md37"></a>
+Tabla Completa de Parámetros</h3>
+<h4><a class="anchor" id="autotoc_md38"></a>
+Route Publisher</h4>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Parámetro   </th><th class="markdownTableHeadLeft">Tipo   </th><th class="markdownTableHeadLeft">Default   </th><th class="markdownTableHeadLeft">Rango   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>selected_route</code>   </td><td class="markdownTableBodyLeft">int   </td><td class="markdownTableBodyLeft">1   </td><td class="markdownTableBodyLeft">1-8   </td><td class="markdownTableBodyLeft">Número de ruta a cargar    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>loop_route</code>   </td><td class="markdownTableBodyLeft">bool   </td><td class="markdownTableBodyLeft">false   </td><td class="markdownTableBodyLeft">-   </td><td class="markdownTableBodyLeft">Repetir ruta en bucle infinito    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>interpolation_points_per_segment</code>   </td><td class="markdownTableBodyLeft">int   </td><td class="markdownTableBodyLeft">10   </td><td class="markdownTableBodyLeft">5-50   </td><td class="markdownTableBodyLeft">Puntos interpolados entre waypoints   </td></tr>
+</table>
+<h4><a class="anchor" id="autotoc_md39"></a>
+Pure Pursuit Node</h4>
+<p><b>Navegación</b>:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Parámetro   </th><th class="markdownTableHeadLeft">Tipo   </th><th class="markdownTableHeadLeft">Default   </th><th class="markdownTableHeadLeft">Rango Típico   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>lookahead_min</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">1.0   </td><td class="markdownTableBodyLeft">0.5-2.0   </td><td class="markdownTableBodyLeft">LHD mínimo (metros)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>lookahead_max</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">3.0   </td><td class="markdownTableBodyLeft">2.0-5.0   </td><td class="markdownTableBodyLeft">LHD máximo (metros)    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>lookahead_gamma</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">0.8   </td><td class="markdownTableBodyLeft">0.3-1.5   </td><td class="markdownTableBodyLeft">Factor de decaimiento exponencial    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>max_linear_vel</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">0.5   </td><td class="markdownTableBodyLeft">0.1-2.0   </td><td class="markdownTableBodyLeft">Velocidad lineal máxima (m/s)    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>max_angular_vel</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">0.5   </td><td class="markdownTableBodyLeft">0.2-2.0   </td><td class="markdownTableBodyLeft">Velocidad angular máxima (rad/s)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>goal_tolerance</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">0.2   </td><td class="markdownTableBodyLeft">0.05-0.5   </td><td class="markdownTableBodyLeft">Tolerancia de llegada (metros)   </td></tr>
+</table>
+<p><b>Evasión de Obstáculos</b>:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Parámetro   </th><th class="markdownTableHeadLeft">Tipo   </th><th class="markdownTableHeadLeft">Default   </th><th class="markdownTableHeadLeft">Rango Típico   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>bubble_base_radius</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">0.5   </td><td class="markdownTableBodyLeft">0.3-1.0   </td><td class="markdownTableBodyLeft">Radio de burbuja de seguridad (m)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>critical_distance</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">0.25   </td><td class="markdownTableBodyLeft">0.1-0.5   </td><td class="markdownTableBodyLeft">Distancia de emergencia (m)    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>detour_offset</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">1.0   </td><td class="markdownTableBodyLeft">0.5-2.0   </td><td class="markdownTableBodyLeft">Desplazamiento lateral del desvío (m)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>rejoin_distance</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">2.0   </td><td class="markdownTableBodyLeft">1.0-4.0   </td><td class="markdownTableBodyLeft">Distancia de reincorporación (m)    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>forward_offset</code>   </td><td class="markdownTableBodyLeft">double   </td><td class="markdownTableBodyLeft">0.5   </td><td class="markdownTableBodyLeft">0.2-1.5   </td><td class="markdownTableBodyLeft">Desplazamiento frontal del ápex (m)   </td></tr>
 </table>
 <hr  />
-<p> <b>Autores:</b> Pedro Cabello Pulido | Gabriela Cano Azuaga | Lola Hernández Canizares | Almudena Jin | Lucía Pérez Guerrero <b>Fecha:</b> 2026 </p>
+<h2><a class="anchor" id="autotoc_md41"></a>
+Comunicación ROS 2</h2>
+<h3><a class="anchor" id="autotoc_md42"></a>
+Diagrama de Topics</h3>
+<div class="fragment"><div class="line">┌─────────────────┐</div>
+<div class="line">│ RoutePublisher  │</div>
+<div class="line">└────────┬────────┘</div>
+<div class="line">         │</div>
+<div class="line">         ├─► /waypoints_path (PoseArray)</div>
+<div class="line">         ├─► /goal_pose (PoseStamped)</div>
+<div class="line">         ├─► /waypoints_markers (MarkerArray)</div>
+<div class="line">         │</div>
+<div class="line">         ◄── /goal_reached (Bool)</div>
+<div class="line">         ◄── /change_route (Int32)</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">┌────────────────┐</div>
+<div class="line">│ PurePursuitNode│</div>
+<div class="line">└────────┬───────┘</div>
+<div class="line">         │</div>
+<div class="line">         ├─► /cmd_vel (Twist)</div>
+<div class="line">         ├─► /goal_reached (Bool)</div>
+<div class="line">         ├─► /lookahead_marker (Marker)</div>
+<div class="line">         ├─► /bubble_viz (Marker)</div>
+<div class="line">         ├─► /robot_marker (Marker)</div>
+<div class="line">         ├─► /detour_path (MarkerArray)</div>
+<div class="line">         │</div>
+<div class="line">         ◄── /goal_pose (PoseStamped)</div>
+<div class="line">         ◄── /waypoints_path (PoseArray)</div>
+<div class="line">         ◄── /odometry/filtered (Odometry)</div>
+<div class="line">         ◄── /scan (LaserScan)</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md43"></a>
+Referencia Completa de Topics</h3>
+<h4><a class="anchor" id="autotoc_md44"></a>
+Topics Publicados por Route Publisher</h4>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Topic   </th><th class="markdownTableHeadLeft">Tipo   </th><th class="markdownTableHeadLeft">Frecuencia   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/waypoints_path</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/PoseArray</code>   </td><td class="markdownTableBodyLeft">Al cambiar ruta   </td><td class="markdownTableBodyLeft">Trayectoria completa interpolada    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>/goal_pose</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/PoseStamped</code>   </td><td class="markdownTableBodyLeft">Por waypoint   </td><td class="markdownTableBodyLeft">Objetivo actual del segmento    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/waypoints_markers</code>   </td><td class="markdownTableBodyLeft"><code>visualization_msgs/MarkerArray</code>   </td><td class="markdownTableBodyLeft">Al actualizar   </td><td class="markdownTableBodyLeft">Visualización de ruta en RViz   </td></tr>
+</table>
+<h4><a class="anchor" id="autotoc_md45"></a>
+Topics Suscritos por Route Publisher</h4>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Topic   </th><th class="markdownTableHeadLeft">Tipo   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/goal_reached</code>   </td><td class="markdownTableBodyLeft"><code>std_msgs/Bool</code>   </td><td class="markdownTableBodyLeft">Confirmación de llegada al waypoint    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>/change_route</code>   </td><td class="markdownTableBodyLeft"><code>std_msgs/Int32</code>   </td><td class="markdownTableBodyLeft">Comando para cambiar de ruta   </td></tr>
+</table>
+<h4><a class="anchor" id="autotoc_md46"></a>
+Topics Publicados por Pure Pursuit Node</h4>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Topic   </th><th class="markdownTableHeadLeft">Tipo   </th><th class="markdownTableHeadLeft">Frecuencia   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/cmd_vel</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/Twist</code>   </td><td class="markdownTableBodyLeft">20 Hz   </td><td class="markdownTableBodyLeft">Comandos de velocidad al robot    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>/goal_reached</code>   </td><td class="markdownTableBodyLeft"><code>std_msgs/Bool</code>   </td><td class="markdownTableBodyLeft">Al alcanzar   </td><td class="markdownTableBodyLeft">Señal de objetivo cumplido    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/lookahead_marker</code>   </td><td class="markdownTableBodyLeft"><code>visualization_msgs/Marker</code>   </td><td class="markdownTableBodyLeft">20 Hz   </td><td class="markdownTableBodyLeft">Punto lookahead (esfera magenta)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>/bubble_viz</code>   </td><td class="markdownTableBodyLeft"><code>visualization_msgs/Marker</code>   </td><td class="markdownTableBodyLeft">20 Hz   </td><td class="markdownTableBodyLeft">Burbuja de seguridad (color según estado)    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/robot_marker</code>   </td><td class="markdownTableBodyLeft"><code>visualization_msgs/Marker</code>   </td><td class="markdownTableBodyLeft">20 Hz   </td><td class="markdownTableBodyLeft">Posición del robot (esfera azul)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>/detour_path</code>   </td><td class="markdownTableBodyLeft"><code>visualization_msgs/MarkerArray</code>   </td><td class="markdownTableBodyLeft">Al desviar   </td><td class="markdownTableBodyLeft">Trayectoria alternativa generada   </td></tr>
+</table>
+<h4><a class="anchor" id="autotoc_md47"></a>
+Topics Suscritos por Pure Pursuit Node</h4>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Topic   </th><th class="markdownTableHeadLeft">Tipo   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/goal_pose</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/PoseStamped</code>   </td><td class="markdownTableBodyLeft">Objetivo final de navegación    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>/waypoints_path</code>   </td><td class="markdownTableBodyLeft"><code>geometry_msgs/PoseArray</code>   </td><td class="markdownTableBodyLeft">Trayectoria a seguir    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>/odometry/filtered</code>   </td><td class="markdownTableBodyLeft"><code>nav_msgs/Odometry</code>   </td><td class="markdownTableBodyLeft">Odometría filtrada del robot    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>/scan</code>   </td><td class="markdownTableBodyLeft"><code>sensor_msgs/LaserScan</code>   </td><td class="markdownTableBodyLeft">Datos del sensor láser   </td></tr>
+</table>
+<hr  />
+<h2><a class="anchor" id="autotoc_md49"></a>
+Sistema de Evasión de Obstáculos</h2>
+<h3><a class="anchor" id="autotoc_md50"></a>
+Funcionamiento del Sistema</h3>
+<p>El sistema de evasión utiliza una <b>máquina de estados</b> con tres niveles de seguridad basados en la distancia mínima detectada por el LIDAR.</p>
+<h4><a class="anchor" id="autotoc_md51"></a>
+Burbuja de Seguridad</h4>
+<div class="fragment"><div class="line">     Burbuja de Seguridad</div>
+<div class="line">         (0.5m radio)</div>
+<div class="line">            ____</div>
+<div class="line">         ,-&#39;    `-.</div>
+<div class="line">        /          \</div>
+<div class="line">       |     🤖     |  ← Robot</div>
+<div class="line">        \          /</div>
+<div class="line">         `-.____,-&#39;</div>
+<div class="line">             </div>
+<div class="line">Zona Crítica (&lt; 0.25m)</div>
+<div class="line">     ____</div>
+<div class="line">  ,-&#39;    `-.</div>
+<div class="line"> /          \</div>
+<div class="line">|            |</div>
+<div class="line"> \          /</div>
+<div class="line">  `-.____,-&#39;</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md52"></a>
+Algoritmo de Detección</h3>
+<p><b>Paso 1: Escaneo del LIDAR</b> </p><div class="fragment"><div class="line">// FOV de 60° para navegación normal (±30°)</div>
+<div class="line">// FOV de 190° para análisis de desvío (±95°)</div>
+</div><!-- fragment --><p><b>Paso 2: Análisis de Proximidad</b> </p><div class="fragment"><div class="line"><span class="keywordflow">if</span> (min_distance &lt; critical_distance)      // &lt; 0.25m</div>
+<div class="line">    → Estado EMERGENCY</div>
+<div class="line"><span class="keywordflow">else</span> <span class="keywordflow">if</span> (min_distance &lt; bubble_base_radius) // &lt; 0.5m</div>
+<div class="line">    → Estado OBSTACLE_DETECTED</div>
+<div class="line"><span class="keywordflow">else</span></div>
+<div class="line">    → Estado NORMAL</div>
+</div><!-- fragment --><p><b>Paso 3: Cálculo de Dirección de Desvío</b> </p><div class="fragment"><div class="line">// Suma ponderada de obstáculos por hemisferio</div>
+<div class="line">peso_izquierda = Σ (1.0 / distancia_i)  para ángulos negativos</div>
+<div class="line">peso_derecha   = Σ (1.0 / distancia_i)  para ángulos positivos</div>
+<div class="line"> </div>
+<div class="line"><span class="keywordflow">if</span> (peso_izquierda &lt; peso_derecha)</div>
+<div class="line">    → Desviar a la IZQUIERDA</div>
+<div class="line"><span class="keywordflow">else</span></div>
+<div class="line">    → Desviar a la DERECHA</div>
+</div><!-- fragment --><p><b>Paso 4: Generación de Curva de Bézier</b></p>
+<p>Puntos de control calculados: </p><div class="fragment"><div class="line">// P0: Posición actual del robot</div>
+<div class="line">P0 = {robot_x, robot_y}</div>
+<div class="line"> </div>
+<div class="line">// P1: Punto ápex (máximo desplazamiento lateral)</div>
+<div class="line">P1 = P0 + forward_offset * [cos(θ), sin(θ)]     // Adelante</div>
+<div class="line">        + detour_offset * [cos(θ±90°), sin(θ±90°)]  // Lateral</div>
+<div class="line"> </div>
+<div class="line">// P2: Punto de reincorporación a la ruta</div>
+<div class="line">P2 = punto_sobre_ruta_a_distancia(rejoin_distance)</div>
+</div><!-- fragment --><p>Curva de Bézier: </p><div class="fragment"><div class="line"><span class="keywordflow">for</span> (t = 0; t &lt;= 1; t += 0.067)  // 15 puntos</div>
+<div class="line">{</div>
+<div class="line">    x(t) = (1-t)²·P0.x + 2(1-t)t·P1.x + t²·P2.x</div>
+<div class="line">    y(t) = (1-t)²·P0.y + 2(1-t)t·P1.y + t²·P2.y</div>
+<div class="line">}</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md53"></a>
+Visualización de Estados</h3>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Estado   </th><th class="markdownTableHeadLeft">Color Burbuja   </th><th class="markdownTableHeadLeft">Velocidad   </th><th class="markdownTableHeadLeft">Acción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">🟢 <b>NORMAL</b>   </td><td class="markdownTableBodyLeft">Azul   </td><td class="markdownTableBodyLeft">100%   </td><td class="markdownTableBodyLeft">Seguimiento estándar    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">🟠 <b>OBSTACLE_DETECTED</b>   </td><td class="markdownTableBodyLeft">Naranja   </td><td class="markdownTableBodyLeft">60%   </td><td class="markdownTableBodyLeft">Genera desvío automático    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">🔴 <b>EMERGENCY</b>   </td><td class="markdownTableBodyLeft">Rojo   </td><td class="markdownTableBodyLeft">0%   </td><td class="markdownTableBodyLeft">¡Parada inmediata!   </td></tr>
+</table>
+<hr  />
+<h2><a class="anchor" id="autotoc_md55"></a>
+Sistema de Logging</h2>
+<p>El sistema genera automáticamente archivos CSV con timestamp, que nos facilita despues la comparación y adquisición de datos.</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">Campo   </th><th class="markdownTableHeadLeft">Unidad   </th><th class="markdownTableHeadLeft">Descripción    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>time</code>   </td><td class="markdownTableBodyLeft">s   </td><td class="markdownTableBodyLeft">Timestamp desde inicio    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>robot_x</code>   </td><td class="markdownTableBodyLeft">m   </td><td class="markdownTableBodyLeft">Posición X del robot    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>robot_y</code>   </td><td class="markdownTableBodyLeft">m   </td><td class="markdownTableBodyLeft">Posición Y del robot    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>robot_yaw</code>   </td><td class="markdownTableBodyLeft">rad   </td><td class="markdownTableBodyLeft">Orientación del robot    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>goal_x</code>   </td><td class="markdownTableBodyLeft">m   </td><td class="markdownTableBodyLeft">Posición X del objetivo    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>goal_y</code>   </td><td class="markdownTableBodyLeft">m   </td><td class="markdownTableBodyLeft">Posición Y del objetivo    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>lookahead</code>   </td><td class="markdownTableBodyLeft">m   </td><td class="markdownTableBodyLeft">Distancia lookahead actual (LHD)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>dist_error</code>   </td><td class="markdownTableBodyLeft">m   </td><td class="markdownTableBodyLeft">Error lateral (CTE - Cross-Track Error)    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>path_index</code>   </td><td class="markdownTableBodyLeft">-   </td><td class="markdownTableBodyLeft">Índice actual en la trayectoria    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>dist_goal</code>   </td><td class="markdownTableBodyLeft">m   </td><td class="markdownTableBodyLeft">Distancia al final de la ruta    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>linear_v</code>   </td><td class="markdownTableBodyLeft">m/s   </td><td class="markdownTableBodyLeft">Velocidad lineal comandada    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>angular_w</code>   </td><td class="markdownTableBodyLeft">rad/s   </td><td class="markdownTableBodyLeft">Velocidad angular comandada    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>curvature</code>   </td><td class="markdownTableBodyLeft">1/m   </td><td class="markdownTableBodyLeft">Curvatura calculada (κ)   </td></tr>
+</table>
+<hr  />
+<h2><a class="anchor" id="autotoc_md57"></a>
+Referencias</h2>
+<ol type="1">
+<li><b>Pure Pursuit Algorithm</b> <br  />
+ Robótica: Manipuladores y Robots Móviles Aníbal Ollero Baturone. <a href="https://books.google.com.ec/books?id=TtMfuy6FNCcC&amp;printsec=frontcover#v=onepage&amp;q&amp;f=false">Enlace</a></li>
+<li><b>ROSbot 2R HUSARION</b> <br  />
+ Dpartamento de Sistema y Automatización, Universidad de Sevilla.</li>
+<li><b>Cubic Spline Interpolation</b> <br  />
+ de Boor, C. (1978). <em>A Practical Guide to Splines</em>. <br  />
+ Springer-Verlag New York.</li>
+<li><b>Bézier Curves in Robotics</b> <br  />
+ Gasparetto, A., &amp; Zanotto, V. (2007). <em>A new method for smooth trajectory planning of robot manipulators</em>. <br  />
+</li>
+</ol>
+<hr  />
+ <hr  />
+<p> <b>Autores:</b> Pedro Cabello Pulido | Gabriela Cano Azuaga | Lola Hernández Canizares | Almudena Jin | Lucía Pérez Guerrero <br  />
+ <b>Grado</b>: Ingeniería Electrónica, Robótica y Mecatrónica <br  />
+ Copyright (c) 2025 </p>
 </div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"></a>
 </div><!-- contents -->

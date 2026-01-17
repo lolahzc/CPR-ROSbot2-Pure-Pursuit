@@ -110,37 +110,56 @@ $(function(){initNavTree('pure__pursuit__node_8cpp.html',''); initResizable(true
   <div class="headertitle"><div class="title">Referencia del archivo pure_pursuit_node.cpp</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Implementación de Pure Pursuit Controller con evasión dinámica de obstáculos.  
+<a href="#details">Más...</a></p>
 <div class="textblock"><code>#include &lt;rclcpp/rclcpp.hpp&gt;</code><br />
 <code>#include &lt;nav_msgs/msg/odometry.hpp&gt;</code><br />
 <code>#include &lt;geometry_msgs/msg/twist.hpp&gt;</code><br />
 <code>#include &lt;geometry_msgs/msg/pose_stamped.hpp&gt;</code><br />
 <code>#include &lt;geometry_msgs/msg/pose_array.hpp&gt;</code><br />
 <code>#include &lt;std_msgs/msg/bool.hpp&gt;</code><br />
+<code>#include &lt;tf2_geometry_msgs/tf2_geometry_msgs.hpp&gt;</code><br />
 <code>#include &lt;tf2_ros/transform_broadcaster.h&gt;</code><br />
 <code>#include &lt;tf2/LinearMath/Quaternion.h&gt;</code><br />
 <code>#include &lt;tf2/LinearMath/Matrix3x3.h&gt;</code><br />
-<code>#include &lt;tf2_geometry_msgs/tf2_geometry_msgs.hpp&gt;</code><br />
+<code>#include &lt;geometry_msgs/msg/transform_stamped.hpp&gt;</code><br />
 <code>#include &lt;visualization_msgs/msg/marker.hpp&gt;</code><br />
+<code>#include &lt;visualization_msgs/msg/marker_array.hpp&gt;</code><br />
 <code>#include &lt;sensor_msgs/msg/laser_scan.hpp&gt;</code><br />
 <code>#include &lt;cmath&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;fstream&gt;</code><br />
 <code>#include &lt;iomanip&gt;</code><br />
-<code>#include &lt;limits&gt;</code><br />
+<code>#include &lt;chrono&gt;</code><br />
+<code>#include &lt;ctime&gt;</code><br />
+<code>#include &lt;sstream&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Clases</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pure_pursuit_node.html">PurePursuitNode</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controlador Pure Pursuit con evasión.  <a href="class_pure_pursuit_node.html#details">Más...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nodo ROS 2 para control de navegación mediante Pure Pursuit con evasión de obstáculos.  <a href="class_pure_pursuit_node.html#details">Más...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Funciones</h2></td></tr>
 <tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627" id="r_a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Función principal - Punto de entrada del programa.  <br /></td></tr>
 <tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Documentación de funciones</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Descripción detallada</h2>
+<div class="textblock"><p>Implementación de Pure Pursuit Controller con evasión dinámica de obstáculos. </p>
+<p>Este nodo implementa un controlador Pure Pursuit avanzado para navegación autónoma de robots móviles en ROS 2. Incluye capacidades de:</p><ul>
+<li>Seguimiento de trayectorias con lookahead distance adaptativo</li>
+<li>Velocidad variable según curvatura</li>
+<li>Evasión reactiva de obstáculos mediante curvas de Bézier</li>
+<li>Sistema de tres estados de seguridad</li>
+<li>Logging automático de datos de navegación <dl class="section author"><dt>Autor</dt><dd>Pedro Cabello Pulido | Gabriela Cano Azuaga | Lola Hernández Canizares | Almudena Jin | Lucía Pérez Guerrero </dd></dl>
+</li>
+</ul>
+</div><h2 class="groupheader">Documentación de funciones</h2>
 <a id="a3c04138a5bfe5d72780bb7e82a18e627" name="a3c04138a5bfe5d72780bb7e82a18e627"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3c04138a5bfe5d72780bb7e82a18e627">&#9670;&#160;</a></span>main()</h2>
 
@@ -159,6 +178,16 @@ Funciones</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Función principal - Punto de entrada del programa. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">argc</td><td>Número de argumentos </td></tr>
+    <tr><td class="paramname">argv</td><td>Array de argumentos </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>0 si terminó correctamente </dd></dl>
 
 </div>
 </div>

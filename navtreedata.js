@@ -25,7 +25,7 @@
 var NAVTREE =
 [
   [ "CPR Pure-Pursuit", "index.html", [
-    [ "Documentación del Proyecto: Navegación Autónoma con Pure Pursuit", "index.html", "index" ],
+    [ "Sistema de Navegación Autónoma con Pure Pursuit", "index.html", "index" ],
     [ "Clases", "annotated.html", [
       [ "Lista de clases", "annotated.html", "annotated_dup" ],
       [ "Índice de clases", "classes.html", null ],

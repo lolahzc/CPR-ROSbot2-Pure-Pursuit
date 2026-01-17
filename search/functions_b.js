@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['routepublisher_0',['RoutePublisher',['../class_route_publisher.html#ab3486876d0e9e2fe7ba8c321d56cf462',1,'RoutePublisher']]]
+  ['scancallback_0',['scanCallback',['../class_pure_pursuit_node.html#a43a7223674077d552696e9d7ec3e161c',1,'PurePursuitNode']]],
+  ['stoprobot_1',['stopRobot',['../class_pure_pursuit_node.html#a9d124a1a7daeb57fd5c664040c868683',1,'PurePursuitNode']]]
 ];

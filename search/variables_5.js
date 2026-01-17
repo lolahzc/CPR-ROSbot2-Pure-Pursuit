@@ -1,4 +1,10 @@
 var searchData=
 [
-  ['interpolation_5fpoints_5f_0',['interpolation_points_',['../class_route_publisher.html#a5b5ac78eb98ec42285324a1660bb17b2',1,'RoutePublisher']]]
+  ['gamma_5f_0',['gamma_',['../class_pure_pursuit_node.html#a579b5ca03cbb8f841f98e0f04106c616',1,'PurePursuitNode']]],
+  ['goal_5fpub_5f_1',['goal_pub_',['../class_route_publisher.html#a785a9636c0cbdfb0e7e93dcca8aff68b',1,'RoutePublisher']]],
+  ['goal_5freached_5f_2',['goal_reached_',['../class_pure_pursuit_node.html#ad428bdef1be303c7d638cbf904514858',1,'PurePursuitNode']]],
+  ['goal_5freached_5fpub_5f_3',['goal_reached_pub_',['../class_pure_pursuit_node.html#a04505efedc412d4286a5334a999de702',1,'PurePursuitNode']]],
+  ['goal_5freached_5fsub_5f_4',['goal_reached_sub_',['../class_route_publisher.html#a90186a684122294c17e1b2d50e36b4f6',1,'RoutePublisher']]],
+  ['goal_5fsub_5f_5',['goal_sub_',['../class_pure_pursuit_node.html#ad0475648247b2d76b5d4ec0db812461f',1,'PurePursuitNode']]],
+  ['goal_5ftolerance_5f_6',['goal_tolerance_',['../class_pure_pursuit_node.html#a86ebece9b28f551aabdf4ebd26844acf',1,'PurePursuitNode']]]
 ];

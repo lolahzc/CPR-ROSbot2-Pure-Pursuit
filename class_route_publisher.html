@@ -113,7 +113,7 @@ $(function(){initNavTree('class_route_publisher.html',''); initResizable(true); 
 </div><!--header-->
 <div class="contents">
 
-<p>Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).  
+<p>Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.  
  <a href="#details">Más...</a></p>
 <div class="dynheader">
 Diagrama de herencia de RoutePublisher</div>
@@ -125,94 +125,99 @@ Diagrama de herencia de RoutePublisher</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Métodos públicos</h2></td></tr>
 <tr class="memitem:ab3486876d0e9e2fe7ba8c321d56cf462" id="r_ab3486876d0e9e2fe7ba8c321d56cf462"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab3486876d0e9e2fe7ba8c321d56cf462">RoutePublisher</a> ()</td></tr>
-<tr class="memdesc:ab3486876d0e9e2fe7ba8c321d56cf462"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor del nodo <a class="el" href="class_route_publisher.html" title="Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).">RoutePublisher</a>.  <br /></td></tr>
+<tr class="memdesc:ab3486876d0e9e2fe7ba8c321d56cf462"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor de la clase <a class="el" href="class_route_publisher.html" title="Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.">RoutePublisher</a>.  <br /></td></tr>
 <tr class="separator:ab3486876d0e9e2fe7ba8c321d56cf462"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Métodos privados</h2></td></tr>
 <tr class="memitem:acb10d8636504050556a64954aefb7ffb" id="r_acb10d8636504050556a64954aefb7ffb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb10d8636504050556a64954aefb7ffb">defineRoute</a> ()</td></tr>
-<tr class="memdesc:acb10d8636504050556a64954aefb7ffb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define los puntos de paso (waypoints) según la ruta seleccionada.  <br /></td></tr>
+<tr class="memdesc:acb10d8636504050556a64954aefb7ffb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Define la ruta según el número de ruta seleccionado.  <br /></td></tr>
 <tr class="separator:acb10d8636504050556a64954aefb7ffb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3702d702dbcfb22f12ccd20ab465ca7" id="r_ac3702d702dbcfb22f12ccd20ab465ca7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac3702d702dbcfb22f12ccd20ab465ca7">generateSplineRoute</a> ()</td></tr>
-<tr class="memdesc:ac3702d702dbcfb22f12ccd20ab465ca7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Genera una trayectoria suavizada usando Splines Cúbicos Naturales.  <br /></td></tr>
+<tr class="memdesc:ac3702d702dbcfb22f12ccd20ab465ca7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Genera una ruta interpolada mediante splines cúbicos naturales.  <br /></td></tr>
 <tr class="separator:ac3702d702dbcfb22f12ccd20ab465ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa7f0394cbd85de41aabd94604dc9b16" id="r_aaa7f0394cbd85de41aabd94604dc9b16"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaa7f0394cbd85de41aabd94604dc9b16">computeNaturalCubicSpline</a> (const std::vector&lt; double &gt; &amp;points)</td></tr>
-<tr class="memdesc:aaa7f0394cbd85de41aabd94604dc9b16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calcula los coeficientes de la segunda derivada para el Spline Cúbico Natural.  <br /></td></tr>
+<tr class="memdesc:aaa7f0394cbd85de41aabd94604dc9b16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calcula los coeficientes de un spline cúbico natural.  <br /></td></tr>
 <tr class="separator:aaa7f0394cbd85de41aabd94604dc9b16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:addb3a7db0cf2b4fa18fdd084f8d178dd" id="r_addb3a7db0cf2b4fa18fdd084f8d178dd"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#addb3a7db0cf2b4fa18fdd084f8d178dd">evaluateCubicSpline</a> (const std::vector&lt; double &gt; &amp;points, const std::vector&lt; double &gt; &amp;D, int i, double t)</td></tr>
-<tr class="memdesc:addb3a7db0cf2b4fa18fdd084f8d178dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evalúa el valor del spline en un punto específico t.  <br /></td></tr>
+<tr class="memdesc:addb3a7db0cf2b4fa18fdd084f8d178dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evalúa el valor del spline cúbico en un punto específico.  <br /></td></tr>
 <tr class="separator:addb3a7db0cf2b4fa18fdd084f8d178dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed7794896839fc9f66d19edfa397f4f0" id="r_aed7794896839fc9f66d19edfa397f4f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aed7794896839fc9f66d19edfa397f4f0">goalReachedCallback</a> (const std_msgs::msg::Bool::SharedPtr msg)</td></tr>
-<tr class="memdesc:aed7794896839fc9f66d19edfa397f4f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback para recibir confirmación de que el robot llegó al objetivo.  <br /></td></tr>
+<tr class="memdesc:aed7794896839fc9f66d19edfa397f4f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback para el topic /goal_reached.  <br /></td></tr>
 <tr class="separator:aed7794896839fc9f66d19edfa397f4f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3df8c74e6e5d832ac6da67dddde7856" id="r_ad3df8c74e6e5d832ac6da67dddde7856"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad3df8c74e6e5d832ac6da67dddde7856">publishCurrentWaypoint</a> ()</td></tr>
-<tr class="memdesc:ad3df8c74e6e5d832ac6da67dddde7856"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica el siguiente waypoint como objetivo (Goal).  <br /></td></tr>
+<tr class="memdesc:ad3df8c74e6e5d832ac6da67dddde7856"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica el waypoint actual como objetivo de navegación.  <br /></td></tr>
 <tr class="separator:ad3df8c74e6e5d832ac6da67dddde7856"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2e56de58e5f2ae4e04b55aebdb169ef" id="r_ad2e56de58e5f2ae4e04b55aebdb169ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad2e56de58e5f2ae4e04b55aebdb169ef">publishWaypointsPath</a> ()</td></tr>
-<tr class="memdesc:ad2e56de58e5f2ae4e04b55aebdb169ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica la ruta completa (Spline) como un PoseArray.  <br /></td></tr>
+<tr class="memdesc:ad2e56de58e5f2ae4e04b55aebdb169ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica la trayectoria completa interpolada.  <br /></td></tr>
 <tr class="separator:ad2e56de58e5f2ae4e04b55aebdb169ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf0a9a4daeb8818cccdfe960978cf9f5" id="r_adf0a9a4daeb8818cccdfe960978cf9f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf0a9a4daeb8818cccdfe960978cf9f5">publishWaypointsMarkers</a> ()</td></tr>
-<tr class="memdesc:adf0a9a4daeb8818cccdfe960978cf9f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica marcadores visuales (Markers) para RViz.  <br /></td></tr>
+<tr class="memdesc:adf0a9a4daeb8818cccdfe960978cf9f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica markers de visualización para RViz.  <br /></td></tr>
 <tr class="separator:adf0a9a4daeb8818cccdfe960978cf9f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62bfe6239ef9e150d053c4ab1e0e2369" id="r_a62bfe6239ef9e150d053c4ab1e0e2369"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a62bfe6239ef9e150d053c4ab1e0e2369">publishStaticTF</a> ()</td></tr>
-<tr class="memdesc:a62bfe6239ef9e150d053c4ab1e0e2369"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica una Transformación estática (TF) entre map y odom.  <br /></td></tr>
+<tr class="memdesc:a62bfe6239ef9e150d053c4ab1e0e2369"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publica la transformación TF estática entre map y odom.  <br /></td></tr>
 <tr class="separator:a62bfe6239ef9e150d053c4ab1e0e2369"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bbe938892316ccb0937984ae583b264" id="r_a6bbe938892316ccb0937984ae583b264"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6bbe938892316ccb0937984ae583b264">advanceToNextWaypoint</a> ()</td></tr>
-<tr class="memdesc:a6bbe938892316ccb0937984ae583b264"><td class="mdescLeft">&#160;</td><td class="mdescRight">Avanza el índice al siguiente waypoint.  <br /></td></tr>
+<tr class="memdesc:a6bbe938892316ccb0937984ae583b264"><td class="mdescLeft">&#160;</td><td class="mdescRight">Avanza al siguiente waypoint en la secuencia.  <br /></td></tr>
 <tr class="separator:a6bbe938892316ccb0937984ae583b264"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a833ee9581e4025a9dfbd82a28d61712a" id="r_a833ee9581e4025a9dfbd82a28d61712a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a833ee9581e4025a9dfbd82a28d61712a">changeRoute</a> (int new_route)</td></tr>
-<tr class="memdesc:a833ee9581e4025a9dfbd82a28d61712a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cambia la ruta actual dinámicamente.  <br /></td></tr>
+<tr class="memdesc:a833ee9581e4025a9dfbd82a28d61712a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cambia dinámicamente la ruta activa.  <br /></td></tr>
 <tr class="separator:a833ee9581e4025a9dfbd82a28d61712a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Atributos privados</h2></td></tr>
 <tr class="memitem:a7dd3cdcf97d41ad80789297bc1112213" id="r_a7dd3cdcf97d41ad80789297bc1112213"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7dd3cdcf97d41ad80789297bc1112213">selected_route_</a></td></tr>
-<tr class="memdesc:a7dd3cdcf97d41ad80789297bc1112213"><td class="mdescLeft">&#160;</td><td class="mdescRight">ID de la ruta seleccionada actualmente via parámetros o tópico.  <br /></td></tr>
+<tr class="memdesc:a7dd3cdcf97d41ad80789297bc1112213"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice de la ruta seleccionada actualmente (1-8)  <br /></td></tr>
 <tr class="separator:a7dd3cdcf97d41ad80789297bc1112213"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93d049e65ad2299dc976591cf868d0c8" id="r_a93d049e65ad2299dc976591cf868d0c8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a93d049e65ad2299dc976591cf868d0c8">current_segment_index_</a> = 0</td></tr>
-<tr class="memdesc:a93d049e65ad2299dc976591cf868d0c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice del waypoint actual al que se dirige el robot.  <br /></td></tr>
+<tr class="memdesc:a93d049e65ad2299dc976591cf868d0c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Índice del waypoint actual en la secuencia de navegación.  <br /></td></tr>
 <tr class="separator:a93d049e65ad2299dc976591cf868d0c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5825d35da3eb98f1e19a01309e2c0800" id="r_a5825d35da3eb98f1e19a01309e2c0800"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::array&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5825d35da3eb98f1e19a01309e2c0800">original_waypoints_</a></td></tr>
-<tr class="memdesc:a5825d35da3eb98f1e19a01309e2c0800"><td class="mdescLeft">&#160;</td><td class="mdescRight">Puntos clave originales de la ruta.  <br /></td></tr>
+<tr class="memdesc:a5825d35da3eb98f1e19a01309e2c0800"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waypoints originales de la ruta seleccionada.  <br /></td></tr>
 <tr class="separator:a5825d35da3eb98f1e19a01309e2c0800"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a223d48693152f4f7e57ee391825c43f1" id="r_a223d48693152f4f7e57ee391825c43f1"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::array&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a223d48693152f4f7e57ee391825c43f1">spline_waypoints_</a></td></tr>
-<tr class="memdesc:a223d48693152f4f7e57ee391825c43f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Puntos interpolados (curva suave).  <br /></td></tr>
+<tr class="memdesc:a223d48693152f4f7e57ee391825c43f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waypoints interpolados mediante splines cúbicos.  <br /></td></tr>
 <tr class="separator:a223d48693152f4f7e57ee391825c43f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a958afdfe43f491d1dd6d3c1d9cdf81c7" id="r_a958afdfe43f491d1dd6d3c1d9cdf81c7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a958afdfe43f491d1dd6d3c1d9cdf81c7">loop_route_</a></td></tr>
-<tr class="memdesc:a958afdfe43f491d1dd6d3c1d9cdf81c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bandera para repetir la ruta infinitamente.  <br /></td></tr>
+<tr class="memdesc:a958afdfe43f491d1dd6d3c1d9cdf81c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flag para activar el modo de bucle continuo de la ruta.  <br /></td></tr>
 <tr class="separator:a958afdfe43f491d1dd6d3c1d9cdf81c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b5ac78eb98ec42285324a1660bb17b2" id="r_a5b5ac78eb98ec42285324a1660bb17b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5b5ac78eb98ec42285324a1660bb17b2">interpolation_points_</a></td></tr>
-<tr class="memdesc:a5b5ac78eb98ec42285324a1660bb17b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cantidad de puntos a generar entre cada segmento.  <br /></td></tr>
+<tr class="memdesc:a5b5ac78eb98ec42285324a1660bb17b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Número de puntos de interpolación por segmento de waypoints.  <br /></td></tr>
 <tr class="separator:a5b5ac78eb98ec42285324a1660bb17b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a785a9636c0cbdfb0e7e93dcca8aff68b" id="r_a785a9636c0cbdfb0e7e93dcca8aff68b"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; geometry_msgs::msg::PoseStamped &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a785a9636c0cbdfb0e7e93dcca8aff68b">goal_pub_</a></td></tr>
+<tr class="memdesc:a785a9636c0cbdfb0e7e93dcca8aff68b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publicador del objetivo actual (/goal_pose)  <br /></td></tr>
 <tr class="separator:a785a9636c0cbdfb0e7e93dcca8aff68b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac8efa1709b996f8bb4955318183b6f8e" id="r_ac8efa1709b996f8bb4955318183b6f8e"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; geometry_msgs::msg::PoseArray &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac8efa1709b996f8bb4955318183b6f8e">path_pub_</a></td></tr>
+<tr class="memdesc:ac8efa1709b996f8bb4955318183b6f8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publicador del path completo de waypoints interpolados (/waypoints_path)  <br /></td></tr>
 <tr class="separator:ac8efa1709b996f8bb4955318183b6f8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a833ac79aba8b6bd9ee279e5cc30c0f1a" id="r_a833ac79aba8b6bd9ee279e5cc30c0f1a"><td class="memItemLeft" align="right" valign="top">rclcpp::Publisher&lt; visualization_msgs::msg::MarkerArray &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a833ac79aba8b6bd9ee279e5cc30c0f1a">marker_pub_</a></td></tr>
+<tr class="memdesc:a833ac79aba8b6bd9ee279e5cc30c0f1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Publicador de markers de visualización para RViz (/waypoints_markers)  <br /></td></tr>
 <tr class="separator:a833ac79aba8b6bd9ee279e5cc30c0f1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90186a684122294c17e1b2d50e36b4f6" id="r_a90186a684122294c17e1b2d50e36b4f6"><td class="memItemLeft" align="right" valign="top">rclcpp::Subscription&lt; std_msgs::msg::Bool &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90186a684122294c17e1b2d50e36b4f6">goal_reached_sub_</a></td></tr>
+<tr class="memdesc:a90186a684122294c17e1b2d50e36b4f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suscriptor para recibir confirmación de objetivo alcanzado (/goal_reached)  <br /></td></tr>
 <tr class="separator:a90186a684122294c17e1b2d50e36b4f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad44b1a9f5c102ab191b979af68215162" id="r_ad44b1a9f5c102ab191b979af68215162"><td class="memItemLeft" align="right" valign="top">rclcpp::Subscription&lt; std_msgs::msg::Int32 &gt;::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad44b1a9f5c102ab191b979af68215162">route_change_sub_</a></td></tr>
+<tr class="memdesc:ad44b1a9f5c102ab191b979af68215162"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suscriptor para recibir comandos de cambio de ruta (/change_route)  <br /></td></tr>
 <tr class="separator:ad44b1a9f5c102ab191b979af68215162"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae504f91a6dc34b28181a588955f46284" id="r_ae504f91a6dc34b28181a588955f46284"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; tf2_ros::TransformBroadcaster &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae504f91a6dc34b28181a588955f46284">tf_broadcaster_</a></td></tr>
+<tr class="memdesc:ae504f91a6dc34b28181a588955f46284"><td class="mdescLeft">&#160;</td><td class="mdescRight">Broadcaster de transformaciones TF2 (map &lt;-&gt; odom)  <br /></td></tr>
 <tr class="separator:ae504f91a6dc34b28181a588955f46284"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e6c7e48ee9c13d0f55ad8e7ccf24f79" id="r_a0e6c7e48ee9c13d0f55ad8e7ccf24f79"><td class="memItemLeft" align="right" valign="top">rclcpp::TimerBase::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e6c7e48ee9c13d0f55ad8e7ccf24f79">tf_timer_</a></td></tr>
+<tr class="memdesc:a0e6c7e48ee9c13d0f55ad8e7ccf24f79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timer para publicación periódica de transformación TF estática (50ms)  <br /></td></tr>
 <tr class="separator:a0e6c7e48ee9c13d0f55ad8e7ccf24f79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a095f261de984ef6bbae8141057fc3913" id="r_a095f261de984ef6bbae8141057fc3913"><td class="memItemLeft" align="right" valign="top">rclcpp::TimerBase::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a095f261de984ef6bbae8141057fc3913">start_timer_</a></td></tr>
+<tr class="memdesc:a095f261de984ef6bbae8141057fc3913"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timer de inicio único para delay de 5 segundos antes de comenzar la ruta.  <br /></td></tr>
 <tr class="separator:a095f261de984ef6bbae8141057fc3913"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Descripción detallada</h2>
-<div class="textblock"><p>Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines). </p>
-<dl class="section author"><dt>Autor</dt><dd>Pedro Cabello Pulido | Gabriela Cano Azuaga | Lola Hernández Canizares | Almudena Jin | Lucía Pérez Guerrero </dd></dl>
-<dl class="section version"><dt>Versión</dt><dd>0.1 </dd></dl>
-<dl class="section date"><dt>Fecha</dt><dd>2026-01-08</dd></dl>
-<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2026</dd></dl>
-<div class="image">
-<img src="robot_pure_pursuit.png" alt=""/>
-<div class="caption">
-Esquema del Robot siguiendo la ruta</div></div>
-<p>Clase que gestiona la selección, generación y publicación de rutas para navegación.</p><ul>
-<li>Esta clase permite seleccionar diferentes rutas predefinidas, genera una interpolación mediante Splines Cúbicos para suavizar el camino y publica tanto los objetivos (goals) como marcadores visuales para RViz. </li>
+<div class="textblock"><p>Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave. </p>
+<p>Esta clase implementa un nodo de ROS2 que:</p><ul>
+<li>Gestiona múltiples rutas predefinidas (8 rutas diferentes)</li>
+<li>Interpola waypoints mediante splines cúbicos naturales para generar trayectorias suaves</li>
+<li>Publica objetivos (goals) secuenciales para navegación</li>
+<li>Visualiza las rutas en RViz mediante markers</li>
+<li>Permite cambio dinámico de rutas</li>
+<li>Mantiene transformaciones TF entre frames map y odom </li>
 </ul>
 </div><h2 class="groupheader">Documentación de constructores y destructores</h2>
 <a id="ab3486876d0e9e2fe7ba8c321d56cf462" name="ab3486876d0e9e2fe7ba8c321d56cf462"></a>
@@ -238,10 +243,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Constructor del nodo <a class="el" href="class_route_publisher.html" title="Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).">RoutePublisher</a>. </p>
-<ul>
-<li>Inicializa publicadores, suscriptores, carga parámetros y configura los temporizadores para la publicación de TF y el inicio de la ruta. </li>
-</ul>
+<p>Constructor de la clase <a class="el" href="class_route_publisher.html" title="Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave.">RoutePublisher</a>. </p>
+<p>Inicializa todos los publicadores, suscriptores, parámetros y timers necesarios. Configura la ruta inicial según el parámetro 'selected_route' y comienza la publicación de waypoints tras un delay de 5 segundos. </p>
 
 </div>
 </div>
@@ -269,9 +272,10 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Avanza el índice al siguiente waypoint. </p>
-<ul>
-<li>Si se completa la ruta, comprueba si debe hacer bucle (loop_route_) o detenerse. </li>
+<p>Avanza al siguiente waypoint en la secuencia. </p>
+<p>Incrementa el índice del waypoint actual y publica el nuevo objetivo. Si se ha alcanzado el final de la ruta:</p><ul>
+<li>Si loop_route_ está activado, reinicia desde el principio</li>
+<li>Si no, detiene la publicación de nuevos objetivos </li>
 </ul>
 
 </div>
@@ -299,17 +303,14 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Cambia la ruta actual dinámicamente. </p>
-<ul>
-<li>Reinicia el índice, recalcula el spline y limpia los marcadores antiguos.</li>
-<li><dl class="params"><dt>Parámetros</dt><dd>
+<p>Cambia dinámicamente la ruta activa. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
   <table class="params">
-    <tr><td class="paramname">new_route</td><td>ID de la nueva ruta a cargar. </td></tr>
+    <tr><td class="paramname">new_route</td><td>Número de la nueva ruta a cargar (1-8)</td></tr>
   </table>
   </dd>
 </dl>
-</li>
-</ul>
+<p>Limpia los markers anteriores, carga la nueva ruta, regenera la interpolación y reinicia la navegación desde el primer waypoint de la nueva ruta. </p>
 
 </div>
 </div>
@@ -336,14 +337,15 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Calcula los coeficientes de la segunda derivada para el Spline Cúbico Natural. </p>
+<p>Calcula los coeficientes de un spline cúbico natural. </p>
 <dl class="params"><dt>Parámetros</dt><dd>
   <table class="params">
-    <tr><td class="paramname">points</td><td>Vector de valores (coordenadas X o Y) a interpolar. </td></tr>
+    <tr><td class="paramname">points</td><td>Vector de valores de coordenadas (x o y) de los waypoints </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Devuelve</dt><dd>std::vector&lt;double&gt; Vector de coeficientes 'D' (momentos) para la interpolación. </dd></dl>
+<dl class="section return"><dt>Devuelve</dt><dd>Vector de derivadas en cada punto (coeficientes D del spline)</dd></dl>
+<p>Implementa el algoritmo de splines cúbicos naturales usando el método de Thomas para resolver el sistema tridiagonal. Las condiciones de frontera naturales asumen segunda derivada cero en los extremos. </p>
 
 </div>
 </div>
@@ -370,10 +372,18 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Define los puntos de paso (waypoints) según la ruta seleccionada. </p>
-<ul>
-<li>Configura el vector <code>original_waypoints_</code> basándose en el valor de <code>selected_route_</code>. Contiene coordenadas hardcodeadas para pruebas (Lola, recta, zigzag, ocho, etc.). </li>
+<p>Define la ruta según el número de ruta seleccionado. </p>
+<p>Carga los waypoints originales correspondientes a la ruta seleccionada. Incluye 8 rutas predefinidas con diferentes características:</p><ul>
+<li>Ruta 1: Trayectoria con curvas suaves</li>
+<li>Ruta 2: Línea recta</li>
+<li>Ruta 3: Trayectoria en escalera</li>
+<li>Ruta 4: Patrón en forma de ocho</li>
+<li>Ruta 5: Trayectoria compleja con múltiples giros</li>
+<li>Ruta 6: Ruta irregular con cambios de dirección</li>
+<li>Ruta 7: Trayectoria con oscilaciones</li>
+<li>Ruta 8: Ruta para evasión de obstáculos</li>
 </ul>
+<p>Si se proporciona un número de ruta inválido, se selecciona la ruta 1 por defecto. </p>
 
 </div>
 </div>
@@ -414,17 +424,18 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Evalúa el valor del spline en un punto específico t. </p>
+<p>Evalúa el valor del spline cúbico en un punto específico. </p>
 <dl class="params"><dt>Parámetros</dt><dd>
   <table class="params">
-    <tr><td class="paramname">points</td><td>Puntos originales. </td></tr>
-    <tr><td class="paramname">D</td><td>Coeficientes calculados. </td></tr>
-    <tr><td class="paramname">i</td><td>Índice del segmento actual. </td></tr>
-    <tr><td class="paramname">t</td><td>Parámetro local de interpolación [0, 1]. </td></tr>
+    <tr><td class="paramname">points</td><td>Vector de valores originales de los waypoints </td></tr>
+    <tr><td class="paramname">D</td><td>Vector de coeficientes calculados por computeNaturalCubicSpline </td></tr>
+    <tr><td class="paramname">i</td><td>Índice del segmento a evaluar </td></tr>
+    <tr><td class="paramname">t</td><td>Parámetro de interpolación local [0,1] dentro del segmento </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Devuelve</dt><dd>double Valor interpolado en la posición t. </dd></dl>
+<dl class="section return"><dt>Devuelve</dt><dd>Valor interpolado en la posición t del segmento i</dd></dl>
+<p>Utiliza la forma polinómica del spline cúbico: a + bt + ct² + dt³ </p>
 
 </div>
 </div>
@@ -451,10 +462,9 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Genera una trayectoria suavizada usando Splines Cúbicos Naturales. </p>
-<ul>
-<li>Toma los puntos de <code>original_waypoints_</code> e interpola puntos intermedios para crear una curva suave, almacenando el resultado en <code>spline_waypoints_</code>. </li>
-</ul>
+<p>Genera una ruta interpolada mediante splines cúbicos naturales. </p>
+<p>Toma los waypoints originales y genera una trayectoria suave mediante interpolación con splines cúbicos. El número de puntos interpolados por segmento está definido por el parámetro 'interpolation_points_per_segment'.</p>
+<p>Los waypoints originales se preservan en sus posiciones exactas dentro de la trayectoria interpolada. </p>
 
 </div>
 </div>
@@ -481,13 +491,14 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Callback para recibir confirmación de que el robot llegó al objetivo. </p>
+<p>Callback para el topic /goal_reached. </p>
 <dl class="params"><dt>Parámetros</dt><dd>
   <table class="params">
-    <tr><td class="paramname">msg</td><td>Mensaje booleano (True = llegó al destino). </td></tr>
+    <tr><td class="paramname">msg</td><td>Mensaje booleano indicando si se alcanzó el objetivo</td></tr>
   </table>
   </dd>
 </dl>
+<p>Cuando se recibe confirmación de que se alcanzó el objetivo actual, avanza automáticamente al siguiente waypoint en la secuencia. </p>
 
 </div>
 </div>
@@ -514,10 +525,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Publica el siguiente waypoint como objetivo (Goal). </p>
-<ul>
-<li>Envía un mensaje PoseStamped al tópico "/goal_pose" calculando la orientación hacia el siguiente punto. </li>
-</ul>
+<p>Publica el waypoint actual como objetivo de navegación. </p>
+<p>Publica un mensaje PoseStamped con la posición y orientación del waypoint actual en el topic /goal_pose. La orientación se calcula como el ángulo hacia el siguiente waypoint. También actualiza la visualización de la ruta y los markers. </p>
 
 </div>
 </div>
@@ -544,10 +553,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Publica una Transformación estática (TF) entre map y odom. </p>
-<ul>
-<li>Nota: Esto es usualmente para pruebas simples donde no hay un sistema de localización real corriendo. </li>
-</ul>
+<p>Publica la transformación TF estática entre map y odom. </p>
+<p>Mantiene una transformación identidad entre los frames "map" y "odom". Se ejecuta periódicamente cada 50ms mediante un timer. </p>
 
 </div>
 </div>
@@ -574,16 +581,14 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Publica marcadores visuales (Markers) para RViz. </p>
-<ul>
-<li>Dibuja:</li>
+<p>Publica markers de visualización para RViz. </p>
+<p>Crea y publica un conjunto de markers que incluyen:</p><ul>
+<li>Línea verde representando la trayectoria interpolada (spline)</li>
+<li>Línea roja semi-transparente representando los waypoints originales</li>
+<li>Esferas rojas en cada waypoint original</li>
+<li>Esfera amarilla destacando el objetivo actual</li>
 </ul>
-<ol type="1">
-<li>La línea de la ruta suavizada (Spline).</li>
-<li>La línea recta entre puntos originales.</li>
-<li>Esferas en los waypoints originales.</li>
-<li>Una esfera destacada en el objetivo actual. </li>
-</ol>
+<p>Los markers se publican en el topic /waypoints_markers </p>
 
 </div>
 </div>
@@ -610,10 +615,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Publica la ruta completa (Spline) como un PoseArray. </p>
-<ul>
-<li>Utilizado principalmente para visualización del camino completo en RViz. </li>
-</ul>
+<p>Publica la trayectoria completa interpolada. </p>
+<p>Publica un mensaje PoseArray con todos los puntos de la trayectoria interpolada mediante splines en el topic /waypoints_path. Esta trayectoria puede ser visualizada en RViz. </p>
 
 </div>
 </div>
@@ -638,7 +641,7 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Índice del waypoint actual al que se dirige el robot. </p>
+<p>Índice del waypoint actual en la secuencia de navegación. </p>
 
 </div>
 </div>
@@ -662,6 +665,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
+<p>Publicador del objetivo actual (/goal_pose) </p>
+
 </div>
 </div>
 <a id="a90186a684122294c17e1b2d50e36b4f6" name="a90186a684122294c17e1b2d50e36b4f6"></a>
@@ -683,6 +688,8 @@ Esquema del Robot siguiendo la ruta</div></div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Suscriptor para recibir confirmación de objetivo alcanzado (/goal_reached) </p>
 
 </div>
 </div>
@@ -706,7 +713,7 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Cantidad de puntos a generar entre cada segmento. </p>
+<p>Número de puntos de interpolación por segmento de waypoints. </p>
 
 </div>
 </div>
@@ -730,7 +737,7 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Bandera para repetir la ruta infinitamente. </p>
+<p>Flag para activar el modo de bucle continuo de la ruta. </p>
 
 </div>
 </div>
@@ -754,6 +761,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
+<p>Publicador de markers de visualización para RViz (/waypoints_markers) </p>
+
 </div>
 </div>
 <a id="a5825d35da3eb98f1e19a01309e2c0800" name="a5825d35da3eb98f1e19a01309e2c0800"></a>
@@ -776,7 +785,7 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Puntos clave originales de la ruta. </p>
+<p>Waypoints originales de la ruta seleccionada. </p>
 
 </div>
 </div>
@@ -800,6 +809,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
+<p>Publicador del path completo de waypoints interpolados (/waypoints_path) </p>
+
 </div>
 </div>
 <a id="ad44b1a9f5c102ab191b979af68215162" name="ad44b1a9f5c102ab191b979af68215162"></a>
@@ -821,6 +832,8 @@ Esquema del Robot siguiendo la ruta</div></div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Suscriptor para recibir comandos de cambio de ruta (/change_route) </p>
 
 </div>
 </div>
@@ -844,7 +857,7 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>ID de la ruta seleccionada actualmente via parámetros o tópico. </p>
+<p>Índice de la ruta seleccionada actualmente (1-8) </p>
 
 </div>
 </div>
@@ -868,7 +881,7 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
-<p>Puntos interpolados (curva suave). </p>
+<p>Waypoints interpolados mediante splines cúbicos. </p>
 
 </div>
 </div>
@@ -892,6 +905,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
+<p>Timer de inicio único para delay de 5 segundos antes de comenzar la ruta. </p>
+
 </div>
 </div>
 <a id="ae504f91a6dc34b28181a588955f46284" name="ae504f91a6dc34b28181a588955f46284"></a>
@@ -914,6 +929,8 @@ Esquema del Robot siguiendo la ruta</div></div>
 </table>
 </div><div class="memdoc">
 
+<p>Broadcaster de transformaciones TF2 (map &lt;-&gt; odom) </p>
+
 </div>
 </div>
 <a id="a0e6c7e48ee9c13d0f55ad8e7ccf24f79" name="a0e6c7e48ee9c13d0f55ad8e7ccf24f79"></a>
@@ -935,6 +952,8 @@ Esquema del Robot siguiendo la ruta</div></div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Timer para publicación periódica de transformación TF estática (50ms) </p>
 
 </div>
 </div>
