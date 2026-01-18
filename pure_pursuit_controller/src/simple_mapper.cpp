@@ -3,8 +3,8 @@
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
+#include "tf2/LinearMath/Transform.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "geometry_msgs/msg/point_stamped.hpp"
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -12,7 +12,11 @@
 class SimpleMapperTF : public rclcpp::Node {
 public:
     SimpleMapperTF() : Node("simple_mapper_tf") {
-        map_pub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/map", 1);
+        rclcpp::QoS map_qos(rclcpp::KeepLast(1));
+        map_qos.transient_local();
+        map_qos.reliable();
+        
+        map_pub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/map", map_qos);
         
         tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -21,18 +25,17 @@ public:
         scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
             "/scan_filtered", qos, std::bind(&SimpleMapperTF::scanCallback, this, std::placeholders::_1));
 
-        width_ = 800;    
-        height_ = 800;   
         resolution_ = 0.05; 
+        width_ = 800;       
+        height_ = 800;   
         origin_x_ = -20.0;
         origin_y_ = -20.0;
 
-        map_data_.resize(width_ * height_, -1);
+        grid_counters_.resize(width_ * height_, 0);
 
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(500), std::bind(&SimpleMapperTF::publishMap, this));
+            std::chrono::milliseconds(100), std::bind(&SimpleMapperTF::updateLoop, this));
 
-        RCLCPP_INFO(this->get_logger(), "Mapper TF Iniciado. Esperando scan...");
     }
 
 private:
@@ -43,60 +46,117 @@ private:
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
-    std::vector<int8_t> map_data_;
+    std::vector<int> grid_counters_;
     int width_, height_;
     double resolution_, origin_x_, origin_y_;
 
-    void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-        geometry_msgs::msg::TransformStamped transform_stamped;
-        try {
+    const int VAL_HIT = 100;    
+    const int VAL_MISS = 50;    
+    const int DECAY_RATE = 2;   
 
-            transform_stamped = tf_buffer_->lookupTransform(
-                "odom", msg->header.frame_id, tf2::TimePointZero);
+    const int MAX_VAL = 100;
+    const int MIN_VAL = 0;
+    const int OCCUPANCY_THRESHOLD = 50; 
+
+    const double MAX_MAPPING_RANGE = 4.5; 
+
+    inline void worldToMap(double wx, double wy, int& mx, int& my) {
+        mx = std::floor((wx - origin_x_) / resolution_);
+        my = std::floor((wy - origin_y_) / resolution_);
+    }
+
+    inline bool isValid(int x, int y) {
+        return (x >= 0 && x < width_ && y >= 0 && y < height_);
+    }
+
+    inline void updateCell(int x, int y, int amount) {
+        if (!isValid(x, y)) return;
+        int idx = y * width_ + x;
+        int val = grid_counters_[idx] + amount;
+        if (val > MAX_VAL) val = MAX_VAL;
+        if (val < MIN_VAL) val = MIN_VAL;
+        grid_counters_[idx] = val;
+    }
+
+    void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+        geometry_msgs::msg::TransformStamped tf_stamped;
+        try {
+            tf_stamped = tf_buffer_->lookupTransform(
+                "odom", msg->header.frame_id, msg->header.stamp, rclcpp::Duration::from_seconds(0.1));
         } catch (tf2::TransformException &ex) {
-            RCLCPP_WARN(this->get_logger(), "No se pudo transformar scan: %s", ex.what());
             return;
         }
 
-        geometry_msgs::msg::PointStamped sensor_origin_local, sensor_origin_global;
-        sensor_origin_local.header.frame_id = msg->header.frame_id;
-        sensor_origin_local.point.x = 0.0;
-        sensor_origin_local.point.y = 0.0;
-        sensor_origin_local.point.z = 0.0;
-        tf2::doTransform(sensor_origin_local, sensor_origin_global, transform_stamped);
+        tf2::Transform transform;
+        tf2::fromMsg(tf_stamped.transform, transform);
 
-        int rob_grid_x = (int)((sensor_origin_global.point.x - origin_x_) / resolution_);
-        int rob_grid_y = (int)((sensor_origin_global.point.y - origin_y_) / resolution_);
+        tf2::Vector3 origin_global = transform * tf2::Vector3(0,0,0);
+        int rob_grid_x, rob_grid_y;
+        worldToMap(origin_global.x(), origin_global.y(), rob_grid_x, rob_grid_y);
+
+        double angle_min = msg->angle_min;
+        double angle_inc = msg->angle_increment;
 
         for (size_t i = 0; i < msg->ranges.size(); ++i) {
             double r = msg->ranges[i];
 
-            if (std::isinf(r) || std::isnan(r) || r < msg->range_min || r > msg->range_max) continue;
-
-            double angle = msg->angle_min + i * msg->angle_increment;
-            geometry_msgs::msg::PointStamped p_local, p_global;
-            p_local.header.frame_id = msg->header.frame_id;
-            p_local.point.x = r * cos(angle);
-            p_local.point.y = r * sin(angle);
-            p_local.point.z = 0.0;
-
-            tf2::doTransform(p_local, p_global, transform_stamped);
-
-            int hit_grid_x = (int)((p_global.point.x - origin_x_) / resolution_);
-            int hit_grid_y = (int)((p_global.point.y - origin_y_) / resolution_);
-
-            bresenhamLine(rob_grid_x, rob_grid_y, hit_grid_x, hit_grid_y);
-
-            if (isValid(hit_grid_x, hit_grid_y)) {
-                map_data_[hit_grid_y * width_ + hit_grid_x] = 100; 
+            if (std::isinf(r) || std::isnan(r)) {
+                continue; 
             }
+
+            if (r > MAX_MAPPING_RANGE) {
+                continue;
+            }
+            
+            if (r < msg->range_min) {
+                continue;
+            }
+
+            double angle = angle_min + i * angle_inc;
+            tf2::Vector3 point_local(r * cos(angle), r * sin(angle), 0.0);
+            tf2::Vector3 point_global = transform * point_local;
+
+            int hit_grid_x, hit_grid_y;
+            worldToMap(point_global.x(), point_global.y(), hit_grid_x, hit_grid_y);
+
+            bresenhamUpdate(rob_grid_x, rob_grid_y, hit_grid_x, hit_grid_y, true);
+        }
+    }
+
+    void bresenhamUpdate(int x0, int y0, int x1, int y1, bool is_hit) {
+        int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+        int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy, e2;
+
+        while (true) {
+            if (x0 == x1 && y0 == y1) {
+                if (is_hit) updateCell(x0, y0, VAL_HIT); 
+                break;
+            }
+            
+            updateCell(x0, y0, -VAL_MISS); 
+            
+            e2 = 2 * err;
+            if (e2 >= dy) { err += dy; x0 += sx; }
+            if (e2 <= dx) { err += dx; y0 += sy; }
+        }
+    }
+
+    void updateLoop() {
+        applyDecay();
+        publishMap();
+    }
+
+    void applyDecay() {
+        for (auto &val : grid_counters_) {
+            if (val > 0) val -= DECAY_RATE; 
         }
     }
 
     void publishMap() {
         nav_msgs::msg::OccupancyGrid map_msg;
         map_msg.header.stamp = this->now();
-        map_msg.header.frame_id = "map"; 
+        map_msg.header.frame_id = "odom";
         
         map_msg.info.resolution = resolution_;
         map_msg.info.width = width_;
@@ -105,29 +165,16 @@ private:
         map_msg.info.origin.position.y = origin_y_;
         map_msg.info.origin.orientation.w = 1.0;
         
-        map_msg.data = map_data_;
-        map_pub_->publish(map_msg);
-    }
+        map_msg.data.resize(width_ * height_);
 
-    void bresenhamLine(int x0, int y0, int x1, int y1) {
-        int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-        int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-        int err = dx + dy, e2;
-
-        while (true) {
-            if (x0 == x1 && y0 == y1) break;
-            if (isValid(x0, y0)) {
-                int idx = y0 * width_ + x0;
-                if (map_data_[idx] != 100) map_data_[idx] = 0; 
+        for (size_t i = 0; i < grid_counters_.size(); ++i) {
+            if (grid_counters_[i] > OCCUPANCY_THRESHOLD) {
+                map_msg.data[i] = 100; 
+            } else {
+                map_msg.data[i] = 0;   
             }
-            e2 = 2 * err;
-            if (e2 >= dy) { err += dy; x0 += sx; }
-            if (e2 <= dx) { err += dx; y0 += sy; }
         }
-    }
-
-    bool isValid(int x, int y) {
-        return (x >= 0 && x < width_ && y >= 0 && y < height_);
+        map_pub_->publish(map_msg);
     }
 };
 

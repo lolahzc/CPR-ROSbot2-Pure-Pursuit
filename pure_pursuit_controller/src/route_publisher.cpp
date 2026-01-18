@@ -17,7 +17,6 @@ class RoutePublisher : public rclcpp::Node
 public:
     RoutePublisher() : Node("route_publisher")
     {
-        goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/goal_pose", 10);
         path_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/waypoints_path", 10);
         marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/waypoints_markers", 10);
         
@@ -55,7 +54,9 @@ public:
             std::chrono::milliseconds(5000), 
             [this]() {
                 current_segment_index_ = 0; 
-                publishCurrentWaypoint();
+                route_finished_ = false; 
+                
+                publishWaypointsPath();
                 publishWaypointsMarkers();
                 
                 start_timer_->cancel();
@@ -66,7 +67,7 @@ private:
 
 	int selected_route_;
     size_t current_segment_index_ = 0;
-	
+    bool route_finished_ = false;
 
     void defineRoute()
     {
@@ -109,19 +110,19 @@ private:
 	     	break;
         case 4:
             original_waypoints_ = {
-            {0.0,  0.0, 0.0},  // Punto central (Cruce) -> Inicio
-            {1.5,  1.5, 0.0},
-            {3.0,  1.0, 0.0},
-            {4.0, -0.5, 0.0},
-            {3.0, -2.0, 0.0},
-            {1.5, -1.5, 0.0},
-            {0.0,  0.0, 0.0},  // Regreso al centro
-            {-1.5, 1.5, 0.0},
-            {-3.0, 1.0, 0.0},
-            {-4.0, -0.5, 0.0},
-            {-3.0, -2.0, 0.0},
-            {-1.5, -1.5, 0.0},
-            {0.0,  0.0, 0.0}   // Fin en el centro
+                {0.0,  0.0, 0.0},  
+                {1.5,  1.5, 0.0},
+                {3.0,  1.0, 0.0},
+                {4.0, -0.5, 0.0},
+                {3.0, -2.0, 0.0},
+                {1.5, -1.5, 0.0},
+                {0.0,  0.0, 0.0}, 
+                {-1.5, 1.5, 0.0},
+                {-3.0, 1.0, 0.0},
+                {-4.0, -0.5, 0.0},
+                {-3.0, -2.0, 0.0},
+                {-1.5, -1.5, 0.0},
+                {0.0,  0.0, 0.0}   
             };
             break;
             break;
@@ -169,20 +170,20 @@ private:
         case 7: 
             original_waypoints_ = {
                 {0.0, 0.0, 0.0},
-                {0.6, 0.2, 0.0},   // Antes: {0.2, 0.6...}
-                {0.0, 0.6, 0.0},   // Antes: {0.6, 0.0...}
-                {0.2, 0.9, 0.0},   // Antes: {0.9, 0.2...}
-                {-0.2, 0.95, 0.0}, // Antes: {0.95, -0.2...}
-                {-0.6, 1.2, 0.0},  // Antes: {1.2, -0.6...}
-                {0.0, 1.5, 0.0},   // Antes: {1.5, 0.0...}
-                {0.8, 1.65, 0.0},  // Antes: {1.65, 0.8...}
-                {0.0, 2.0, 0.0},   // Antes: {2.0, 0.0...}
-                {1.0, 2.4, 0.0},   // Antes: {2.4, 1.0...}
-                {-0.6, 3.0, 0.0},  // Antes: {3.0, -0.6...}     
+                {0.6, 0.2, 0.0},   
+                {0.0, 0.6, 0.0},   
+                {0.2, 0.9, 0.0},   
+                {-0.2, 0.95, 0.0},
+                {-0.6, 1.2, 0.0},  
+                {0.0, 1.5, 0.0},  
+                {0.8, 1.65, 0.0},  
+                {0.0, 2.0, 0.0},   
+                {1.0, 2.4, 0.0},   
+                {-0.6, 3.0, 0.0},   
             };
             break;   
             
-        case 8: // obtaculo
+        case 8: 
    		    original_waypoints_ = {
                 {-0.5, 0.0, 0.0},
                 {0.0, -5.0, 0.0},
@@ -284,43 +285,17 @@ private:
 
     void goalReachedCallback(const std_msgs::msg::Bool::SharedPtr msg)
     {
-        if (msg->data) {
-            advanceToNextWaypoint();
-        }
-    }
-
-    void publishCurrentWaypoint()
-    {
-        if (current_segment_index_ >= original_waypoints_.size()) {
+        if (route_finished_) {
             return;
         }
 
-        auto goal_msg = geometry_msgs::msg::PoseStamped();
-        goal_msg.header.stamp = this->now();
-        goal_msg.header.frame_id = "map";
-        
-        const auto& wp = original_waypoints_[current_segment_index_]; 
-        goal_msg.pose.position.x = wp[0];
-        goal_msg.pose.position.y = wp[1];
-        goal_msg.pose.position.z = wp[2];
-        
-        if (current_segment_index_ < original_waypoints_.size() - 1) {
-            const auto& next_wp = original_waypoints_[current_segment_index_ + 1];
-            double yaw = std::atan2(next_wp[1] - wp[1], next_wp[0] - wp[0]);
-            goal_msg.pose.orientation.x = 0.0;
-            goal_msg.pose.orientation.y = 0.0;
-            goal_msg.pose.orientation.z = std::sin(yaw / 2.0);
-            goal_msg.pose.orientation.w = std::cos(yaw / 2.0);
-        } else {
-            goal_msg.pose.orientation.w = 1.0; 
+        if (msg->data) {
+            if (loop_route_) {
+                publishWaypointsPath(); 
+            } else {
+                route_finished_ = true; 
+            }
         }
-        
-        goal_pub_->publish(goal_msg);
-        
-        publishWaypointsPath();
-        
-        publishWaypointsMarkers();
-        
     }
 
     void publishWaypointsPath()
@@ -466,29 +441,14 @@ private:
         
         tf_broadcaster_->sendTransform(transform);
     }
-
-    void advanceToNextWaypoint()
-    {
-        current_segment_index_++; 
-        
-        if (current_segment_index_ >= original_waypoints_.size()) {
-            if (loop_route_) {
-                current_segment_index_ = 0;
-            } else {
-                return;
-            }
-        }
-        
-        publishCurrentWaypoint();
-    }
     
     void changeRoute(int new_route)
     {
         selected_route_ = new_route;
-
         defineRoute();
         generateSplineRoute();
         current_segment_index_ = 0; 
+        route_finished_ = false;
 	
 	    visualization_msgs::msg::MarkerArray marker_array;
         auto clear_marker = visualization_msgs::msg::Marker();
@@ -498,7 +458,7 @@ private:
         marker_array.markers.push_back(clear_marker);
         marker_pub_->publish(marker_array);	
         
-        publishCurrentWaypoint();
+        publishWaypointsPath();
         publishWaypointsMarkers();
     }
 
@@ -507,7 +467,6 @@ private:
     bool loop_route_;
     int interpolation_points_;
     
-    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr path_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr goal_reached_sub_;

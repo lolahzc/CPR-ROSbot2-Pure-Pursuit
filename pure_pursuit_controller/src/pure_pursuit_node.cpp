@@ -27,7 +27,6 @@ class PurePursuitNode : public rclcpp::Node
 public:
     PurePursuitNode() : Node("pure_pursuit_node")
     {
-        // --- PARÁMETROS DE NAVEGACIÓN ---
         this->declare_parameter("lookahead_distance", 1.0);
         this->declare_parameter("max_linear_vel", 0.5);
         this->declare_parameter("max_angular_vel", 0.5);
@@ -37,14 +36,12 @@ public:
         this->declare_parameter("lookahead_gamma", 0.8);    
         this->declare_parameter("selected_route", 1);
         
-        // --- PARÁMETROS DE EVASIÓN ---
         this->declare_parameter("bubble_base_radius", 0.5);
         this->declare_parameter("critical_distance", 0.25);
         this->declare_parameter("detour_offset", 1.0);
         this->declare_parameter("rejoin_distance", 2.0);
         this->declare_parameter("forward_offset", 0.5);
 
-        // Lectura de parámetros
         selected_route_ = this->get_parameter("selected_route").as_int();
         lookahead_distance_ = this->get_parameter("lookahead_distance").as_double();
         max_linear_vel_ = this->get_parameter("max_linear_vel").as_double();
@@ -60,7 +57,6 @@ public:
         delta_max_ = this->get_parameter("lookahead_max").as_double();
         gamma_ = this->get_parameter("lookahead_gamma").as_double();
 
-        // --- CONFIGURACIÓN DE PUBLICADORES Y SUSCRIPTORES ---
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
         odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
@@ -70,7 +66,6 @@ public:
         bubble_viz_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/bubble_viz", 10);
         robot_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/robot_marker", 10);
         
-        // Publicador MarkerArray para la ruta modificada
         detour_path_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/detour_path", 10);
 
         goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
@@ -89,7 +84,6 @@ public:
             "/scan", rclcpp::SensorDataQoS(),
             std::bind(&PurePursuitNode::scanCallback, this, std::placeholders::_1));
 
-        // --- CONFIGURACIÓN DE LOGS ---
         std::string base_name;
         switch(selected_route_) {
             case 1: base_name = "ruta_defecto"; break;
@@ -167,6 +161,13 @@ private:
             has_path_ = true;
             current_path_index_ = 0;
             findClosestIndex();
+            
+            if (!path_points_.empty()) {
+                current_goal_.position = path_points_.back();
+                current_goal_.orientation.w = 1.0;
+                has_goal_ = true; 
+                goal_reached_ = false; 
+            }
         }
     }
     
@@ -413,15 +414,12 @@ private:
         double angular_vel = (2.0 * current_vel_cmd_ * std::sin(alpha)) / lookahead_dist;
         angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
 
-        // --- CAMBIO CLAVE AQUÍ ---
-        // Ignoramos 'current_goal_' para la parada. Calculamos distancia al ÚLTIMO punto de la ruta.
         double dist_to_end = 999.9;
         if (!path_points_.empty()) {
              auto last_p = path_points_.back();
              dist_to_end = std::hypot(last_p.x - robot_x_, last_p.y - robot_y_);
         }
 
-        // --- GUARDADO DE LOGS ---
         if (data_log_file_.is_open()) {
             double current_time = this->now().seconds();
             data_log_file_ << std::fixed << std::setprecision(9)
@@ -434,13 +432,12 @@ private:
                            << lookahead_dist << ","   
                            << cte << ","              
                            << current_path_index_ << "," 
-                           << dist_to_end << ","      // Guardamos la distancia real al final, no al waypoint intermedio
+                           << dist_to_end << ","    
                            << current_vel_cmd_ << "," 
                            << angular_vel << ","      
                            << curv << "\n";           
         }
 
-        // Condición de parada basada en el FINAL DE LA RUTA
         if (dist_to_end < goal_tolerance_) {
             if (!goal_reached_) {
                 goal_reached_ = true;
@@ -494,20 +491,19 @@ private:
 
     void publishBubbleViz(double radius) {
         auto m = visualization_msgs::msg::Marker();
-        m.header.frame_id = "map"; // Cambiar a "map"
+        m.header.frame_id = "map";
         m.header.stamp = now();
-        // ¡ESTO ES LO QUE FALTABA!
         m.pose.position.x = robot_x_;
         m.pose.position.y = robot_y_;
-        m.pose.position.z = 0.0; // Elevarlo un poco para que se vea
+        m.pose.position.z = 0.0; 
         m.pose.orientation.w = 1.0;
         m.ns = "bubble"; 
         m.id = 1; 
-        m.type = visualization_msgs::msg::Marker::SPHERE; // Tipo 6 es mejor que 3 (SPHERE)
+        m.type = visualization_msgs::msg::Marker::SPHERE;
         m.action = 0;
         m.scale.x = radius * 2.0; 
         m.scale.y = radius * 2.0; 
-        m.scale.z = 0.05; // Más alto para que se vea mejor
+        m.scale.z = 0.05;
 
         if (avoidance_state_ == AvoidanceState::NORMAL) { 
             m.color.r = 0.0;
@@ -578,7 +574,6 @@ private:
         return angle;
     }
 
-    // Variables
     double robot_x_, robot_y_, robot_yaw_, robot_linear_vel_;
     geometry_msgs::msg::Pose current_goal_;
     std::vector<geometry_msgs::msg::Point> path_points_;
@@ -588,7 +583,6 @@ private:
     std::ofstream data_log_file_;
     sensor_msgs::msg::LaserScan::SharedPtr last_scan_;
     
-    // Params
     double lookahead_distance_, max_linear_vel_, max_angular_vel_, goal_tolerance_;
     double delta_min_, delta_max_, gamma_;
     double bubble_base_radius_, critical_distance_;
