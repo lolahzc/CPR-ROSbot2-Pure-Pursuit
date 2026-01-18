@@ -2,45 +2,7 @@
 
 Este proyecto implementa el algoritmo **Pure Pursuit** para el robot **Husarion ROSbot 2.0** en el entorno de simulación **Gazebo** (ROS 2). Se incluye una **máquina de estados** robusta para gestionar la evasión de obstáculos.
 
-## Funcionalidades y Mejoras
-
-### `pure_pursuit_controller.cpp` (Lógica de Control)
-
-El controlador principal ha sido extendido para incluir la lógica de evasión de obstáculos, manteniendo el seguimiento de la trayectoria Pure Pursuit como modo por defecto.
-
-
-## Algoritmo de Evasión de Obstáculos
-
-Este módulo implementa un algoritmo de navegación reactiva basado en LIDAR que gestiona la seguridad del robot y la generación de trayectorias alternativas mediante curvas de Bézier cuadráticas.
-
-### Flujo de Funcionamiento
-
-#### 1. Escaneo Adaptativo (LIDAR)
-El sistema ajusta el campo de visión (FOV) según el contexto:
-* **Navegación Normal:** FOV de `60°` (±30°).
-* **Análisis de Desvío:** FOV ampliado a `190°` (±95°) para buscar rutas alternativas.
-
-#### 2. Máquina de Estados (Proximidad)
-Se evalúa la distancia mínima (`min_distance`) detectada para determinar el comportamiento:
-
-| Distancia ($d$) | Estado | Acción |
-| :--- | :--- | :--- |
-| $d < 0.25m$ | 🔴 **EMERGENCY** | Parada inmediata (Velocidad 0%). |
-| $d < 0.50m$ | 🟠 **OBSTACLE** | Inicio de maniobra de evasión (Velocidad 60%). |
-| Resto | 🟢 **NORMAL** | Seguimiento de ruta estándar (Velocidad 100%). |
-
-#### 3. Lógica de Evasión
-Si se detecta un obstáculo, el sistema decide la dirección óptima calculando el "peso" de los obstáculos en cada hemisferio:
-* `peso = Σ (1.0 / distancia_i)`
-* Si `peso_izq < peso_der` → Desvío a la **Izquierda**.
-* Si `peso_izq > peso_der` → Desvío a la **Derecha**.
-
-#### 4. Generación de Trayectoria (Curvas de Bézier)
-Se genera una ruta suave utilizando una curva de Bézier cuadrática definida por tres puntos de control $(P_0, P_1, P_2)$:
-
-* **$P_0$ (Inicio):** Posición actual del robot.
-* **$P_1$ (Ápex):** Punto de máximo desplazamiento lateral (calculado con `forward_offset` y `detour_offset`).
-* **$P_2$ (Fin):** Punto de reincorporación a la ruta original (`rejoin_distance`).
+Aviso: puede haber diferencias de funcionamiento de los códigos según el ordenador en el que se ejecute. Si al hacer la trayectoria 6 con obstáculos se choca el vehículo, incrementar detour_offset a 1.5 metros.
   
 ---
 
@@ -123,6 +85,44 @@ Se ha creado una configuración de Rvizz para visualizar el comportamiento del r
 Se ha creado un código de matlab ejecutable en Octave para analizar el comportamiento del robot, tanto en simulación como en la vida real. Su nombre es analyzer.m
 
 Se han empleado grabaciones de rosbag que se han analizado con foxglove para comprobar el comportamiento del robot en la vida real
+
+### `pure_pursuit_controller.cpp` (Lógica de Control)
+
+El controlador principal ha sido extendido para incluir la lógica de evasión de obstáculos, manteniendo el seguimiento de la trayectoria Pure Pursuit como modo por defecto.
+
+
+## Algoritmo de Evasión de Obstáculos
+
+Este módulo implementa un algoritmo de navegación reactiva basado en LIDAR que gestiona la seguridad del robot y la generación de trayectorias alternativas mediante curvas de Bézier cuadráticas.
+
+### Flujo de Funcionamiento
+
+#### 1. Escaneo Adaptativo (LIDAR)
+El sistema ajusta el campo de visión (FOV) según el contexto:
+* **Navegación Normal:** FOV de `60°` (±30°).
+* **Análisis de Desvío:** FOV ampliado a `190°` (±95°) para buscar rutas alternativas.
+
+#### 2. Máquina de Estados (Proximidad)
+Se evalúa la distancia mínima (`min_distance`) detectada para determinar el comportamiento:
+
+| Distancia ($d$) | Estado | Acción |
+| :--- | :--- | :--- |
+| $d < 0.25m$ | 🔴 **EMERGENCY** | Parada inmediata (Velocidad 0%). |
+| $d < 0.50m$ | 🟠 **OBSTACLE** | Inicio de maniobra de evasión (Velocidad 60%). |
+| Resto | 🟢 **NORMAL** | Seguimiento de ruta estándar (Velocidad 100%). |
+
+#### 3. Lógica de Evasión
+Si se detecta un obstáculo, el sistema decide la dirección óptima calculando el "peso" de los obstáculos en cada hemisferio:
+* `peso = Σ (1.0 / distancia_i)`
+* Si `peso_izq < peso_der` → Desvío a la **Izquierda**.
+* Si `peso_izq > peso_der` → Desvío a la **Derecha**.
+
+#### 4. Generación de Trayectoria (Curvas de Bézier)
+Se genera una ruta suave utilizando una curva de Bézier cuadrática definida por tres puntos de control $(P_0, P_1, P_2)$:
+
+* **$P_0$ (Inicio):** Posición actual del robot.
+* **$P_1$ (Ápex):** Punto de máximo desplazamiento lateral (calculado con `forward_offset` y `detour_offset`).
+* **$P_2$ (Fin):** Punto de reincorporación a la ruta original (`rejoin_distance`).
 
 ---
 
