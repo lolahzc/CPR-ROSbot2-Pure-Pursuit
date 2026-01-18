@@ -1,3 +1,10 @@
+ /**
+ * @file route_publisher.cpp
+ * @brief Nodo para la publicación de rutas y generación de trayectorias suavizadas (Splines).
+ * @author Pedro Cabello Pulido | Gabriela Cano Azuaga  | Lola Hernández Canizares | 
+Almudena Jin | Lucía Pérez Guerrero 
+ */
+
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
@@ -12,9 +19,30 @@
 #include <cmath>
 #include <algorithm>
 
+/**
+ * @class RoutePublisher
+ * @brief Nodo ROS2 que gestiona la publicación de rutas predefinidas con interpolación suave
+ * 
+ * Esta clase implementa un nodo de ROS2 que:
+ * - Gestiona múltiples rutas predefinidas (8 rutas diferentes)
+ * - Interpola waypoints mediante splines cúbicos naturales para generar trayectorias suaves
+ * - Publica objetivos (goals) secuenciales para navegación
+ * - Visualiza las rutas en RViz mediante markers
+ * - Permite cambio dinámico de rutas
+ * - Mantiene transformaciones TF entre frames map y odom
+ */
+
 class RoutePublisher : public rclcpp::Node
 {
-public:
+public:    
+    /**
+     * @brief Constructor de la clase RoutePublisher
+     * 
+     * Inicializa todos los publicadores, suscriptores, parámetros y timers necesarios.
+     * Configura la ruta inicial según el parámetro 'selected_route' y comienza la publicación
+     * de waypoints tras un delay de 5 segundos.
+     */
+
     RoutePublisher() : Node("route_publisher")
     {
         goal_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/goal_pose", 10);
@@ -64,10 +92,27 @@ public:
 
 private:
 
-	int selected_route_;
+    /** @brief Índice de la ruta seleccionada actualmente (1-8) */
+    int selected_route_;
+    /** @brief Índice del waypoint actual en la secuencia de navegación */
     size_t current_segment_index_ = 0;
 	
-
+    /**
+     * @brief Define la ruta según el número de ruta seleccionado
+     * 
+     * Carga los waypoints originales correspondientes a la ruta seleccionada.
+     * Incluye 8 rutas predefinidas con diferentes características:
+     * - Ruta 1: Trayectoria con curvas suaves
+     * - Ruta 2: Línea recta
+     * - Ruta 3: Trayectoria en escalera
+     * - Ruta 4: Patrón en forma de ocho
+     * - Ruta 5: Trayectoria compleja con múltiples giros
+     * - Ruta 6: Ruta irregular con cambios de dirección
+     * - Ruta 7: Trayectoria con oscilaciones
+     * - Ruta 8: Ruta para evasión de obstáculos
+     * 
+     * Si se proporciona un número de ruta inválido, se selecciona la ruta 1 por defecto.
+     */
     void defineRoute()
     {
     
@@ -169,18 +214,18 @@ private:
         case 7: 
             original_waypoints_ = {
                 {0.0, 0.0, 0.0},
-                {0.6, 0.2, 0.0},   // Antes: {0.2, 0.6...}
-                {0.0, 0.6, 0.0},   // Antes: {0.6, 0.0...}
-                {0.2, 0.9, 0.0},   // Antes: {0.9, 0.2...}
-                {-0.2, 0.95, 0.0}, // Antes: {0.95, -0.2...}
-                {-0.6, 1.2, 0.0},  // Antes: {1.2, -0.6...}
-                {0.0, 1.5, 0.0},   // Antes: {1.5, 0.0...}
-                {0.8, 1.65, 0.0},  // Antes: {1.65, 0.8...}
-                {0.0, 2.0, 0.0},   // Antes: {2.0, 0.0...}
-                {1.0, 2.4, 0.0},   // Antes: {2.4, 1.0...}
-                {-0.6, 3.0, 0.0},  // Antes: {3.0, -0.6...}     
+                {0.6, 0.2, 0.0},   
+                {0.0, 0.6, 0.0},   
+                {0.2, 0.9, 0.0},   
+                {-0.2, 0.95, 0.0}, 
+                {-0.6, 1.2, 0.0},  
+                {0.0, 1.5, 0.0},   
+                {0.8, 1.65, 0.0},  
+                {0.0, 2.0, 0.0},   
+                {1.0, 2.4, 0.0},   
+                {-0.6, 3.0, 0.0},  
             };
-            break;   
+            break;      
             
         case 8: // obtaculo
    		    original_waypoints_ = {
@@ -198,10 +243,19 @@ private:
             defineRoute(); 
             break;
     }
-        
-       
+          
     }
 
+    /**
+     * @brief Genera una ruta interpolada mediante splines cúbicos naturales
+     * 
+     * Toma los waypoints originales y genera una trayectoria suave mediante
+     * interpolación con splines cúbicos. El número de puntos interpolados por
+     * segmento está definido por el parámetro 'interpolation_points_per_segment'.
+     * 
+     * Los waypoints originales se preservan en sus posiciones exactas dentro
+     * de la trayectoria interpolada.
+     */
     void generateSplineRoute()
     {
         spline_waypoints_.clear();
@@ -245,6 +299,16 @@ private:
         }
     }
 
+    /**
+     * @brief Calcula los coeficientes de un spline cúbico natural
+     * 
+     * @param points Vector de valores de coordenadas (x o y) de los waypoints
+     * @return Vector de derivadas en cada punto (coeficientes D del spline)
+     * 
+     * Implementa el algoritmo de splines cúbicos naturales usando el método
+     * de Thomas para resolver el sistema tridiagonal. Las condiciones de frontera
+     * naturales asumen segunda derivada cero en los extremos.
+     */
     std::vector<double> computeNaturalCubicSpline(const std::vector<double>& points)
     {
         int n = points.size() - 1;
@@ -271,7 +335,17 @@ private:
         
         return D;
     }
-
+    /**
+     * @brief Evalúa el valor del spline cúbico en un punto específico
+     * 
+     * @param points Vector de valores originales de los waypoints
+     * @param D Vector de coeficientes calculados por computeNaturalCubicSpline
+     * @param i Índice del segmento a evaluar
+     * @param t Parámetro de interpolación local [0,1] dentro del segmento
+     * @return Valor interpolado en la posición t del segmento i
+     * 
+     * Utiliza la forma polinómica del spline cúbico: a + bt + ct² + dt³
+     */
     double evaluateCubicSpline(const std::vector<double>& points, const std::vector<double>& D, int i, double t)
     {
         double a = points[i];
@@ -282,13 +356,29 @@ private:
         return a + b * t + c * t * t + d * t * t * t;
     }
 
+    /**
+     * @brief Callback para el topic /goal_reached
+     * 
+     * @param msg Mensaje booleano indicando si se alcanzó el objetivo
+     * 
+     * Cuando se recibe confirmación de que se alcanzó el objetivo actual,
+     * avanza automáticamente al siguiente waypoint en la secuencia.
+     */
+
     void goalReachedCallback(const std_msgs::msg::Bool::SharedPtr msg)
     {
         if (msg->data) {
             advanceToNextWaypoint();
         }
     }
-
+    /**
+     * @brief Publica el waypoint actual como objetivo de navegación
+     * 
+     * Publica un mensaje PoseStamped con la posición y orientación del waypoint
+     * actual en el topic /goal_pose. La orientación se calcula como el ángulo
+     * hacia el siguiente waypoint. También actualiza la visualización de la ruta
+     * y los markers.
+     */
     void publishCurrentWaypoint()
     {
         if (current_segment_index_ >= original_waypoints_.size()) {
@@ -323,6 +413,13 @@ private:
         
     }
 
+    /**
+     * @brief Publica la trayectoria completa interpolada
+     * 
+     * Publica un mensaje PoseArray con todos los puntos de la trayectoria
+     * interpolada mediante splines en el topic /waypoints_path. Esta trayectoria
+     * puede ser visualizada en RViz.
+     */
     void publishWaypointsPath()
     {
         auto path_msg = geometry_msgs::msg::PoseArray();
@@ -341,7 +438,17 @@ private:
         
         path_pub_->publish(path_msg);
     }
-
+    /**
+     * @brief Publica markers de visualización para RViz
+     * 
+     * Crea y publica un conjunto de markers que incluyen:
+     * - Línea verde representando la trayectoria interpolada (spline)
+     * - Línea roja semi-transparente representando los waypoints originales
+     * - Esferas rojas en cada waypoint original
+     * - Esfera amarilla destacando el objetivo actual
+     * 
+     * Los markers se publican en el topic /waypoints_markers
+     */
     void publishWaypointsMarkers()
     {
         auto marker_array = visualization_msgs::msg::MarkerArray();
@@ -449,6 +556,12 @@ private:
         marker_pub_->publish(marker_array);
     }
 
+    /**
+     * @brief Publica la transformación TF estática entre map y odom
+     * 
+     * Mantiene una transformación identidad entre los frames "map" y "odom".
+     * Se ejecuta periódicamente cada 50ms mediante un timer.
+     */
     void publishStaticTF()
     {
         auto transform = geometry_msgs::msg::TransformStamped();
@@ -467,6 +580,14 @@ private:
         tf_broadcaster_->sendTransform(transform);
     }
 
+    /**
+     * @brief Avanza al siguiente waypoint en la secuencia
+     * 
+     * Incrementa el índice del waypoint actual y publica el nuevo objetivo.
+     * Si se ha alcanzado el final de la ruta:
+     * - Si loop_route_ está activado, reinicia desde el principio
+     * - Si no, detiene la publicación de nuevos objetivos
+     */
     void advanceToNextWaypoint()
     {
         current_segment_index_++; 
@@ -481,7 +602,16 @@ private:
         
         publishCurrentWaypoint();
     }
-    
+
+    /**
+     * @brief Cambia dinámicamente la ruta activa
+     * 
+     * @param new_route Número de la nueva ruta a cargar (1-8)
+     * 
+     * Limpia los markers anteriores, carga la nueva ruta, regenera la interpolación
+     * y reinicia la navegación desde el primer waypoint de la nueva ruta.
+     */
+
     void changeRoute(int new_route)
     {
         selected_route_ = new_route;
@@ -502,24 +632,43 @@ private:
         publishWaypointsMarkers();
     }
 
+    /** @brief Waypoints originales de la ruta seleccionada */
     std::vector<std::array<double, 3>> original_waypoints_;
+    /** @brief Waypoints interpolados mediante splines cúbicos */
     std::vector<std::array<double, 3>> spline_waypoints_;
+    /** @brief Flag para activar el modo de bucle continuo de la ruta */
     bool loop_route_;
-    int interpolation_points_;
-    
+    /** @brief Número de puntos de interpolación por segmento de waypoints */
+        int interpolation_points_;
+    /** @brief Publicador del objetivo actual (/goal_pose) */
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pub_;
+    /** @brief Publicador del path completo de waypoints interpolados (/waypoints_path) */
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr path_pub_;
+    /** @brief Publicador de markers de visualización para RViz (/waypoints_markers) */
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
+    /** @brief Suscriptor para recibir confirmación de objetivo alcanzado (/goal_reached) */
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr goal_reached_sub_;
+    /** @brief Suscriptor para recibir comandos de cambio de ruta (/change_route) */
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr route_change_sub_;
-    
+    /** @brief Broadcaster de transformaciones TF2 (map <-> odom) */
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    /** @brief Timer para publicación periódica de transformación TF estática (50ms) */
     rclcpp::TimerBase::SharedPtr tf_timer_;
+    /** @brief Timer de inicio único para delay de 5 segundos antes de comenzar la ruta */
     rclcpp::TimerBase::SharedPtr start_timer_;
 };
 
-
-
+/**
+ * @brief Función principal del programa
+ * 
+ * @param argc Número de argumentos de línea de comandos
+ * @param argv Array de argumentos de línea de comandos
+ * @return int Código de retorno (0 si es exitoso)
+ * 
+ * Inicializa el contexto de ROS2, crea una instancia del nodo RoutePublisher,
+ * mantiene el nodo en ejecución (spin) hasta que se reciba una señal de apagado,
+ * y finalmente realiza la limpieza del contexto de ROS2.
+ */
 int main(int argc, char** argv)
 {
     rclcpp::init(argc, argv);
