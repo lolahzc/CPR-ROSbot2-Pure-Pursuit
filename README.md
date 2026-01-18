@@ -1,4 +1,4 @@
-# 🚗 CPR-ROSbot2-Pure-Pursuit: Seguimiento de Trayectorias y Evasión de Obstáculos
+# CPR-ROSbot2-Pure-Pursuit: Seguimiento de Trayectorias y Evasión de Obstáculos
 
 Este proyecto implementa el algoritmo **Pure Pursuit** para el robot **Husarion ROSbot 2.0** en el entorno de simulación **Gazebo** (ROS 2). Se incluye una **máquina de estados** robusta para gestionar la evasión de obstáculos.
 
@@ -8,30 +8,43 @@ Este proyecto implementa el algoritmo **Pure Pursuit** para el robot **Husarion 
 
 El controlador principal ha sido extendido para incluir la lógica de evasión de obstáculos, manteniendo el seguimiento de la trayectoria Pure Pursuit como modo por defecto.
 
-#### Máquina de Estados para Evasión (`enum AvoidanceState`)
 
-| Estado | Descripción | Transición |
+
+## Algoritmo de Evasión de Obstáculos
+
+Este módulo implementa un algoritmo de navegación reactiva basado en LIDAR que gestiona la seguridad del robot y la generación de trayectorias alternativas mediante curvas de Bézier cuadráticas.
+
+### Flujo de Funcionamiento
+
+#### 1. Escaneo Adaptativo (LIDAR)
+El sistema ajusta el campo de visión (FOV) según el contexto:
+* **Navegación Normal:** FOV de `60°` (±30°).
+* **Análisis de Desvío:** FOV ampliado a `190°` (±95°) para buscar rutas alternativas.
+
+#### 2. Máquina de Estados (Proximidad)
+Se evalúa la distancia mínima (`min_distance`) detectada para determinar el comportamiento:
+
+| Distancia ($d$) | Estado | Acción |
 | :--- | :--- | :--- |
-| `NORMAL` | El robot sigue la trayectoria Pure Pursuit. | Si detecta obstáculo $\rightarrow$ `STOPPED` |
-| `STOPPED` | Detención del robot. Decisión de giro. | Después de decidir la dirección $\rightarrow$ `SEARCHING_LEFT/RIGHT` |
-| `SEARCHING_LEFT/RIGHT` | El robot pivota sobre sí mismo buscando un espacio libre. | Si el frente está libre y seguro $\rightarrow$ `NORMAL` |
+| $d < 0.25m$ | 🔴 **EMERGENCY** | Parada inmediata (Velocidad 0%). |
+| $d < 0.50m$ | 🟠 **OBSTACLE** | Inicio de maniobra de evasión (Velocidad 60%). |
+| Resto | 🟢 **NORMAL** | Seguimiento de ruta estándar (Velocidad 100%). |
 
-#### Funciones de Evasión Implementadas
+#### 3. Lógica de Evasión
+Si se detecta un obstáculo, el sistema decide la dirección óptima calculando el "peso" de los obstáculos en cada hemisferio:
+* `peso = Σ (1.0 / distancia_i)`
+* Si `peso_izq < peso_der` → Desvío a la **Izquierda**.
+* Si `peso_izq > peso_der` → Desvío a la **Derecha**.
 
-* **`scanCallback()`**: Procesa las lecturas del sensor LIDAR con un **filtro de ruido** (ignora lecturas menores a **0.20m**, para evitar el chasis) y un ajuste de **$180^\circ$** (corrigiendo la orientación del sensor).
-* **`checkFreeSpace()`**: Verifica si hay espacio frontal (`> min_free_distance`) para reanudar la marcha.
-* **`findGapSide()`**: Determina hacia dónde pivotar (Izquierda o Derecha) en modo `STOPPED`.
-* **`findClosestIndexForward()`**: Localiza el punto de la trayectoria más cercano y "adelantado" para reenganchar el camino correctamente.
+#### 4. Generación de Trayectoria (Curvas de Bézier)
+Se genera una ruta suave utilizando una curva de Bézier cuadrática definida por tres puntos de control $(P_0, P_1, P_2)$:
 
-#### Parámetros Clave (Configurables)
+* **$P_0$ (Inicio):** Posición actual del robot.
+* **$P_1$ (Ápex):** Punto de máximo desplazamiento lateral (calculado con `forward_offset` y `detour_offset`).
+* **$P_2$ (Fin):** Punto de reincorporación a la ruta original (`rejoin_distance`).
 
-| Parámetro | Valor Defecto | Descripción |
-| :--- | :--- | :--- |
-| `obstacle_distance_threshold` | 0.9m | Distancia máxima para considerar un objeto como obstáculo y detener la marcha. |
-| `scan_fov_degrees` | 50° | Campo de visión frontal del LIDAR utilizado para la detección. |
-| `min_free_distance` | 1.2m | Distancia libre mínima requerida para reanudar la marcha. |
-| `search_angular_vel` | 0.45 rad/s | Velocidad angular utilizada para pivotar y buscar un hueco libre. |
-
+**Ecuación de la curva (15 puntos):**
+$$B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]$$
 ---
 
 ## Instrucciones instalación
