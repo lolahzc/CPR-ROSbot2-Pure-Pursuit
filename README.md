@@ -9,7 +9,6 @@ Este proyecto implementa el algoritmo **Pure Pursuit** para el robot **Husarion 
 El controlador principal ha sido extendido para incluir la lógica de evasión de obstáculos, manteniendo el seguimiento de la trayectoria Pure Pursuit como modo por defecto.
 
 
-
 ## Algoritmo de Evasión de Obstáculos
 
 Este módulo implementa un algoritmo de navegación reactiva basado en LIDAR que gestiona la seguridad del robot y la generación de trayectorias alternativas mediante curvas de Bézier cuadráticas.
@@ -42,9 +41,7 @@ Se genera una ruta suave utilizando una curva de Bézier cuadrática definida po
 * **$P_0$ (Inicio):** Posición actual del robot.
 * **$P_1$ (Ápex):** Punto de máximo desplazamiento lateral (calculado con `forward_offset` y `detour_offset`).
 * **$P_2$ (Fin):** Punto de reincorporación a la ruta original (`rejoin_distance`).
-
-**Ecuación de la curva (15 puntos):**
-$$B(t) = (1-t)^2 P_0 + 2(1-t)t P_1 + t^2 P_2, \quad t \in [0, 1]$$
+  
 ---
 
 ## Instrucciones instalación
