@@ -1,3 +1,16 @@
+ /**
+ * @file pure_pursuit_node.cpp
+ * @brief Implementación de Pure Pursuit Controller con evasión dinámica de obstáculos
+ * @details Este nodo implementa un controlador Pure Pursuit avanzado para navegación
+ * autónoma de robots móviles en ROS 2. Incluye capacidades de:
+ * - Seguimiento de trayectorias con lookahead distance adaptativo
+ * - Velocidad variable según curvatura
+ * - Evasión reactiva de obstáculos mediante curvas de Bézier
+ * - Sistema de tres estados de seguridad
+ * - Logging automático de datos de navegación
+ * @author Pedro Cabello Pulido | Gabriela Cano Azuaga  | Lola Hernández Canizares | 
+Almudena Jin | Lucía Pérez Guerrero 
+ */
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -22,9 +35,25 @@
 #include <sstream>
 #include <string>
 
+/**
+ * @class PurePursuitNode
+ * @brief Nodo ROS 2 para control de navegación mediante Pure Pursuit con evasión de obstáculos
+ * 
+ * Esta clase implementa un sistema completo de navegación autónoma que combina:
+ * - Algoritmo Pure Pursuit para seguimiento de trayectorias
+ * - Sistema de evasión de obstáculos basado en sensor láser
+ * - Generación dinámica de rutas de desvío mediante curvas de Bézier
+ * - Ajuste adaptativo de velocidad y lookahead distance
+ */
 class PurePursuitNode : public rclcpp::Node
 {
 public:
+    /**
+     * @brief Constructor del nodo Pure Pursuit
+     * 
+     * Inicializa todos los parámetros, publicadores, suscriptores y temporizadores.
+     * También configura el sistema de logging automático con timestamp.
+     */
     PurePursuitNode() : Node("pure_pursuit_node")
     {
         // --- PARÁMETROS DE NAVEGACIÓN ---
@@ -70,7 +99,6 @@ public:
         bubble_viz_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/bubble_viz", 10);
         robot_marker_pub_ = this->create_publisher<visualization_msgs::msg::Marker>("/robot_marker", 10);
         
-        // Publicador MarkerArray para la ruta modificada
         detour_path_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/detour_path", 10);
 
         goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
@@ -128,18 +156,32 @@ public:
     }
 
 private:
+    /**
+     * @enum AvoidanceState
+     * @brief Estados del sistema de evasión de obstáculos
+     */
     enum class AvoidanceState { 
-        NORMAL,           
-        OBSTACLE_DETECTED, 
-        EMERGENCY         
+        NORMAL,            ///< Sin obstáculos, navegación normal (>0.5m)
+        OBSTACLE_DETECTED, ///< Obstáculo en burbuja, genera desvío (0.25-0.5m)
+        EMERGENCY         ///< Colisión inminente, parada inmediata (<0.25m)
     };
 
+    /**
+     * @brief Callback para recibir el objetivo de navegación
+     * @param msg Pose del objetivo en el marco de referencia global
+     */
     void goalCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
         current_goal_ = msg->pose;
         has_goal_ = true;
         goal_reached_ = false;
     }
 
+    /**
+     * @brief Callback para recibir la odometría filtrada del robot
+     * @param msg Mensaje de odometría con pose y velocidad
+     * 
+     * Actualiza la posición (x,y), orientación (yaw) y velocidad lineal del robot
+     */
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
         robot_x_ = msg->pose.pose.position.x;
         robot_y_ = msg->pose.pose.position.y;
@@ -154,10 +196,21 @@ private:
         robot_yaw_ = normalizeAngle(robot_yaw_);
     }
 
+    /**
+     * @brief Callback para recibir datos del sensor láser
+     * @param msg Escaneo láser con distancias y ángulos
+     */
     void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
         last_scan_ = msg;
     }
 
+    /**
+     * @brief Callback para recibir la trayectoria a seguir
+     * @param msg Array de poses que conforman el camino
+     * 
+     * Solo actualiza la trayectoria si han pasado >3 segundos desde el último desvío
+     * para evitar conflictos entre rutas planificadas y desvíos reactivos
+     */
     void pathCallback(const geometry_msgs::msg::PoseArray::SharedPtr msg) {
         if ((this->now() - last_detour_time_).seconds() > 3.0) {
             path_points_.clear();
@@ -170,6 +223,12 @@ private:
         }
     }
     
+    /**
+     * @brief Encuentra el índice del punto más cercano en la trayectoria
+     * 
+     * Busca en toda la trayectoria el waypoint más próximo a la posición actual
+     * del robot para inicializar correctamente el índice de seguimiento
+     */
     void findClosestIndex() {
         if (path_points_.empty()) return;
         double min_dist_sq = std::numeric_limits<double>::max();
@@ -186,6 +245,12 @@ private:
         current_path_index_ = best_idx;
     }
 
+    /**
+     * @brief Actualiza el índice actual en la trayectoria durante navegación
+     * 
+     * Busca hacia adelante (hasta 50 puntos) para encontrar el waypoint más cercano,
+     * asegurando progreso continuo sin retrocesos
+     */
     void updateCurrentPathIndex()
     {
         if (path_points_.empty()) return;
@@ -207,6 +272,12 @@ private:
         if (best_idx > current_path_index_) current_path_index_ = best_idx;
     }
 
+    /**
+     * @brief Calcula el error de seguimiento lateral (Cross-Track Error)
+     * @return Distancia mínima perpendicular a la trayectoria (metros)
+     * 
+     * Busca entre los próximos 20 waypoints la distancia mínima al robot
+     */
     double getCrossTrackError() {
         if (path_points_.empty()) return 0.0;
         double min_dist = 1000.0;
@@ -218,11 +289,29 @@ private:
         return min_dist;
     }
 
+    /**
+     * @brief Calcula la distancia lookahead adaptativa
+     * @param cross_track_error Error lateral actual (m)
+     * @param vx Velocidad lineal del robot (m/s)
+     * @return Lookahead distance calculado (m)
+     * 
+     * Fórmula: LHD = v_factor × (δ_max - δ_min) × e^(-γ×|CTE|) + δ_min
+     * - Mayor velocidad → Mayor LHD (más anticipación)
+     * - Mayor error → Menor LHD (más corrección agresiva)
+     */
     double calculateLookaheadDistance(double cross_track_error, double vx) {
         double vel_f = std::clamp(vx/5.0, 0.05, 0.2)*5.0;
         return vel_f * (delta_max_ - delta_min_) * std::exp(-gamma_ * std::abs(cross_track_error)) + delta_min_;
     }
 
+    /**
+     * @brief Actualiza el estado del sistema de evasión de obstáculos
+     * 
+     * Escanea el láser en un FOV de 60° frontal (±30°) y determina:
+     * - EMERGENCY: si hay obstáculo < 0.25m
+     * - OBSTACLE_DETECTED: si hay obstáculo < 0.5m
+     * - NORMAL: si todos los obstáculos > 0.5m
+     */
     void updateAvoidanceState() {
         if (!last_scan_) return;
 
@@ -251,6 +340,22 @@ private:
         }
     }
 
+    /**
+     * @brief Genera una ruta de desvío para evadir obstáculos
+     * 
+     * Algoritmo:
+     * 1. Escanea 190° (±95°) para analizar entorno completo
+     * 2. Calcula pesos por hemisferio: peso = 1/distancia
+     * 3. Decide dirección: hacia lado con menor peso total
+     * 4. Calcula 3 puntos clave:
+     *    - P_inicio: posición actual
+     *    - P_ápex: 0.5m adelante + 1.0m lateral
+     *    - P_reincorporación: sobre ruta a 2.0m adelante
+     * 5. Genera curva de Bézier cuadrática con 15 puntos
+     * 6. Reemplaza segmento de ruta original por desvío
+     * 
+     * @note Solo se ejecuta si han pasado >2s desde último desvío
+     */
     void generateDetourPath() {
         if ((this->now() - last_detour_time_).seconds() < 2.0) return;
         if (!last_scan_) return;
@@ -333,6 +438,13 @@ private:
         }
     }
 
+    /**
+     * @brief Publica visualización de la trayectoria modificada en RViz
+     * 
+     * Genera dos marcadores:
+     * - LINE_STRIP: línea continua cian mostrando la ruta completa
+     * - SPHERE_LIST: esferas magenta en cada waypoint
+     */
     void publishDetourPath() {
         visualization_msgs::msg::MarkerArray marker_array;
 
@@ -369,6 +481,20 @@ private:
         detour_path_pub_->publish(marker_array);
     }
 
+    /**
+     * @brief Bucle principal de control (ejecutado a 20Hz - cada 50ms)
+     * 
+     * Secuencia de ejecución:
+     * 1. Actualizar índice en trayectoria
+     * 2. Evaluar estado de evasión (láser 60°)
+     * 3. Si EMERGENCY → parar
+     * 4. Si OBSTACLE → generar desvío
+     * 5. Calcular LHD adaptativo
+     * 6. Encontrar punto lookahead
+     * 7. Calcular curvatura y velocidades
+     * 8. Publicar comandos y visualizaciones
+     * 9. Guardar datos en CSV
+     */
     void controlLoop()
     {
         publishRobotMarker();
@@ -413,15 +539,13 @@ private:
         double angular_vel = (2.0 * current_vel_cmd_ * std::sin(alpha)) / lookahead_dist;
         angular_vel = std::clamp(angular_vel, -max_angular_vel_, max_angular_vel_);
 
-        // --- CAMBIO CLAVE AQUÍ ---
-        // Ignoramos 'current_goal_' para la parada. Calculamos distancia al ÚLTIMO punto de la ruta.
         double dist_to_end = 999.9;
         if (!path_points_.empty()) {
              auto last_p = path_points_.back();
              dist_to_end = std::hypot(last_p.x - robot_x_, last_p.y - robot_y_);
         }
 
-        // --- GUARDADO DE LOGS ---
+        // Logging de datos
         if (data_log_file_.is_open()) {
             double current_time = this->now().seconds();
             data_log_file_ << std::fixed << std::setprecision(9)
@@ -434,13 +558,12 @@ private:
                            << lookahead_dist << ","   
                            << cte << ","              
                            << current_path_index_ << "," 
-                           << dist_to_end << ","      // Guardamos la distancia real al final, no al waypoint intermedio
+                           << dist_to_end << ","
                            << current_vel_cmd_ << "," 
                            << angular_vel << ","      
                            << curv << "\n";           
         }
 
-        // Condición de parada basada en el FINAL DE LA RUTA
         if (dist_to_end < goal_tolerance_) {
             if (!goal_reached_) {
                 goal_reached_ = true;
@@ -460,12 +583,26 @@ private:
         publishBubbleViz(current_radius);
     }
 
+    /**
+     * @brief Detiene el robot completamente
+     * 
+     * Publica velocidad lineal y angular = 0
+     */
     void stopRobot() {
         geometry_msgs::msg::Twist cmd;
         cmd.linear.x = 0.0; cmd.angular.z = 0.0;
         cmd_vel_pub_->publish(cmd);
     }
 
+    /**
+     * @brief Busca el punto lookahead en la trayectoria
+     * @param dynamic_lookahead_dist Distancia lookahead calculada dinámicamente
+     * @param lookahead_point Punto encontrado (salida)
+     * @return true si encontró punto, false si llegó al final
+     * 
+     * Busca hacia adelante el primer waypoint que esté a una distancia
+     * mayor o igual al lookahead distance calculado
+     */
     bool findLookaheadPoint(double dynamic_lookahead_dist ,geometry_msgs::msg::Point& lookahead_point)
     {
         for (size_t i = current_path_index_; i < path_points_.size(); ++i) {
@@ -481,6 +618,15 @@ private:
         return false;
     }
 
+    /**
+     * @brief Calcula la curvatura instantánea hacia el punto lookahead
+     * @param lookahead_point Punto objetivo en coordenadas globales
+     * @return Curvatura (1/m) - positiva=izquierda, negativa=derecha
+     * 
+     * Fórmula en sistema de coordenadas del robot:
+     * κ = 2 × y_rel / L²
+     * donde L es la distancia al punto lookahead
+     */
     double calculateCurvature(const geometry_msgs::msg::Point& lookahead_point)
     {
         double rel_x = lookahead_point.x - robot_x_;
@@ -492,22 +638,30 @@ private:
         return 0.0;
     }
 
+    /**
+     * @brief Publica marcador visual de la burbuja de seguridad en RViz
+     * @param radius Radio de la burbuja (metros)
+     * 
+     * Colores según estado:
+     * - NORMAL: Cian translúcido (α=0.3)
+     * - OBSTACLE_DETECTED: Naranja semi-opaco (α=0.5)
+     * - EMERGENCY: Rojo opaco (α=0.7)
+     */
     void publishBubbleViz(double radius) {
         auto m = visualization_msgs::msg::Marker();
-        m.header.frame_id = "map"; // Cambiar a "map"
+        m.header.frame_id = "map";
         m.header.stamp = now();
-        // ¡ESTO ES LO QUE FALTABA!
         m.pose.position.x = robot_x_;
         m.pose.position.y = robot_y_;
-        m.pose.position.z = 0.0; // Elevarlo un poco para que se vea
+        m.pose.position.z = 0.0;
         m.pose.orientation.w = 1.0;
         m.ns = "bubble"; 
         m.id = 1; 
-        m.type = visualization_msgs::msg::Marker::SPHERE; // Tipo 6 es mejor que 3 (SPHERE)
+        m.type = visualization_msgs::msg::Marker::SPHERE;
         m.action = 0;
         m.scale.x = radius * 2.0; 
         m.scale.y = radius * 2.0; 
-        m.scale.z = 0.05; // Más alto para que se vea mejor
+        m.scale.z = 0.05;
 
         if (avoidance_state_ == AvoidanceState::NORMAL) { 
             m.color.r = 0.0;
@@ -515,8 +669,6 @@ private:
             m.color.b = 1.0; 
             m.color.a = 0.3; 
         }
-
-
         else if (avoidance_state_ == AvoidanceState::OBSTACLE_DETECTED) { 
             m.color.r = 1.0; 
             m.color.g = 0.65; 
@@ -532,8 +684,14 @@ private:
 
         m.lifetime = rclcpp::Duration::from_seconds(0);
         bubble_viz_pub_->publish(m);
-        }
+    }
 
+    /**
+     * @brief Publica marcador visual del punto lookahead en RViz
+     * @param point Punto lookahead en coordenadas globales
+     * 
+     * Marcador: esfera magenta de 0.2m de diámetro
+     */
     void publishLookaheadMarker(const geometry_msgs::msg::Point& point) {
         auto marker = visualization_msgs::msg::Marker();
         marker.header.stamp = this->now(); marker.header.frame_id = "map";
@@ -544,8 +702,13 @@ private:
         marker_pub_->publish(marker);
     }
     
+    /**
+     * @brief Publica marcador visual de la posición del robot en RViz
+     * 
+     * Marcador: esfera azul de 0.3m de diámetro en la posición actual
+     */
     void publishRobotMarker() {
-         auto marker = visualization_msgs::msg::Marker();
+        auto marker = visualization_msgs::msg::Marker();
         marker.header.stamp = this->now();
         marker.header.frame_id = "map";
         marker.ns = "robot_viz";
@@ -572,49 +735,103 @@ private:
         robot_marker_pub_->publish(marker);
     }
 
+    /**
+     * @brief Normaliza un ángulo al rango [-π, π]
+     * @param angle Ángulo en radianes (cualquier valor)
+     * @return Ángulo normalizado en [-π, π]
+     */
     double normalizeAngle(double angle) {
         while (angle > M_PI) angle -= 2.0 * M_PI;
         while (angle < -M_PI) angle += 2.0 * M_PI;
         return angle;
     }
 
-    // Variables
-    double robot_x_, robot_y_, robot_yaw_, robot_linear_vel_;
-    geometry_msgs::msg::Pose current_goal_;
-    std::vector<geometry_msgs::msg::Point> path_points_;
-    bool has_goal_ = false; bool has_path_ = false; bool goal_reached_ = false;
-    size_t current_path_index_ = 0;
+    // ========== VARIABLES MIEMBRO ==========
     
-    std::ofstream data_log_file_;
-    sensor_msgs::msg::LaserScan::SharedPtr last_scan_;
+    /// @name Estado del Robot
+    /// @{
+    double robot_x_;           ///< Posición X en marco global (m)
+    double robot_y_;           ///< Posición Y en marco global (m)
+    double robot_yaw_;         ///< Orientación en marco global (rad)
+    double robot_linear_vel_;  ///< Velocidad lineal actual (m/s)
+    /// @}
     
-    // Params
-    double lookahead_distance_, max_linear_vel_, max_angular_vel_, goal_tolerance_;
-    double delta_min_, delta_max_, gamma_;
-    double bubble_base_radius_, critical_distance_;
-    double detour_offset_, rejoin_distance_, forward_offset_;
-    int selected_route_;
+    /// @name Objetivos y Trayectoria
+    /// @{
+    geometry_msgs::msg::Pose current_goal_;              ///< Objetivo final de navegación
+    std::vector<geometry_msgs::msg::Point> path_points_; ///< Waypoints de la trayectoria
+    bool has_goal_;                                      ///< Flag: objetivo recibido
+    bool has_path_;                                      ///< Flag: trayectoria recibida
+    bool goal_reached_;                                  ///< Flag: objetivo alcanzado
+    size_t current_path_index_;                          ///< Índice actual en la trayectoria
+    /// @}
     
-    double current_vel_cmd_;
-    rclcpp::Time last_detour_time_;
+    /// @name Sistema de Logs y Sensores
+    /// @{
+    std::ofstream data_log_file_;                           ///< Archivo CSV de logging
+    sensor_msgs::msg::LaserScan::SharedPtr last_scan_;      ///< Último escaneo láser recibido
+    /// @}
+    
+    /// @name Parámetros de Navegación
+    /// @{
+    double lookahead_distance_;  ///< LHD base (no usado con adaptativo)
+    double max_linear_vel_;      ///< Velocidad lineal máxima (m/s)
+    double max_angular_vel_;     ///< Velocidad angular máxima (rad/s)
+    double goal_tolerance_;      ///< Tolerancia de llegada (m)
+    double delta_min_;           ///< LHD mínimo para adaptativo (m)
+    double delta_max_;           ///< LHD máximo para adaptativo (m)
+    double gamma_;               ///< Factor de decaimiento exponencial
+    /// @}
+    
+    /// @name Parámetros de Evasión
+    /// @{
+    double bubble_base_radius_;  ///< Radio de burbuja de seguridad (m)
+    double critical_distance_;   ///< Distancia de emergencia (m)
+    double detour_offset_;       ///< Desplazamiento lateral del desvío (m)
+    double rejoin_distance_;     ///< Distancia de reincorporación (m)
+    double forward_offset_;      ///< Desplazamiento frontal del ápex (m)
+    /// @}
+    
+    /// @name Control y Estado
+    /// @{
+    int selected_route_;                      ///< ID de ruta seleccionada (1-8)
+    double current_vel_cmd_;                  ///< Última velocidad comandada (m/s)
+    rclcpp::Time last_detour_time_;           ///< Timestamp del último desvío
+    AvoidanceState avoidance_state_;          ///< Estado actual de evasión
+    /// @}
 
+    /// @name Publicadores ROS 2
+    /// @{
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr goal_reached_pub_;
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_, bubble_viz_pub_, robot_marker_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr bubble_viz_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr robot_marker_pub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr detour_path_pub_;
+    /// @}
 
+    /// @name Suscriptores ROS 2
+    /// @{
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseArray>::SharedPtr path_sub_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+    /// @}
     
-    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    rclcpp::TimerBase::SharedPtr control_timer_;
-
-    AvoidanceState avoidance_state_ = AvoidanceState::NORMAL;
+    /// @name Utilidades
+    /// @{
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< Broadcaster TF2
+    rclcpp::TimerBase::SharedPtr control_timer_;                      ///< Timer del bucle control
+    /// @}
 };
 
+/**
+ * @brief Función principal - Punto de entrada del programa
+ * @param argc Número de argumentos
+ * @param argv Array de argumentos
+ * @return 0 si terminó correctamente
+ */
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<PurePursuitNode>());
