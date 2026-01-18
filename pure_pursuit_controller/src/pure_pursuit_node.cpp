@@ -161,9 +161,9 @@ private:
      * @brief Estados del sistema de evasión de obstáculos
      */
     enum class AvoidanceState { 
-        NORMAL,            ///< Sin obstáculos, navegación normal (>0.5m)
-        OBSTACLE_DETECTED, ///< Obstáculo en burbuja, genera desvío (0.25-0.5m)
-        EMERGENCY         ///< Colisión inminente, parada inmediata (<0.25m)
+        NORMAL,             ///< Sin obstáculos, navegación normal (>0.5m)
+        OBSTACLE_DETECTED,  ///< Obstáculo en burbuja, genera desvío (0.25-0.5m)
+        EMERGENCY           ///< Colisión inminente, parada inmediata (<0.25m)
     };
 
     /**
@@ -821,7 +821,7 @@ private:
     
     /// @name Utilidades
     /// @{
-    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< Broadcaster TF2
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;   ///< Broadcaster TF2
     rclcpp::TimerBase::SharedPtr control_timer_;                      ///< Timer del bucle control
     /// @}
 };
