@@ -73,6 +73,15 @@ Os recomiendo añadiros esto en el .bashrc para no tener que hacerlo cada vez qu
 ros2 launch rosbot_gazebo simulation.launch.py robot_model:=rosbot
 ```
 
+Si se quiere lanzar un mundo sin obstáculos, en husarion_gz_worlds/launch/gz_sim.launch.py cambiar la línea:
+```
+[FindPackageShare("husarion_gz_worlds"), "worlds", "slam.sdf"]
+```
+Por:
+```
+[FindPackageShare("husarion_gz_worlds"), "worlds", "empty_with_plugins.sdf"]
+```
+
 El `route_publisher` define, interpole (mediante **Splines Cúbicos Naturales**) y publica las trayectorias.
 
 ---
